@@ -7,8 +7,10 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    name: '',
+    business_name: '',
+    owner_name: '',
     email: '',
+    whatsapp: '',
     password: '',
     password_confirmation: '',
 });
@@ -26,19 +28,34 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="business_name" value="Business Name" />
 
                 <TextInput
-                    id="name"
+                    id="business_name"
                     type="text"
                     class="mt-1 block w-full"
-                    v-model="form.name"
+                    v-model="form.business_name"
                     required
                     autofocus
+                    autocomplete="organization"
+                />
+
+                <InputError class="mt-2" :message="form.errors.business_name" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="owner_name" value="Owner Name" />
+
+                <TextInput
+                    id="owner_name"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.owner_name"
+                    required
                     autocomplete="name"
                 />
 
-                <InputError class="mt-2" :message="form.errors.name" />
+                <InputError class="mt-2" :message="form.errors.owner_name" />
             </div>
 
             <div class="mt-4">
@@ -57,7 +74,23 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
+                <InputLabel for="whatsapp" value="WhatsApp Number" />
+
+                <TextInput
+                    id="whatsapp"
+                    type="tel"
+                    class="mt-1 block w-full"
+                    v-model="form.whatsapp"
+                    required
+                    autocomplete="tel"
+                />
+
+                <InputError class="mt-2" :message="form.errors.whatsapp" />
+            </div>
+
+            <div class="mt-4">
                 <InputLabel for="password" value="Password" />
+                <p class="text-sm text-gray-600">Minimum 8 characters.</p>
 
                 <TextInput
                     id="password"
