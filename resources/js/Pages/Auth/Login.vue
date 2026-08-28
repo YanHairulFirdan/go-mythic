@@ -14,6 +14,9 @@ defineProps({
     status: {
         type: String,
     },
+    error: {
+        type: String,
+    },
 });
 
 const form = useForm({
@@ -35,6 +38,10 @@ const submit = () => {
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
+        </div>
+
+        <div v-if="error" class="mb-4 text-sm font-medium text-red-600" role="alert">
+            {{ error }}
         </div>
 
         <form @submit.prevent="submit">
