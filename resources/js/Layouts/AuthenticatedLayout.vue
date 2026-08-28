@@ -39,6 +39,13 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.user.role === 'owner'"
+                                    :href="route('subscription.index')"
+                                    :active="route().current('subscription.*')"
+                                >
+                                    Langganan
+                                </NavLink>
                             </div>
                         </div>
 
@@ -145,6 +152,13 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="$page.props.auth.user.role === 'owner'"
+                            :href="route('subscription.index')"
+                            :active="route().current('subscription.*')"
+                        >
+                            Langganan
                         </ResponsiveNavLink>
                     </div>
 
