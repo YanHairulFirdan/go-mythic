@@ -115,3 +115,9 @@ Report:
 - explicit statement: no commit, push, sheet update, merge, or rebase performed.
 
 Stop. Wait for the user to inspect and explicitly say `oke`. `oke` permits the next review step only; do not assume it permits push, merge, or any other outward-facing action. Never commit in the same turn as implementation.
+
+## Conversation-derived constraints
+
+- 2026-08-28: Before implementation, read and use all three references: `doc/database-schema.dbml` for schema/model/migration decisions, `doc/index.html` for Inertia/Vue screens and states, and `doc/PRD-Aplikasi-Pencatatan-Keuangan-UMKM-v1.3 (1).md` for feature behavior and scope. Compare the completed slice against each reference before handoff.
+- 2026-08-28: For password reset, verify approximately 60-minute expiry, single-use tokens, and invalidation of all active sessions; use the configured session storage rather than adding a new dependency or abstraction.
+- 2026-08-28: Do not write back to Google Sheets unless explicitly requested. Keep implementation uncommitted until review approval (`oke`); commit only the reviewed slice, without push, merge, rebase, or Sheet updates unless separately authorized.
