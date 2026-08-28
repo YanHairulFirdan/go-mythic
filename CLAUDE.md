@@ -23,6 +23,8 @@ Ikuti workflow `/implement-pic-task` untuk mengerjakan task dari Google Sheet be
 - Identifikasi header sebelum memfilter. Normalisasi whitespace dan perbandingan PIC case-insensitive.
 - Proses hanya baris yang PIC-nya cocok dan statusnya actionable. Jika ada lebih dari satu kandidat tanpa task ID, tampilkan kandidat lalu minta pilihan.
 - Missing/ambiguous header, PIC, user story, acceptance criteria, atau status adalah blocker. Jangan mengarang requirement.
+- Jika tab Implementation Tasks berisi task per layer, gunakan baris terpilih sebagai entry point lalu kelompokkan hanya sibling task/dependency yang diperlukan untuk satu user story dan satu alur end-to-end. Resolusi user story wajib memakai seluruh acceptance criteria dari tab User Stories.
+- Mapping user story yang salah atau ambigu adalah blocker: tampilkan konflik dan minta klarifikasi, jangan menebak. Satu slice selesai hanya setelah alur end-to-end terverifikasi; jangan menganggap satu layer selesai sebagai task selesai.
 - Jangan menulis balik ke Sheet, mengubah status, atau mengirim data keluar kecuali user meminta secara eksplisit.
 - Jangan menampilkan credential/token. Jangan menyimpan credential di repository.
 
@@ -46,6 +48,8 @@ Ikuti workflow `/implement-pic-task` untuk mengerjakan task dari Google Sheet be
 
 ## Implementasi
 
+- Kerjakan feature sebagai **vertical slice**: setiap task harus menutup alur end-to-end minimum dari input/UI melalui route, controller, validasi, persistence, hingga output/response sesuai acceptance criteria.
+- Jangan mengerjakan feature sebagai pekerjaan terpisah per layer (misalnya migration/backend dahulu lalu frontend tanpa alur yang dapat diverifikasi), kecuali acceptance criteria memang hanya mencakup sebagian alur.
 - Implementasikan hanya file yang diperlukan untuk story: migration, model, FormRequest, middleware, controller, route, Vue page, layout/component, dan test.
 - Middleware bukan checklist wajib; tambahkan hanya jika ada aturan lintas-request yang jelas.
 - Validasi semua input dari trust boundary. Pertahankan authorization, CSRF, escaping, dan accessibility.

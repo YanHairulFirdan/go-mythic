@@ -1,6 +1,6 @@
 # Implement PIC Task
 
-Implement exactly one actionable task assigned to the requested PIC from Google Sheets. Follow every phase in order. Keep all decisions and edits visible in the main session.
+Implement exactly one actionable user-story slice assigned to the requested PIC from Google Sheets. A Sheet row may be a layer-level subtask; use it as the entry point, then include only its directly required sibling rows/dependencies to complete one observable end-to-end flow. Never implement unrelated rows or an entire feature group. Follow every phase in order. Keep all decisions and edits visible in the main session.
 
 ## Required inputs
 
@@ -21,7 +21,10 @@ Never guess credentials, sheet names, headers, PIC identity, task status, user s
 4. Normalize PIC whitespace and compare case-insensitively.
 5. Keep only rows assigned to the requested PIC with an actionable status. Do not infer what an unknown status means.
 6. If zero rows match, report that and stop. If multiple rows match without a task ID, show a compact candidate list and ask the user to choose. If required fields are empty or ambiguous, stop and ask for clarification.
-7. Display the selected task, user story, complete acceptance criteria, status, and PIC. Do not write to the sheet.
+7. Resolve the selected row's user story against the User Stories tab and display the complete acceptance criteria from that tab. If the mapping is wrong or ambiguous, stop and show the conflict; never guess.
+8. If the tab is layer-oriented, group only the selected row's directly required sibling tasks/dependencies for that same user story into this one vertical slice. Do not pull in unrelated rows or an entire feature group. Display the grouped scope. Do not write to the sheet.
+
+The selected row is an entry point, not permission to implement one layer in isolation. The slice is complete only when its observable end-to-end behavior is verified.
 
 ## Phase 2 — Branch preflight
 
@@ -51,7 +54,7 @@ Use existing Laravel conventions: feature tests under `tests/Feature`, `RefreshD
 
 ## Phase 4 — Red/green implementation
 
-Write tests first where practical. Then implement the smallest slice required by the approved task:
+Write tests first where practical. Implement the smallest **vertical slice** required by the approved task: close the minimum end-to-end flow from UI/input through route, controller, validation, persistence, and response/output covered by the acceptance criteria. Do not implement the feature as separate layer-only work (for example, backend first and frontend later) unless the acceptance criteria intentionally cover only part of the flow.
 
 1. migration and model/factory when persistence is required;
 2. FormRequest and/or middleware only when validation or cross-request policy requires it;
@@ -60,6 +63,8 @@ Write tests first where practical. Then implement the smallest slice required by
 5. matching page in `resources/js/Pages/`, reusing existing layout/components and `useForm`.
 
 Keep route names, `Inertia::render()` page names, Vue paths, and test names aligned. Preserve authorization, CSRF, escaping, accessibility, and existing auth behavior. Do not add speculative abstractions, packages, or unrelated refactors.
+
+Treat each acceptance criterion as a complete behavior slice: its test must exercise the observable end-to-end path rather than validating isolated layers only, where the criterion spans multiple layers.
 
 ## Phase 5 — Refactor and verify
 
