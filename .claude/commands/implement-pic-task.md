@@ -13,7 +13,7 @@ Ask for any missing value before proceeding:
 
 Never guess credentials, sheet names, headers, PIC identity, task status, user story, or acceptance criteria.
 
-## Phase 1 — Scan task
+## Phase 1 — Scan task and reference documents
 
 1. Inspect repository instructions and current branch.
 2. Use Google Sheets MCP metadata/value reads to inspect the requested tab/range.
@@ -23,8 +23,22 @@ Never guess credentials, sheet names, headers, PIC identity, task status, user s
 6. If zero rows match, report that and stop. If multiple rows match without a task ID, show a compact candidate list and ask the user to choose. If required fields are empty or ambiguous, stop and ask for clarification.
 7. Resolve the selected row's user story against the User Stories tab and display the complete acceptance criteria from that tab. If the mapping is wrong or ambiguous, stop and show the conflict; never guess.
 8. If the tab is layer-oriented, group only the selected row's directly required sibling tasks/dependencies for that same user story into this one vertical slice. Do not pull in unrelated rows or an entire feature group. Display the grouped scope. Do not write to the sheet.
+9. Before implementing any model or migration, read `doc/database-schema.dbml`. Extract required columns, types, nullability, defaults, indexes, relationships, and soft-delete requirements for the selected slice. Before implementing any Inertia/Vue page, read `doc/index.html`. Extract the relevant screen's fields, labels, states, interactions, accessibility expectations, and design tokens. Before implementing feature behavior, read `doc/PRD-Aplikasi-Pencatatan-Keuangan-UMKM-v1.3 (1).md` and use it as the feature-scope and behavior reference. If a named reference file is missing, stop and report it.
+10. Record a compact reference baseline before editing: DBML schema targets, prototype UI targets, and PRD behavior/AC targets. Treat the PRD/User Stories acceptance criteria as authoritative for observable behavior; surface conflicts with DBML or prototype instead of silently guessing.
 
 The selected row is an entry point, not permission to implement one layer in isolation. The slice is complete only when its observable end-to-end behavior is verified.
+
+## Reference conformance gate
+
+Before verification and handoff, compare the changed implementation against all three references:
+
+- **Database:** changed migrations/models vs `doc/database-schema.dbml` (columns, types, constraints, relations, indexes, soft deletes).
+- **Page:** changed Inertia/Vue page vs the corresponding flow in `doc/index.html` (required fields, labels/content, states, interaction, accessibility, design tokens). The prototype is a UI/flow reference; do not copy its offline simulation into production.
+- **Feature:** changed routes/controllers/tests vs `doc/PRD-Aplikasi-Pencatatan-Keuangan-UMKM-v1.3 (1).md` and the resolved Sheet acceptance criteria (scope, deferred features, behavior).
+
+Classify each difference as **match**, **intentional simplification**, **non-blocking gap**, or **blocker**. A schema or behavior difference that changes an acceptance criterion is a blocker requiring clarification or correction. Include the comparison and any unresolved gap in the final handoff; never claim reference conformance without checking.
+
+Do not update reference documents or write back to the Sheet unless the user explicitly requests it.
 
 ## Phase 2 — Branch preflight
 
