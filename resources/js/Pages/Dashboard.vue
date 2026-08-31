@@ -29,7 +29,7 @@ const quickActions = [
     { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
     { label: 'Buat invoice', icon: FilePlus2, href: '#invoices' },
     { label: 'Lihat laporan', icon: TrendingUp, href: route('reports.profit-loss') },
-    { label: 'Atur modal/kas', icon: Landmark, href: '#capital' },
+    { label: 'Atur modal/kas', icon: Landmark, href: route('capital.index') },
 ];
 </script>
 
