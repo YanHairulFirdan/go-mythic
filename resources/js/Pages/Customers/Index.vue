@@ -36,7 +36,7 @@ const props = defineProps({
                 <Link
                     v-for="customer in props.customers"
                     :key="customer.id"
-                    href="#customer-detail"
+                    :href="route('customers.show', customer.id)"
                     class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
                 >
                     <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
