@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "ai-color-palette",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Reports/ProfitLoss.vue"
+        ],
+        "createdAt": "2026-08-31T06:17:04.769Z",
+        "reason": "existing codebase design system: indigo is the established primary across Dashboard, Transactions, Invoices, BottomNav and PrototypeLayout — matched for consistency, not an AI default"
+      }
+    ]
+  }
+}
