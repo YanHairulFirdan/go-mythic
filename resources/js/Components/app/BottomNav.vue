@@ -20,7 +20,9 @@ const currentActive = currentRoute?.startsWith('dashboard')
             ? 'Customer'
             : currentRoute?.startsWith('invoices')
                 ? 'Invoice'
-                : props.active;
+                : currentRoute?.startsWith('reports')
+                    ? 'Lainnya'
+                    : props.active;
 </script>
 
 <template>
