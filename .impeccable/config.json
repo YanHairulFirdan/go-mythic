@@ -92,6 +92,51 @@
         ],
         "createdAt": "2026-08-31T06:53:26.556Z",
         "reason": "matches established prototype type scale: text-xl h1 header identical to every other prototype page (Capital/Index, Subscription/Index, Employees/Index, etc)"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Customers/Index.vue"
+        ],
+        "createdAt": "2026-08-31T08:10:39.221Z",
+        "reason": "false positive: outline-button pattern (text-slate-700 on white, hover switches to text-indigo-700 on bg-indigo-50) — pre-existing markup kept verbatim, identical to whitelisted Customers/Show.vue, Employees/Index.vue, Transactions/Show.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Customers/Show.vue"
+        ],
+        "createdAt": "2026-08-31T08:10:59.079Z",
+        "reason": "false positive: outline-button pattern (text-slate-700 on white, hover text-indigo-700 on bg-indigo-50) — same pattern already whitelisted for Employees/Index.vue which cites this very file as the source"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Customers/Create.vue"
+        ],
+        "createdAt": "2026-08-31T08:12:26.906Z",
+        "reason": "matches established prototype type scale: text-xl h1 header + text-[10px] uppercase labels identical to whitelisted Capital/Index.vue, Subscription/Index.vue, Employees/Index.vue, Profile/Edit.vue; structure kept verbatim from pre-existing prototype page"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Customers/Edit.vue"
+        ],
+        "createdAt": "2026-08-31T08:12:26.975Z",
+        "reason": "matches established prototype type scale: text-xl h1 header + text-[10px] uppercase labels identical to whitelisted Capital/Index.vue, Subscription/Index.vue, Employees/Index.vue, Profile/Edit.vue; structure kept verbatim from pre-existing prototype page"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Customers/Show.vue"
+        ],
+        "createdAt": "2026-08-31T08:12:27.055Z",
+        "reason": "matches established prototype type scale: text-xl h1 header + text-[10px] uppercase labels identical to whitelisted Capital/Index.vue, Subscription/Index.vue, Employees/Index.vue, Profile/Edit.vue; structure kept verbatim from pre-existing prototype page"
       }
     ]
   }
