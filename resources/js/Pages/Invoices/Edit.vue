@@ -6,14 +6,17 @@ import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
 
 const props = defineProps({
+    invoice: { type: Object, required: true },
     customers: { type: Array, default: () => [] },
     employees: { type: Array, default: () => [] },
 });
 
 const form = useForm({
-    customer_id: '',
-    employee_id: '',
-    items: [{ description: '', amount: null }],
+    customer_id: props.invoice.customer_id ?? '',
+    employee_id: props.invoice.employee_id ?? '',
+    items: props.invoice.items.length
+        ? props.invoice.items.map((item) => ({ description: item.description, amount: Number(item.amount) }))
+        : [{ description: '', amount: null }],
 });
 
 const total = computed(() => form.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
@@ -24,22 +27,22 @@ const removeItem = (index) => {
     if (form.items.length > 1) form.items.splice(index, 1);
 };
 
-const submit = () => form.post(route('invoices.store'));
+const submit = () => form.patch(route('invoices.update', props.invoice.id));
 </script>
 
 <template>
-    <Head title="Buat invoice" />
+    <Head title="Edit invoice" />
 
     <PrototypeLayout>
         <section class="flex items-center gap-3 pb-5 pt-4">
             <Link
-                :href="route('invoices.index')"
-                aria-label="Kembali ke invoice"
+                :href="route('invoices.show', props.invoice.id)"
+                aria-label="Kembali ke detail invoice"
                 class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
-            <h1 class="text-xl font-bold tracking-tight">Buat invoice</h1>
+            <h1 class="text-xl font-bold tracking-tight">Edit invoice</h1>
         </section>
 
         <form class="space-y-5 pb-8" @submit.prevent="submit">
@@ -98,7 +101,7 @@ const submit = () => form.post(route('invoices.store'));
             <Card label="Total invoice" :amount="formattedTotal" />
 
             <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
-                Simpan invoice
+                Simpan perubahan
             </button>
         </form>
     </PrototypeLayout>

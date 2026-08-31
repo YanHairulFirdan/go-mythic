@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Middleware\EnsureUserActive;
@@ -32,9 +33,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
     Route::resource('customers', CustomerController::class);
-    Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
-    Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
-    Route::get('/invoices/{invoice}', fn () => Inertia::render('Invoices/Show'))->name('invoices.show');
+    Route::resource('invoices', InvoiceController::class);
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
     Route::get('/capital', fn () => Inertia::render('Capital/Index'))->name('capital.index');
     Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
