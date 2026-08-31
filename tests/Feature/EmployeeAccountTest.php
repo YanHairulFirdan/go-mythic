@@ -234,4 +234,177 @@ class EmployeeAccountTest extends TestCase
                 ->has('employees', 1)
                 ->where('employees.0.name', 'My Employee'));
     }
+
+    public function test_owner_can_deactivate_employee_account_and_preserve_roster_history(): void
+    {
+        $owner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'active',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($owner)
+            ->patch(route('employees.status.update', $roster), ['status' => 'inactive'])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('employees', [
+            'id' => $roster->id,
+            'status' => 'inactive',
+            'deleted_at' => null,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $employee->id,
+            'status' => 'inactive',
+            'inactive_reason' => 'manual',
+        ]);
+    }
+
+    public function test_owner_can_reactivate_employee_account_and_clear_inactive_reason(): void
+    {
+        $owner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'inactive',
+            'inactive_reason' => 'manual',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+            'status' => 'inactive',
+        ]);
+
+        $this->actingAs($owner)
+            ->patch(route('employees.status.update', $roster), ['status' => 'active'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('employees', ['id' => $roster->id, 'status' => 'active']);
+        $this->assertDatabaseHas('users', [
+            'id' => $employee->id,
+            'status' => 'active',
+            'inactive_reason' => null,
+        ]);
+    }
+
+    public function test_employee_status_update_rejects_other_company_roster(): void
+    {
+        $owner = User::factory()->create();
+        $otherOwner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $otherOwner->company_id,
+            'role' => 'employee',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $otherOwner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->patch(route('employees.status.update', $roster), ['status' => 'inactive'])
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('employees', ['id' => $roster->id, 'status' => 'active']);
+        $this->assertDatabaseHas('users', ['id' => $employee->id, 'status' => 'active']);
+    }
+
+    public function test_employee_cannot_update_employee_status(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee']);
+        $roster = Employee::factory()->create([
+            'company_id' => $employee->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+        ]);
+
+        $this->actingAs($employee)
+            ->patch(route('employees.status.update', $roster), ['status' => 'inactive'])
+            ->assertForbidden();
+    }
+
+    public function test_employee_status_update_requires_a_supported_status(): void
+    {
+        $owner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->from(route('employees.index'))
+            ->patch(route('employees.status.update', $roster), ['status' => 'paused'])
+            ->assertSessionHasErrors('status');
+    }
+
+    public function test_deactivated_employee_cannot_log_in(): void
+    {
+        $owner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'active',
+            'username' => 'inactive.employee',
+            'password' => 'secret-password',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->patch(route('employees.status.update', $roster), ['status' => 'inactive']);
+        auth()->logout();
+
+        $this->from(route('login'))
+            ->post(route('login'), [
+                'email' => 'inactive.employee',
+                'password' => 'secret-password',
+            ])
+            ->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_deactivated_employee_active_session_is_revoked_on_next_request(): void
+    {
+        $owner = User::factory()->create();
+        $employee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'active',
+        ]);
+        $roster = Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $employee->id,
+            'has_access_to_system' => true,
+        ]);
+
+        $this->actingAs($employee)->get('/dashboard')->assertOk();
+
+        $this->actingAs($owner)
+            ->patch(route('employees.status.update', $roster), ['status' => 'inactive']);
+
+        $employee->refresh();
+        $this->assertSame('inactive', $employee->status);
+
+        $response = $this->actingAs($employee)->get('/dashboard');
+
+        $this->assertGuest();
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Akun Employee tidak aktif. Alasan: manual.');
+    }
 }

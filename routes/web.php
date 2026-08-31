@@ -27,6 +27,8 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::post('/employees/account', [EmployeeController::class, 'storeAccount'])->name('employees.account.store');
+    Route::patch('/employees/{employee}/status', [EmployeeController::class, 'updateStatus'])
+        ->name('employees.status.update');
     Route::get('/transactions', fn () => Inertia::render('Transactions/Index'))->name('transactions.index');
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
@@ -39,28 +41,13 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/invoices/{invoice}', fn () => Inertia::render('Invoices/Show'))->name('invoices.show');
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
     Route::get('/capital', fn () => Inertia::render('Capital/Index'))->name('capital.index');
-    Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
+    Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('/subscription/payment', [SubscriptionController::class, 'store'])->name('subscription.payment.store');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
-});
-
-Route::prefix('admin')->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
-    Route::post('/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
-    Route::post('/logout', [AdminAuthController::class, 'destroy'])
-        ->middleware('admin.auth')
-        ->name('admin.logout');
-
-    Route::middleware('admin.auth')->group(function () {
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
-        Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])
-            ->name('admin.payments.approve');
-    });
 });
 
 Route::prefix('admin')->group(function () {

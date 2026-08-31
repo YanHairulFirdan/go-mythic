@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEmployeeAccountRequest;
 use App\Http\Requests\StoreWorkerRequest;
+use App\Http\Requests\UpdateEmployeeStatusRequest;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -72,5 +73,22 @@ class EmployeeController extends Controller
         });
 
         return to_route('employees.index');
+    }
+
+    public function updateStatus(UpdateEmployeeStatusRequest $request, Employee $employee): RedirectResponse
+    {
+        abort_unless($employee->company_id === $request->user()->company_id, 404);
+
+        $status = $request->validated('status');
+
+        DB::transaction(function () use ($employee, $status): void {
+            $employee->update(['status' => $status]);
+            $employee->user?->update([
+                'status' => $status,
+                'inactive_reason' => $status === 'inactive' ? 'manual' : null,
+            ]);
+        });
+
+        return back()->with('status', sprintf('Status %s diperbarui menjadi %s.', $employee->name, $status));
     }
 }

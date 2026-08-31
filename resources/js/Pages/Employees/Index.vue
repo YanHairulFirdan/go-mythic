@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ChevronLeft } from '@lucide/vue';
 import { ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -44,6 +44,19 @@ const submitEmployee = () => {
             employeeForm.reset();
             modal.value = null;
         },
+    });
+};
+
+const toggleStatus = (employee) => {
+    const nextStatus = employee.status === 'active' ? 'inactive' : 'active';
+    const action = nextStatus === 'inactive' ? 'menonaktifkan' : 'mengaktifkan kembali';
+
+    if (! window.confirm(`Yakin ingin ${action} ${employee.name}?`)) {
+        return;
+    }
+
+    router.patch(route('employees.status.update', employee.id), { status: nextStatus }, {
+        preserveScroll: true,
     });
 };
 </script>
@@ -94,6 +107,15 @@ const submitEmployee = () => {
                 >
                     {{ employee.status }}
                 </span>
+                <button
+                    v-if="employee.has_access_to_system"
+                    type="button"
+                    :aria-label="`${employee.status === 'active' ? 'Nonaktifkan' : 'Aktifkan kembali'} ${employee.name}`"
+                    class="min-h-10 shrink-0 rounded-xl border border-slate-200 px-2.5 text-[10px] font-bold text-slate-600 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    @click="toggleStatus(employee)"
+                >
+                    {{ employee.status === 'active' ? 'Nonaktifkan' : 'Aktifkan' }}
+                </button>
             </div>
             <p v-if="props.employees.length === 0" class="py-10 text-center text-sm text-slate-400">
                 Belum ada karyawan.

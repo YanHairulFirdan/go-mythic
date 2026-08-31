@@ -62,7 +62,7 @@ class AdminPaymentApprovalTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $before = now();
+        $before = now()->startOfSecond();
 
         $this->actingAs($admin, 'admin')
             ->post(route('admin.payments.approve', $payment))
