@@ -38,7 +38,7 @@ const statusTone = (progress) => (progress === 100 ? 'text-emerald-600' : progre
                 <Link
                     v-for="invoice in props.invoices"
                     :key="invoice.id"
-                    href="#invoice-detail"
+                    :href="route('invoices.show', invoice.id)"
                     class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
                 >
                     <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
