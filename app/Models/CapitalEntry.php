@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -35,6 +36,21 @@ class CapitalEntry extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function topups(): HasMany
+    {
+        return $this->hasMany(CapitalTopup::class);
+    }
+
+    /**
+     * US-MK-01B AC2 "Total Modal Periode Ini": the originally-set amount plus
+     * every top-up. `initial_amount` is kept immutable; the running total is
+     * always derived (reconciles the DBML column name with the PRD prose).
+     */
+    public function periodTotal(): float
+    {
+        return (float) $this->initial_amount + (float) $this->topups()->sum('amount');
     }
 
     /**
