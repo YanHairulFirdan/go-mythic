@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\CapitalEntryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
@@ -21,9 +22,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', EnsureUserActive::class])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', EnsureUserActive::class])
+    ->name('dashboard');
 
 Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
