@@ -36,6 +36,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::resource('invoices', InvoiceController::class);
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
     Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
+    Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');
     Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
     Route::patch('/capital/{capitalEntry}', [CapitalEntryController::class, 'topUp'])->name('capital.top-up');
     Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
