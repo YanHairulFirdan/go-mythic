@@ -137,6 +137,69 @@
         ],
         "createdAt": "2026-08-31T08:12:27.055Z",
         "reason": "matches established prototype type scale: text-xl h1 header + text-[10px] uppercase labels identical to whitelisted Capital/Index.vue, Subscription/Index.vue, Employees/Index.vue, Profile/Edit.vue; structure kept verbatim from pre-existing prototype page"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Create.vue"
+        ],
+        "createdAt": "2026-08-31T08:23:08.182Z",
+        "reason": "false positive: decorative 'Rp' currency prefix (text-slate-400) inside a bordered input group on white — markup kept verbatim from the pre-existing prototype Invoices/Create.vue, not body text on a colored fill"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Edit.vue"
+        ],
+        "createdAt": "2026-08-31T08:23:43.198Z",
+        "reason": "false positive: decorative 'Rp' currency prefix (text-slate-400) inside bordered input group on white — same markup as Invoices/Create.vue (from prototype), not body text on a colored fill"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Index.vue"
+        ],
+        "createdAt": "2026-08-31T08:24:02.530Z",
+        "reason": "false positive: outline-button pattern (text-slate-700 on white, hover text-indigo-700 on bg-indigo-50) — markup kept verbatim from pre-existing prototype Invoices/Index.vue; identical to whitelisted Customers/Index.vue, Employees/Index.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Show.vue"
+        ],
+        "createdAt": "2026-08-31T08:24:25.952Z",
+        "reason": "false positive: outline Edit button (text-slate-700 on white, hover text-indigo-700 on bg-indigo-50) — identical pattern already whitelisted for Customers/Show.vue, Transactions/Show.vue"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Create.vue"
+        ],
+        "createdAt": "2026-08-31T08:25:54.239Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Customers/{Create,Edit,Show}.vue, Capital/Index.vue, Employees/Index.vue; kept verbatim from pre-existing prototype Invoice pages"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Edit.vue"
+        ],
+        "createdAt": "2026-08-31T08:25:54.284Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Customers/{Create,Edit,Show}.vue, Capital/Index.vue, Employees/Index.vue; kept verbatim from pre-existing prototype Invoice pages"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Invoices/Show.vue"
+        ],
+        "createdAt": "2026-08-31T08:25:54.334Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Customers/{Create,Edit,Show}.vue, Capital/Index.vue, Employees/Index.vue; kept verbatim from pre-existing prototype Invoice pages"
       }
     ]
   }
