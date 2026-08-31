@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\CapitalEntryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +35,8 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::resource('invoices', InvoiceController::class);
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
-    Route::get('/capital', fn () => Inertia::render('Capital/Index'))->name('capital.index');
+    Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
+    Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
     Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');
 
