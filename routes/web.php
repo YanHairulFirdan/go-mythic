@@ -31,6 +31,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
     Route::get('/customers', fn () => Inertia::render('Customers/Index'))->name('customers.index');
     Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
+    Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

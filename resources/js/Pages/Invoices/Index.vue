@@ -27,7 +27,7 @@ const statusTone = (progress) => (progress === 100 ? 'text-emerald-600' : progre
         </section>
 
         <Link
-            href="#invoice-create"
+:href="route('invoices.create')"
             class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
             + Buat invoice
