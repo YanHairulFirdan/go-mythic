@@ -32,7 +32,10 @@ Ikuti workflow `/implement-pic-task` untuk mengerjakan task dari Google Sheet be
 
 - Sebelum mulai, `git status --short` wajib bersih. Jika tidak bersih, berhenti dan minta arahan.
 - Branch dasar wajib `development` lokal. Verifikasi branch aktif sebelum membuat branch.
+- Sebelum membuat branch baru, sinkronkan `development` dengan remote: `git pull --ff-only origin development`.
 - Buat branch non-destruktif `feature/<task-id>-<slug>` dari `development`; sanitasi task ID/slug menjadi karakter aman.
+- Alur integrasi wajib melalui PR ke `development`; jangan merge lokal atau push langsung ke `development`.
+- Sebelum membuat PR, sinkronkan feature branch dengan `development` terbaru dan selesaikan konflik di feature branch.
 - Jika branch target sudah ada, jangan reset, hapus, overwrite, force-update, merge, atau rebase. Berhenti dan minta arahan.
 - Jangan commit, push, merge, rebase, amend, reset, atau menghapus perubahan tanpa instruksi eksplisit.
 - Jangan membuat commit pada turn implementasi. Setelah verifikasi, berhenti dalam keadaan uncommitted dan tunggu user mengatakan `oke`.
