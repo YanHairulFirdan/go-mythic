@@ -5,12 +5,20 @@ import { Link } from '@inertiajs/vue3';
 const items = [
     { label: 'Beranda', href: route('dashboard'), icon: Home },
     { label: 'Transaksi', href: route('transactions.index'), icon: FileText },
-    { label: 'Customer', href: '#', icon: Users },
+    { label: 'Customer', href: route('customers.index'), icon: Users },
     { label: 'Invoice', href: '#', icon: ReceiptText },
     { label: 'Lainnya', href: '#', icon: MoreHorizontal },
 ];
 
-defineProps({ active: { type: String, default: route().current('dashboard') ? 'Beranda' : '' } });
+const props = defineProps({ active: { type: String, default: '' } });
+const currentRoute = route().current();
+const currentActive = currentRoute?.startsWith('dashboard')
+    ? 'Beranda'
+    : currentRoute?.startsWith('transactions')
+        ? 'Transaksi'
+        : currentRoute?.startsWith('customers')
+            ? 'Customer'
+            : props.active;
 </script>
 
 <template>
@@ -22,10 +30,10 @@ defineProps({ active: { type: String, default: route().current('dashboard') ? 'B
                 :href="item.href"
                 :class="[
                     'flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
-                    active === item.label ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                    currentActive === item.label ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                 ]"
             >
-                <component :is="item.icon" class="size-[18px]" :stroke-width="active === item.label ? 2.5 : 2" />
+                <component :is="item.icon" class="size-[18px]" :stroke-width="currentActive === item.label ? 2.5 : 2" />
                 {{ item.label }}
             </Link>
         </div>
