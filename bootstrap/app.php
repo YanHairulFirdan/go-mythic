@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'active' => \App\Http\Middleware\EnsureUserActive::class,
         ]);
 
+        $middleware->alias([
+            'admin.auth' => \App\Http\Middleware\AuthenticateAdmin::class,
+        ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {

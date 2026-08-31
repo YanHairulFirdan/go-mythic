@@ -14,8 +14,20 @@ class Payment extends Model
     /** @use HasFactory<PaymentFactory> */
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'approved_at' => 'datetime',
+        ];
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'approved_by');
     }
 }
