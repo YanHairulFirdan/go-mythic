@@ -56,6 +56,24 @@
         ],
         "createdAt": "2026-08-31T06:30:24.626Z",
         "reason": "matches established prototype type scale: text-xl h1 header identical to Transactions/Show, Invoices/Show, Capital/Index — consistency with existing design system"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Employees/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:35:01.840Z",
+        "reason": "false positive: outline-button pattern (text-slate-700 on white, hover switches to text-indigo-700 on bg-indigo-50) reused verbatim from Customers/Show.vue and Transactions/Show.vue"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Employees/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:35:32.949Z",
+        "reason": "matches established prototype type scale: text-xl h1 header identical to Capital/Index, Subscription/Index, Transactions/Show — consistency with existing design system"
       }
     ]
   }
