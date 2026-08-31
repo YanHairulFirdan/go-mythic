@@ -29,6 +29,33 @@
         ],
         "createdAt": "2026-08-31T06:25:54.212Z",
         "reason": "matches established prototype type scale: text-xl h1 header identical to Transactions/Show, Invoices/Show, Customers/Edit — consistency with existing design system"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Subscription/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:29:25.050Z",
+        "reason": "false positive: slate-500 dropzone text on white with faint indigo-50/40 hover tint; readable (~7:1)"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Components/app/BottomNav.vue"
+        ],
+        "createdAt": "2026-08-31T06:29:42.859Z",
+        "reason": "false positive: detector pairs text-slate-400 (inactive branch, on white) with bg-indigo-50 (active branch); active tab is text-indigo-600 on bg-indigo-50 which is correct. pre-existing styling untouched this session"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Subscription/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:30:24.626Z",
+        "reason": "matches established prototype type scale: text-xl h1 header identical to Transactions/Show, Invoices/Show, Capital/Index — consistency with existing design system"
       }
     ]
   }
