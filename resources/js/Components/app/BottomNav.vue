@@ -6,7 +6,7 @@ const items = [
     { label: 'Beranda', href: route('dashboard'), icon: Home },
     { label: 'Transaksi', href: route('transactions.index'), icon: FileText },
     { label: 'Customer', href: route('customers.index'), icon: Users },
-    { label: 'Invoice', href: '#', icon: ReceiptText },
+    { label: 'Invoice', href: route('invoices.index'), icon: ReceiptText },
     { label: 'Lainnya', href: '#', icon: MoreHorizontal },
 ];
 
@@ -18,7 +18,9 @@ const currentActive = currentRoute?.startsWith('dashboard')
         ? 'Transaksi'
         : currentRoute?.startsWith('customers')
             ? 'Customer'
-            : props.active;
+            : currentRoute?.startsWith('invoices')
+                ? 'Invoice'
+                : props.active;
 </script>
 
 <template>
