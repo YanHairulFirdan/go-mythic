@@ -4,13 +4,13 @@ import { Link } from '@inertiajs/vue3';
 
 const items = [
     { label: 'Beranda', href: route('dashboard'), icon: Home },
-    { label: 'Transaksi', href: '#', icon: FileText },
+    { label: 'Transaksi', href: route('transactions.index'), icon: FileText },
     { label: 'Customer', href: '#', icon: Users },
     { label: 'Invoice', href: '#', icon: ReceiptText },
     { label: 'Lainnya', href: '#', icon: MoreHorizontal },
 ];
 
-defineProps({ active: { type: String, default: 'Beranda' } });
+defineProps({ active: { type: String, default: route().current('dashboard') ? 'Beranda' : '' } });
 </script>
 
 <template>

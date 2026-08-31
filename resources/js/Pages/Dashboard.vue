@@ -26,7 +26,7 @@ const props = defineProps({
 });
 
 const quickActions = [
-    { label: 'Catat transaksi', icon: CirclePlus, href: '#transactions' },
+    { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.index') },
     { label: 'Buat invoice', icon: FilePlus2, href: '#invoices' },
     { label: 'Lihat laporan', icon: TrendingUp, href: '#reports' },
     { label: 'Atur modal/kas', icon: Landmark, href: '#capital' },
@@ -99,7 +99,7 @@ const quickActions = [
         <section class="mt-7 pb-4" aria-labelledby="recent-title">
             <div class="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" class="text-sm font-bold">Transaksi terbaru</h2>
-                <Link href="#transactions" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Lihat semua <span aria-hidden="true">→</span></Link>
+                <Link :href="route('transactions.index')" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Lihat semua <span aria-hidden="true">→</span></Link>
             </div>
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
                 <Link v-for="transaction in props.recentTransactions" :key="transaction.name" href="#transaction-detail" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
