@@ -6,7 +6,6 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -46,10 +45,12 @@ class LoginRequest extends FormRequest
         $identifier = $this->string('email')->toString();
         $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (! Auth::attempt([
+        $credentials = [
             $field => $identifier,
             'password' => $this->string('password')->toString(),
-        ], $this->boolean('remember'))) {
+        ];
+
+        if (! Auth::validate($credentials)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -57,7 +58,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        $user = Auth::user();
+        $user = Auth::getProvider()->retrieveByCredentials($credentials);
 
         if ($user?->role === 'employee' && $user->status !== 'active') {
             RateLimiter::hit($this->throttleKey());
