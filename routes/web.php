@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
@@ -30,10 +31,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/transactions', fn () => Inertia::render('Transactions/Index'))->name('transactions.index');
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
-    Route::get('/customers', fn () => Inertia::render('Customers/Index'))->name('customers.index');
-    Route::get('/customers/create', fn () => Inertia::render('Customers/Create'))->name('customers.create');
-    Route::get('/customers/{customer}', fn () => Inertia::render('Customers/Show'))->name('customers.show');
-    Route::get('/customers/{customer}/edit', fn () => Inertia::render('Customers/Edit'))->name('customers.edit');
+    Route::resource('customers', CustomerController::class);
     Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
     Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
     Route::get('/invoices/{invoice}', fn () => Inertia::render('Invoices/Show'))->name('invoices.show');
