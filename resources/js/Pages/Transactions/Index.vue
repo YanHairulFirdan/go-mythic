@@ -78,7 +78,7 @@ const filteredTransactions = computed(() => selectedFilter.value === 'Hari ini'
             <Link
                 v-for="transaction in filteredTransactions"
                 :key="transaction.id"
-                href="#transaction-detail"
+                :href="route('transactions.show', transaction.id)"
                 class="flex items-center gap-3 border-b border-slate-100 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
             >
                 <span

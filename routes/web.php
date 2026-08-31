@@ -29,6 +29,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::post('/employees/account', [EmployeeController::class, 'storeAccount'])->name('employees.account.store');
     Route::get('/transactions', fn () => Inertia::render('Transactions/Index'))->name('transactions.index');
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
+    Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
     Route::get('/customers', fn () => Inertia::render('Customers/Index'))->name('customers.index');
     Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
     Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
