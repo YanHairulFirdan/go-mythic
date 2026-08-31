@@ -83,6 +83,15 @@
         ],
         "createdAt": "2026-08-31T06:38:48.415Z",
         "reason": "matches established prototype type scale: text-xl h1 header identical to Transactions/Index and every other prototype page"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Profile/Edit.vue"
+        ],
+        "createdAt": "2026-08-31T06:53:26.556Z",
+        "reason": "matches established prototype type scale: text-xl h1 header identical to every other prototype page (Capital/Index, Subscription/Index, Employees/Index, etc)"
       }
     ]
   }
