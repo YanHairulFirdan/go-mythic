@@ -29,7 +29,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -43,9 +43,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $user = Auth::getProvider()->retrieveByCredentials($this->only('email'));
+        $identifier = $this->string('email')->toString();
+        $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (! $user || ! Hash::check($this->string('password'), $user->getAuthPassword())) {
+        if (! Auth::attempt([
+            $field => $identifier,
+            'password' => $this->string('password')->toString(),
+        ], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
