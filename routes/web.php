@@ -33,6 +33,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/customers', fn () => Inertia::render('Customers/Index'))->name('customers.index');
     Route::get('/customers/create', fn () => Inertia::render('Customers/Create'))->name('customers.create');
     Route::get('/customers/{customer}', fn () => Inertia::render('Customers/Show'))->name('customers.show');
+    Route::get('/customers/{customer}/edit', fn () => Inertia::render('Customers/Edit'))->name('customers.edit');
     Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
     Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
     Route::get('/invoices/{invoice}', fn () => Inertia::render('Invoices/Show'))->name('invoices.show');
