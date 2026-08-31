@@ -56,6 +56,44 @@ class CapitalEntryController extends Controller
     }
 
     /**
+     * US-MK-03: read-only history of every capital entry (newest first) with its
+     * top-ups. Owner-only (AC3).
+     */
+    public function history(Request $request): Response
+    {
+        $this->authorizeOwner($request);
+
+        $today = Carbon::now()->toDateString();
+
+        $entries = CapitalEntry::query()
+            ->where('company_id', $request->user()->company_id)
+            ->with('topups:id,capital_entry_id,amount,changed_at,extended_end_date')
+            ->orderByDesc('created_at')
+            ->get(['id', 'initial_amount', 'start_date', 'end_date', 'created_at'])
+            ->map(fn (CapitalEntry $entry): array => [
+                'id' => $entry->id,
+                'final_amount' => (float) $entry->initial_amount + (float) $entry->topups->sum('amount'),
+                'start_date' => $entry->start_date,
+                'end_date' => $entry->end_date,
+                'status' => ($entry->start_date <= $today && $entry->end_date >= $today) ? 'Aktif' : 'Kadaluarsa',
+                'created_at' => $entry->created_at?->toDateString(),
+                'topups' => $entry->topups
+                    ->sortBy('changed_at')
+                    ->values()
+                    ->map(fn (CapitalTopup $topup): array => [
+                        'id' => $topup->id,
+                        'amount' => (float) $topup->amount,
+                        'changed_at' => $topup->changed_at?->toDateString(),
+                        'extended_end_date' => $topup->extended_end_date,
+                    ]),
+            ]);
+
+        return Inertia::render('Capital/History', [
+            'entries' => $entries,
+        ]);
+    }
+
+    /**
      * US-MK-01B: top-up edits the same active entry — the running total is
      * derived, so only a history row is added (and end_date optionally extended).
      */

@@ -125,6 +125,13 @@ const submitTopUp = () => {
                 <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
                     Simpan modal
                 </button>
+
+                <Link
+                    :href="route('capital.history')"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                    Riwayat modal
+                </Link>
             </form>
         </template>
 
@@ -140,7 +147,7 @@ const submitTopUp = () => {
                 </div>
             </div>
 
-            <div class="pb-8 pt-5">
+            <div class="grid gap-3 pb-8 pt-5">
                 <button
                     type="button"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
@@ -148,6 +155,12 @@ const submitTopUp = () => {
                 >
                     Top-up Modal
                 </button>
+                <Link
+                    :href="route('capital.history')"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                    Riwayat modal
+                </Link>
             </div>
 
             <div

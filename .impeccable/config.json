@@ -200,6 +200,24 @@
         ],
         "createdAt": "2026-08-31T08:25:54.334Z",
         "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Customers/{Create,Edit,Show}.vue, Capital/Index.vue, Employees/Index.vue; kept verbatim from pre-existing prototype Invoice pages"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Capital/History.vue"
+        ],
+        "createdAt": "2026-08-31T09:06:45.975Z",
+        "reason": "false positive: status pill uses text-slate-700 on bg-slate-200 (~7.5:1) / text-emerald-700 on bg-emerald-50 (~6.9:1) — both well above WCAG AA; same pill pattern as whitelisted Employees/Index.vue, Capital/Index.vue"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Capital/History.vue"
+        ],
+        "createdAt": "2026-08-31T09:08:05.439Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, Employees/Index.vue"
       }
     ]
   }
