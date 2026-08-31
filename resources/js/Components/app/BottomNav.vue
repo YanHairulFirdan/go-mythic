@@ -7,7 +7,7 @@ const items = [
     { label: 'Transaksi', href: route('transactions.index'), icon: FileText },
     { label: 'Customer', href: route('customers.index'), icon: Users },
     { label: 'Invoice', href: route('invoices.index'), icon: ReceiptText },
-    { label: 'Lainnya', href: '#', icon: MoreHorizontal },
+    { label: 'Lainnya', href: route('subscription.index'), icon: MoreHorizontal },
 ];
 
 const props = defineProps({ active: { type: String, default: '' } });
@@ -20,7 +20,7 @@ const currentActive = currentRoute?.startsWith('dashboard')
             ? 'Customer'
             : currentRoute?.startsWith('invoices')
                 ? 'Invoice'
-                : currentRoute?.startsWith('reports')
+                : currentRoute?.startsWith('reports') || currentRoute?.startsWith('subscription')
                     ? 'Lainnya'
                     : props.active;
 </script>
