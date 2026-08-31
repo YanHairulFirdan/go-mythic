@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-08-31T06:17:04.769Z",
         "reason": "existing codebase design system: indigo is the established primary across Dashboard, Transactions, Invoices, BottomNav and PrototypeLayout — matched for consistency, not an AI default"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Capital/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:25:20.788Z",
+        "reason": "false positive: slate-700 text on white modal with slate-50 hover (~11:1 contrast); same modal button pattern as Invoices/Show.vue"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Capital/Index.vue"
+        ],
+        "createdAt": "2026-08-31T06:25:54.212Z",
+        "reason": "matches established prototype type scale: text-xl h1 header identical to Transactions/Show, Invoices/Show, Customers/Edit — consistency with existing design system"
       }
     ]
   }
