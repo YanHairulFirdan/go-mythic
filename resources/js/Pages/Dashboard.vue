@@ -26,7 +26,7 @@ const props = defineProps({
 });
 
 const quickActions = [
-    { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.index') },
+    { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
     { label: 'Buat invoice', icon: FilePlus2, href: '#invoices' },
     { label: 'Lihat laporan', icon: TrendingUp, href: '#reports' },
     { label: 'Atur modal/kas', icon: Landmark, href: '#capital' },

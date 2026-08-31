@@ -106,7 +106,7 @@ const filteredTransactions = computed(() => selectedFilter.value === 'Hari ini'
         </section>
 
         <Link
-            href="#transaction-create"
+            :href="route('transactions.create')"
             aria-label="Tambah transaksi"
             class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
         >
