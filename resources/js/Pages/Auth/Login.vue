@@ -67,12 +67,17 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email atau username" />
+                <label
+                    for="email"
+                    class="mb-1 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Email atau username
+                </label>
 
                 <TextInput
                     id="email"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="block w-full rounded-[10px] border-[#e8eaf1] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:border-[#4f46e5] focus:ring-[#4f46e5]"
                     v-model="form.email"
                     required
                     autofocus

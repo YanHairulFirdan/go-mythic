@@ -1,12 +1,11 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ChevronLeft } from '@lucide/vue';
+import { ref } from 'vue';
+import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import Card from '@/Components/ui/Card.vue';
 
-defineProps({
+const props = defineProps({
     employees: {
         type: Array,
         required: true,
@@ -17,30 +16,34 @@ defineProps({
     },
 });
 
-const workerForm = useForm({
-    name: '',
-});
+const modal = ref(null);
 
-const employeeForm = useForm({
-    name: '',
-    username: '',
-    password: '',
-});
+const workerForm = useForm({ name: '' });
+const employeeForm = useForm({ name: '', username: '', password: '' });
+
+const closeModal = () => {
+    modal.value = null;
+    workerForm.clearErrors();
+    employeeForm.clearErrors();
+};
 
 const submitWorker = () => {
     workerForm.post(route('employees.store'), {
-        onSuccess: () => workerForm.reset(),
+        preserveScroll: true,
+        onSuccess: () => {
+            workerForm.reset();
+            modal.value = null;
+        },
     });
 };
 
 const submitEmployee = () => {
-    if (!canCreateEmployee) {
-        window.location.href = route('subscription.index');
-        return;
-    }
-
     employeeForm.post(route('employees.account.store'), {
-        onSuccess: () => employeeForm.reset(),
+        preserveScroll: true,
+        onSuccess: () => {
+            employeeForm.reset();
+            modal.value = null;
+        },
     });
 };
 </script>
@@ -48,148 +51,124 @@ const submitEmployee = () => {
 <template>
     <Head title="Kelola Karyawan" />
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Kelola Karyawan
-            </h2>
-        </template>
+    <PrototypeLayout>
+        <section class="flex items-center gap-3 pb-5 pt-4">
+            <Link
+                :href="route('dashboard')"
+                aria-label="Kembali ke beranda"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+                <ChevronLeft class="size-5" />
+            </Link>
+            <h1 class="text-xl font-bold tracking-tight">Kelola Karyawan</h1>
+        </section>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div class="grid gap-6 lg:grid-cols-2">
-                    <section class="bg-white p-6 shadow-sm sm:rounded-lg">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            Tambah Employee
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600">
-                            Employee memiliki akun untuk masuk ke aplikasi.
-                        </p>
-                        <p
-                            v-if="!canCreateEmployee"
-                            class="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber-700"
-                        >
-                            Paket Free belum dapat membuat Employee ber-akun.
-                            Upgrade ke Paid untuk melanjutkan.
-                        </p>
+        <Card
+            label="Karyawan terdaftar"
+            :amount="String(props.employees.length)"
+            :note="props.canCreateEmployee ? 'Paket Paid · employee ber-akun tersedia' : 'Paket Free · hanya worker tanpa akun'"
+        />
 
-                        <form class="mt-4 space-y-4" @submit.prevent="submitEmployee">
-                            <div>
-                                <InputLabel for="employee-name" value="Nama" />
-                                <TextInput
-                                    id="employee-name"
-                                    v-model="employeeForm.name"
-                                    class="mt-1 block w-full"
-                                    required
-                                    autocomplete="name"
-                                />
-                                <InputError class="mt-2" :message="employeeForm.errors.name" />
-                            </div>
-                            <div>
-                                <InputLabel for="employee-username" value="Username" />
-                                <TextInput
-                                    id="employee-username"
-                                    v-model="employeeForm.username"
-                                    class="mt-1 block w-full"
-                                    required
-                                    autocomplete="username"
-                                />
-                                <InputError class="mt-2" :message="employeeForm.errors.username" />
-                            </div>
-                            <div>
-                                <InputLabel for="employee-password" value="Password" />
-                                <TextInput
-                                    id="employee-password"
-                                    v-model="employeeForm.password"
-                                    type="password"
-                                    class="mt-1 block w-full"
-                                    required
-                                    minlength="8"
-                                    autocomplete="new-password"
-                                />
-                                <InputError class="mt-2" :message="employeeForm.errors.password" />
-                            </div>
-                            <PrimaryButton
-                                :class="{ 'opacity-25': employeeForm.processing }"
-                                :disabled="employeeForm.processing"
-                            >
-                                {{ canCreateEmployee ? 'Tambah Employee' : 'Upgrade ke Paid' }}
-                            </PrimaryButton>
-                        </form>
-                    </section>
-
-                    <section class="bg-white p-6 shadow-sm sm:rounded-lg">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            Tambah Worker
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600">
-                            Pekerja harian tanpa akun login — cukup nama, tanpa username/kata sandi.
-                        </p>
-                        <form class="mt-4" @submit.prevent="submitWorker">
-                            <InputLabel for="worker-name" value="Nama" />
-                            <TextInput
-                                id="worker-name"
-                                v-model="workerForm.name"
-                                class="mt-1 block w-full"
-                                required
-                                autocomplete="name"
-                            />
-                            <InputError class="mt-2" :message="workerForm.errors.name" />
-                            <div class="mt-4 flex justify-end">
-                                <PrimaryButton
-                                    :class="{ 'opacity-25': workerForm.processing }"
-                                    :disabled="workerForm.processing"
-                                >
-                                    Tambah Worker
-                                </PrimaryButton>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-
-                <section class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900">Roster Karyawan</h3>
-                        <div class="mt-4 overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr class="text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                        <th class="px-3 py-3">Nama</th>
-                                        <th class="px-3 py-3">Status Akses</th>
-                                        <th class="px-3 py-3">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
-                                    <tr v-for="employee in employees" :key="employee.id">
-                                        <td class="whitespace-nowrap px-3 py-3 font-medium">{{ employee.name }}</td>
-                                        <td class="whitespace-nowrap px-3 py-3">
-                                            <span
-                                                :class="employee.has_access_to_system ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
-                                                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
-                                            >
-                                                {{ employee.has_access_to_system ? `Bisa login (${employee.user?.username ?? ''})` : 'Tanpa akun login' }}
-                                            </span>
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-3">
-                                            <span
-                                                :class="employee.status === 'active' ? 'text-green-700' : 'text-red-700'"
-                                                class="font-medium"
-                                            >
-                                                {{ employee.status }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr v-if="employees.length === 0">
-                                        <td colspan="3" class="px-3 py-8 text-center text-gray-500">
-                                            Belum ada karyawan.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-            </div>
+        <div v-if="!props.canCreateEmployee" class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800">
+            Paket Free hanya dapat menambah worker tanpa akun login. Upgrade ke Paid untuk employee ber-akun.
         </div>
-    </AuthenticatedLayout>
+
+        <section class="mt-4" aria-label="Daftar karyawan">
+            <div
+                v-for="employee in props.employees"
+                :key="employee.id"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5"
+            >
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-700">
+                    {{ employee.name?.charAt(0) ?? '?' }}
+                </span>
+                <span class="min-w-0 flex-1">
+                    <strong class="block truncate text-xs font-bold text-slate-800">{{ employee.name }}</strong>
+                    <small class="mt-1 block truncate text-[10px] text-slate-400">
+                        {{ employee.has_access_to_system ? `Bisa login · ${employee.user?.username ?? ''}` : 'Worker · tanpa akun login' }}
+                    </small>
+                </span>
+                <span
+                    :class="employee.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'"
+                    class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold capitalize"
+                >
+                    {{ employee.status }}
+                </span>
+            </div>
+            <p v-if="props.employees.length === 0" class="py-10 text-center text-sm text-slate-400">
+                Belum ada karyawan.
+            </p>
+        </section>
+
+        <div class="grid gap-3 pb-8 pt-5">
+            <button
+                type="button"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                @click="modal = 'worker'"
+            >
+                + Tambah worker
+            </button>
+            <button
+                v-if="props.canCreateEmployee"
+                type="button"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                @click="modal = 'employee'"
+            >
+                + Tambah employee ber-akun
+            </button>
+            <Link
+                v-else
+                :href="route('subscription.index')"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            >
+                Upgrade ke Paid untuk employee ber-akun
+            </Link>
+        </div>
+
+        <div v-if="modal === 'worker'" class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center" role="presentation" @click.self="closeModal">
+            <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="worker-title">
+                <h2 id="worker-title" class="text-lg font-bold text-slate-800">Tambah worker</h2>
+                <p class="mt-1 text-xs text-slate-500">Pekerja harian tanpa akun login — cukup nama.</p>
+                <form class="mt-4 space-y-4" @submit.prevent="submitWorker">
+                    <div>
+                        <label for="worker-name" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nama</label>
+                        <input id="worker-name" v-model="workerForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="workerForm.errors.name" class="mt-1.5 text-xs font-semibold text-rose-600">{{ workerForm.errors.name }}</p>
+                    </div>
+                    <div class="flex gap-3 pt-1">
+                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
+                        <button type="submit" :disabled="workerForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Tambah worker</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <div v-if="modal === 'employee'" class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center" role="presentation" @click.self="closeModal">
+            <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="employee-title">
+                <h2 id="employee-title" class="text-lg font-bold text-slate-800">Tambah employee ber-akun</h2>
+                <p class="mt-1 text-xs text-slate-500">Employee mendapat akun untuk masuk ke aplikasi.</p>
+                <form class="mt-4 space-y-4" @submit.prevent="submitEmployee">
+                    <div>
+                        <label for="employee-name" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nama</label>
+                        <input id="employee-name" v-model="employeeForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="employeeForm.errors.name" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.name }}</p>
+                    </div>
+                    <div>
+                        <label for="employee-username" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Username</label>
+                        <input id="employee-username" v-model="employeeForm.username" type="text" required autocomplete="username" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="employeeForm.errors.username" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.username }}</p>
+                    </div>
+                    <div>
+                        <label for="employee-password" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kata sandi</label>
+                        <input id="employee-password" v-model="employeeForm.password" type="password" required minlength="8" autocomplete="new-password" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="employeeForm.errors.password" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.password }}</p>
+                    </div>
+                    <div class="flex gap-3 pt-1">
+                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
+                        <button type="submit" :disabled="employeeForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Tambah employee</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </PrototypeLayout>
 </template>
