@@ -30,6 +30,22 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
+    Route::post('/logout', [AdminAuthController::class, 'destroy'])
+        ->middleware('admin.auth')
+        ->name('admin.logout');
+
+    Route::middleware('admin.auth')->group(function () {
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
+        Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])
+            ->name('admin.payments.approve');
+    });
 });
 
 Route::prefix('admin')->group(function () {
