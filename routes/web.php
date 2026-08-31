@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminCompanyController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProfileController;
@@ -50,6 +52,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
 });
 
 Route::prefix('admin')->group(function () {
+    Route::redirect('/', '/admin/dashboard');
     Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])
@@ -57,20 +60,8 @@ Route::prefix('admin')->group(function () {
         ->name('admin.logout');
 
     Route::middleware('admin.auth')->group(function () {
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
-        Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])
-            ->name('admin.payments.approve');
-    });
-});
-
-Route::prefix('admin')->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
-    Route::post('/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
-    Route::post('/logout', [AdminAuthController::class, 'destroy'])
-        ->middleware('admin.auth')
-        ->name('admin.logout');
-
-    Route::middleware('admin.auth')->group(function () {
+        Route::get('/dashboard', AdminDashboardController::class)->name('admin.dashboard');
+        Route::get('/companies', [AdminCompanyController::class, 'index'])->name('admin.companies.index');
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
         Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])
             ->name('admin.payments.approve');

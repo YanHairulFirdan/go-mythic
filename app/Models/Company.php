@@ -36,4 +36,9 @@ class Company extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function isPaid(): bool
+    {
+        return $this->paid_until !== null && $this->paid_until->isFuture();
+    }
 }
