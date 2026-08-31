@@ -57,7 +57,9 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if ($user->role === 'employee' && $user->status !== 'active') {
+        $user = Auth::user();
+
+        if ($user?->role === 'employee' && $user->status !== 'active') {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -100,6 +102,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

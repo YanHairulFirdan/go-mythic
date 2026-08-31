@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,9 +21,9 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'active'])->name('dashboard');
+})->middleware(['auth', EnsureUserActive::class])->name('dashboard');
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::post('/employees/account', [EmployeeController::class, 'storeAccount'])->name('employees.account.store');
