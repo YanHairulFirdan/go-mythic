@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -41,7 +42,22 @@ class AdminPaymentController extends Controller
                 'approved_by' => auth('admin')->id(),
                 'approved_at' => $now,
             ]);
-            $company->update(['paid_until' => $paidUntil]);
+
+            $companyChanges = ['paid_until' => $paidUntil];
+
+            // US-SUB-07 AC4: an approved payment reactivates a soft-closed company
+            // and restores the accounts that were disabled *because* it closed.
+            if ($company->status === 'closed') {
+                $companyChanges['status'] = 'active';
+
+                User::query()
+                    ->where('company_id', $company->id)
+                    ->where('status', 'inactive')
+                    ->where('inactive_reason', 'company_closed')
+                    ->update(['status' => 'active', 'inactive_reason' => null]);
+            }
+
+            $company->update($companyChanges);
         });
 
         return to_route('admin.payments.index');
