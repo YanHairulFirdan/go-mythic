@@ -35,6 +35,7 @@ const tabs: Array<{ type: CategoryType; label: string }> = [
 
 const activeType = ref<CategoryType>(props.filters.type);
 const search = ref<string>(props.filters.search);
+const reloading = ref(false);
 
 const reload = (): void => {
     router.get(route('transaction-categories.index'), {
@@ -45,6 +46,8 @@ const reload = (): void => {
         reset: ['categories'],
         preserveState: true,
         replace: true,
+        onStart: () => { reloading.value = true; },
+        onFinish: () => { reloading.value = false; },
     });
 };
 
@@ -182,7 +185,11 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
         <p class="mt-3 text-[11px] text-slate-400">Jumlah transaksi per kategori menyusul modul transaksi.</p>
 
         <div class="mt-1 rounded-2xl border border-slate-200 bg-white">
-            <InfiniteScroll data="categories" as="div" class="divide-y divide-slate-100">
+            <InfiniteScroll
+                data="categories"
+                as="div"
+                :class="['divide-y divide-slate-100 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']"
+            >
                 <div
                     v-for="category in props.categories.data"
                     :key="category.id"
@@ -289,7 +296,7 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                         class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-40"
                         @click="confirmDelete"
                     >
-                        Hapus
+                        {{ deleting ? 'Menghapus…' : 'Hapus' }}
                     </button>
                 </div>
             </section>

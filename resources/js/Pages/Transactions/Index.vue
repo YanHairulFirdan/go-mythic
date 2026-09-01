@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, Plus } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -62,6 +62,8 @@ const showHref = (id: number): string => route('transactions.show', id);
 const availableCategories = computed((): Category[] =>
     form.type === null ? props.categories : props.categories.filter((category) => category.type === form.type));
 
+const reloading = ref(false);
+
 const reload = (): void => {
     router.get(route('transactions.index'), {
         type: form.type ?? undefined,
@@ -73,6 +75,8 @@ const reload = (): void => {
         reset: ['transactions'],
         preserveState: true,
         replace: true,
+        onStart: () => { reloading.value = true; },
+        onFinish: () => { reloading.value = false; },
     });
 };
 
@@ -156,8 +160,12 @@ const hasActiveFilter = computed((): boolean =>
             </label>
         </div>
 
-        <section class="mt-3 pb-24" aria-label="Daftar transaksi">
-            <InfiniteScroll data="transactions" as="div" class="divide-y divide-slate-100">
+        <section class="mt-3 pb-24" aria-label="Daftar transaksi" :aria-busy="reloading">
+            <InfiniteScroll
+                data="transactions"
+                as="div"
+                :class="['divide-y divide-slate-100 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']"
+            >
                 <Link
                     v-for="transaction in props.transactions.data"
                     :key="transaction.id"

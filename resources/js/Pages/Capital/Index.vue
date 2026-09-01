@@ -127,7 +127,7 @@ const submitTopUp = () => {
                 </div>
 
                 <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
-                    Simpan modal
+                    {{ form.processing ? 'Menyimpan…' : 'Simpan modal' }}
                 </button>
 
                 <Link
@@ -214,7 +214,7 @@ const submitTopUp = () => {
 
                         <div class="flex gap-3 pt-1">
                             <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="topUpOpen = false">Batal</button>
-                            <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Simpan</button>
+                            <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{{ topUpForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                         </div>
                     </form>
                 </section>

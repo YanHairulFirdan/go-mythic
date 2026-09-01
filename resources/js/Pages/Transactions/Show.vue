@@ -190,7 +190,7 @@ const rows = computed((): Array<[string, string]> => [
                         class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-40"
                         @click="destroy"
                     >
-                        Hapus
+                        {{ deleting ? 'Menghapus…' : 'Hapus' }}
                     </button>
                 </div>
             </section>
