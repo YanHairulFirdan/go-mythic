@@ -42,6 +42,10 @@ const periodTotalPreview = computed(
     () => Number(props.activeEntry?.period_total || 0) + (Number(topUpForm.amount) || 0),
 );
 
+const currentTotalPreview = computed(
+    () => Number(props.activeEntry?.current_total || 0) + (Number(topUpForm.amount) || 0),
+);
+
 const minExtendDate = computed(() => {
     if (!props.activeEntry?.end_date) return undefined;
     const next = new Date(props.activeEntry.end_date);
@@ -142,6 +146,13 @@ const submitTopUp = () => {
                     <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600">Aktif</span>
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">{{ formatRupiah(props.activeEntry.period_total) }}</div>
+                <div class="mt-3 flex items-baseline justify-between border-t border-slate-100 pt-3">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total modal saat ini</span>
+                    <span
+                        class="text-sm font-bold tabular-nums"
+                        :class="props.activeEntry.current_total < 0 ? 'text-rose-600' : 'text-slate-800'"
+                    >{{ formatRupiah(props.activeEntry.current_total) }}</span>
+                </div>
                 <div class="mt-2 text-xs text-slate-500">
                     Periode {{ formatDate(props.activeEntry.start_date) }} – {{ formatDate(props.activeEntry.end_date) }}
                 </div>
@@ -180,8 +191,12 @@ const submitTopUp = () => {
                             </div>
                             <div class="rounded-xl bg-slate-50 p-3">
                                 <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Saat ini</div>
-                                <div class="mt-1 text-sm font-bold tabular-nums text-slate-400">—</div>
-                                <div class="mt-0.5 text-[10px] text-slate-400">menunggu modul transaksi</div>
+                                <div
+                                    class="mt-1 text-sm font-bold tabular-nums"
+                                    :class="currentTotalPreview < 0 ? 'text-rose-600' : 'text-slate-800'"
+                                >
+                                    {{ formatRupiah(currentTotalPreview) }}
+                                </div>
                             </div>
                         </div>
 

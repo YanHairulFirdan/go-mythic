@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft } from '@lucide/vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 
 type TransactionType = 'income' | 'expense';
@@ -12,11 +12,26 @@ interface Category {
     type: TransactionType;
 }
 
+interface CapitalPeriod {
+    start_date: string;
+    end_date: string;
+}
+
 interface Props {
     categories: Category[];
+    capitalPeriods: CapitalPeriod[];
+}
+
+interface PageProps {
+    auth: { user: { role?: string } | null };
+    [key: string]: unknown;
 }
 
 const props = defineProps<Props>();
+
+const page = usePage<PageProps>();
+const isOwner = computed((): boolean => page.props.auth.user?.role === 'owner');
+const capitalHref = route('capital.index');
 
 const paymentMethods: Array<{ value: string; label: string }> = [
     { value: 'cash', label: 'Tunai' },
@@ -47,6 +62,11 @@ const form = useForm<{
 });
 
 const isIncome = computed((): boolean => form.type === 'income');
+
+// US-MK-04/05: submit is blocked unless the chosen date falls inside a capital period.
+const dateHasCapital = computed((): boolean =>
+    props.capitalPeriods.some((period) =>
+        form.transaction_date >= period.start_date && form.transaction_date <= period.end_date));
 
 const availableCategories = computed((): Category[] =>
     props.categories.filter((category) => category.type === form.type));
@@ -81,6 +101,28 @@ const submit = (): void => {
         </section>
 
         <form class="space-y-4 pb-8" @submit.prevent="submit">
+            <div
+                v-if="!dateHasCapital"
+                class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-rose-800"
+                role="alert"
+            >
+                <TriangleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <div class="min-w-0 flex-1 text-xs">
+                    <p class="font-bold">Belum ada modal aktif untuk tanggal ini</p>
+                    <p class="mt-0.5 text-[11px] text-rose-700">
+                        <template v-if="isOwner">Setiap transaksi butuh modal/kas aktif sebagai baseline.</template>
+                        <template v-else>Hubungi Owner untuk mengatur modal/kas usaha.</template>
+                    </p>
+                    <Link
+                        v-if="isOwner"
+                        :href="capitalHref"
+                        class="mt-1.5 inline-flex items-center rounded-lg bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-rose-700"
+                    >
+                        Set Modal Sekarang
+                    </Link>
+                </div>
+            </div>
+
             <div class="flex rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Jenis transaksi">
                 <button
                     type="button"
@@ -191,7 +233,7 @@ const submit = (): void => {
 
             <button
                 type="submit"
-                :disabled="form.processing"
+                :disabled="form.processing || !dateHasCapital"
                 class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
                 Simpan transaksi
