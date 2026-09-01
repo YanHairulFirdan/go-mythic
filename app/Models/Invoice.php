@@ -41,6 +41,11 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
     /**
      * US-INV-01 AC2: total is always SUM(invoice_items.amount), never stored.
      */
@@ -50,12 +55,25 @@ class Invoice extends Model
     }
 
     /**
+     * US-INV-02 AC2 / US-INV-04: SUM of non-soft-deleted linked transactions
+     * and the balance still available to link against.
+     */
+    public function linkedTotal(): float
+    {
+        return (float) $this->transactions()->sum('amount');
+    }
+
+    public function remainingBalance(): float
+    {
+        return $this->nominalTotal() - $this->linkedTotal();
+    }
+
+    /**
      * US-INV-01 AC4: an invoice is frozen once it has a non-soft-deleted
-     * linked transaction. The transactions table lands in Feature 4, so this
-     * stays false until that relation exists.
+     * linked transaction — Customer, Worker/Employee and items become read-only.
      */
     public function isFrozen(): bool
     {
-        return false;
+        return $this->transactions()->exists();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\CapitalEntry;
+use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,6 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -89,6 +91,7 @@ class TransactionController extends Controller
         return Inertia::render('Transactions/Create', [
             'categories' => $this->companyCategories($request),
             'capitalPeriods' => $this->companyCapitalPeriods($request),
+            'invoices' => $this->companyInvoices($request),
         ]);
     }
 
@@ -97,6 +100,15 @@ class TransactionController extends Controller
         $data = $request->safe()->except('attachment');
 
         DB::transaction(function () use ($request, $data): void {
+            // US-INV-02 AC2/AC3/AC5: lock the invoice, re-check the balance, and
+            // pull customer_id from it.
+            $data['customer_id'] = $this->resolveInvoiceLink(
+                $request,
+                $data['invoice_id'] ?? null,
+                (float) $data['amount'],
+                excludeTransactionId: null,
+            );
+
             $attachmentPath = $request->hasFile('attachment')
                 ? $request->file('attachment')->store(self::ATTACHMENT_DIR, 'local')
                 : null;
@@ -160,6 +172,7 @@ class TransactionController extends Controller
                 'type' => $transaction->type,
                 'amount' => (float) $transaction->amount,
                 'category_id' => $transaction->category_id,
+                'invoice_id' => $transaction->invoice_id,
                 'transaction_date' => $transaction->transaction_date,
                 'payment_method' => $transaction->payment_method,
                 'notes' => $transaction->notes,
@@ -169,6 +182,7 @@ class TransactionController extends Controller
             ],
             'categories' => $this->companyCategories($request),
             'capitalPeriods' => $this->companyCapitalPeriods($request),
+            'invoices' => $this->companyInvoices($request),
         ]);
     }
 
@@ -182,6 +196,15 @@ class TransactionController extends Controller
         $data = $request->safe()->except('attachment');
 
         DB::transaction(function () use ($request, $transaction, $data): void {
+            // US-INV-02: re-validate the (possibly changed / removed) invoice link;
+            // unlinking clears the invoice-derived customer.
+            $data['customer_id'] = $this->resolveInvoiceLink(
+                $request,
+                $data['invoice_id'] ?? null,
+                (float) $data['amount'],
+                excludeTransactionId: $transaction->id,
+            );
+
             if ($request->hasFile('attachment')) {
                 if ($transaction->attachment_path !== null) {
                     Storage::disk('local')->delete($transaction->attachment_path);
@@ -247,6 +270,63 @@ class TransactionController extends Controller
             ->where('company_id', $request->user()->company_id)
             ->orderBy('name')
             ->get(['id', 'name', 'type']);
+    }
+
+    /**
+     * US-INV-02 AC1: invoices to pick from on the income form, with the balance
+     * still available to link against.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function companyInvoices(Request $request): Collection
+    {
+        return Invoice::query()
+            ->where('company_id', $request->user()->company_id)
+            ->with('customer:id,name')
+            ->withSum('items as nominal_total', 'amount')
+            ->withSum('transactions as linked_total', 'amount')
+            ->latest()
+            ->get(['id', 'customer_id', 'created_at'])
+            ->map(fn (Invoice $invoice): array => [
+                'id' => $invoice->id,
+                'customer' => $invoice->customer?->name,
+                'nominal_total' => (float) ($invoice->nominal_total ?? 0),
+                'remaining' => (float) ($invoice->nominal_total ?? 0) - (float) ($invoice->linked_total ?? 0),
+            ]);
+    }
+
+    /**
+     * US-INV-02 AC2/AC3/AC5: with the invoice row locked, ensure this amount
+     * fits the remaining balance and return the customer_id to copy onto the
+     * transaction. Returns null when there is no invoice link (unlink clears it).
+     */
+    private function resolveInvoiceLink(Request $request, ?int $invoiceId, float $amount, ?int $excludeTransactionId): ?int
+    {
+        if ($invoiceId === null) {
+            return null;
+        }
+
+        $invoice = Invoice::query()
+            ->where('company_id', $request->user()->company_id)
+            ->lockForUpdate()
+            ->findOrFail($invoiceId);
+
+        $linked = (float) $invoice->transactions()
+            ->when($excludeTransactionId, fn (Builder $query, int $id) => $query->where('id', '!=', $id))
+            ->sum('amount');
+
+        $remaining = $invoice->nominalTotal() - $linked;
+
+        if ($amount > $remaining) {
+            throw ValidationException::withMessages([
+                'invoice_id' => sprintf(
+                    'Sisa saldo invoice ini Rp%s. Nominal transaksi melebihi sisa saldo.',
+                    number_format($remaining, 0, ',', '.'),
+                ),
+            ]);
+        }
+
+        return $invoice->customer_id;
     }
 
     /**
