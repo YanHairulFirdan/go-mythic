@@ -1,19 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
-defineProps({
-    stats: {
-        type: Object,
-        required: true,
-    },
-});
+interface Stats {
+    companies: number;
+    paid: number;
+    free: number;
+    pendingPayments: number;
+}
 
-const cards = [
-    { key: 'companies', label: 'Total company', route: 'admin.companies.index' },
-    { key: 'paid', label: 'Company Paid', route: 'admin.companies.index', query: { status: 'paid' } },
-    { key: 'free', label: 'Company Free', route: 'admin.companies.index', query: { status: 'free' } },
-    { key: 'pendingPayments', label: 'Pembayaran pending', route: 'admin.payments.index', query: { status: 'pending' } },
+interface Props {
+    stats: Stats;
+}
+
+const props = defineProps<Props>();
+
+interface Card {
+    key: keyof Stats;
+    label: string;
+    href: string;
+}
+
+const cards: Card[] = [
+    { key: 'companies', label: 'Total company', href: route('admin.companies.index') },
+    { key: 'paid', label: 'Company Paid', href: route('admin.companies.index', { status: 'paid' }) },
+    { key: 'free', label: 'Company Free', href: route('admin.companies.index', { status: 'free' }) },
+    { key: 'pendingPayments', label: 'Pembayaran pending', href: route('admin.payments.index', { status: 'pending' }) },
 ];
 </script>
 
@@ -31,11 +43,11 @@ const cards = [
                     <Link
                         v-for="card in cards"
                         :key="card.key"
-                        :href="route(card.route, card.query ?? {})"
+                        :href="card.href"
                         class="block rounded-lg bg-white p-6 shadow-sm transition hover:shadow"
                     >
                         <div class="text-sm font-medium text-gray-500">{{ card.label }}</div>
-                        <div class="mt-2 text-3xl font-semibold text-gray-900">{{ stats[card.key] }}</div>
+                        <div class="mt-2 text-3xl font-semibold text-gray-900">{{ props.stats[card.key] }}</div>
                     </Link>
                 </div>
             </div>

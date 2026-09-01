@@ -1,25 +1,35 @@
-<script setup>
+<script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { reactive } from 'vue';
 
-const props = defineProps({
-    companies: {
-        type: Array,
-        required: true,
-    },
-    filters: {
-        type: Object,
-        required: true,
-    },
-});
+interface Company {
+    id: number;
+    name: string;
+    owner_name: string;
+    email: string;
+    subscription_status: 'Paid' | 'Free';
+    paid_until: string | null;
+}
+
+interface Filters {
+    search: string | null;
+    status: string | null;
+}
+
+interface Props {
+    companies: Company[];
+    filters: Filters;
+}
+
+const props = defineProps<Props>();
 
 const form = reactive({
     search: props.filters.search ?? '',
     status: props.filters.status ?? '',
 });
 
-const applyFilters = () => {
+const applyFilters = (): void => {
     router.get(route('admin.companies.index'), {
         search: form.search || undefined,
         status: form.status || undefined,
@@ -30,13 +40,13 @@ const applyFilters = () => {
     });
 };
 
-const resetFilters = () => {
+const resetFilters = (): void => {
     form.search = '';
     form.status = '';
     applyFilters();
 };
 
-const formatDate = (value) => (value
+const formatDate = (value: string | null): string => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—');
 </script>
@@ -107,7 +117,7 @@ const formatDate = (value) => (value
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
-                                <tr v-for="company in companies" :key="company.id">
+                                <tr v-for="company in props.companies" :key="company.id">
                                     <td class="whitespace-nowrap px-3 py-3 font-medium">{{ company.name }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ company.owner_name }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ company.email }}</td>
@@ -123,7 +133,7 @@ const formatDate = (value) => (value
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ formatDate(company.paid_until) }}</td>
                                 </tr>
-                                <tr v-if="companies.length === 0">
+                                <tr v-if="props.companies.length === 0">
                                     <td colspan="5" class="px-3 py-8 text-center text-gray-500">
                                         Tidak ada company yang cocok.
                                     </td>
