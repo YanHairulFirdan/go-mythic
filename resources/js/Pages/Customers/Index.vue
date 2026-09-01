@@ -26,9 +26,9 @@ defineProps({
                     v-for="customer in customers"
                     :key="customer.id"
                     :href="route('customers.show', customer.id)"
-                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
                 >
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
                         <Users class="size-[18px]" />
                     </span>
                     <span class="min-w-0 flex-1">
@@ -46,7 +46,7 @@ defineProps({
         <Link
             :href="route('customers.create')"
             aria-label="Tambah customer"
-            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
+            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
         >
             <Plus class="size-6" />
         </Link>

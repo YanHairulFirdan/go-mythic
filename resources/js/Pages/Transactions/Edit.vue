@@ -141,7 +141,7 @@ const submit = (): void => {
             <Link
                 :href="backHref"
                 aria-label="Kembali ke detail"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -177,7 +177,7 @@ const submit = (): void => {
                     role="tab"
                     :aria-selected="isIncome"
                     :class="isIncome ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                    class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     @click="form.type = 'income'"
                 >
                     <ArrowUpRight class="size-4" /> Pemasukan
@@ -187,7 +187,7 @@ const submit = (): void => {
                     role="tab"
                     :aria-selected="!isIncome"
                     :class="!isIncome ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                    class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     @click="form.type = 'expense'"
                 >
                     <ArrowDownLeft class="size-4" /> Pengeluaran
@@ -196,7 +196,7 @@ const submit = (): void => {
 
             <div>
                 <label for="amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal</label>
-                <div class="flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                <div class="flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                     <span class="text-sm font-semibold text-slate-400">Rp</span>
                     <input
                         id="amount"
@@ -216,7 +216,7 @@ const submit = (): void => {
                 <select
                     id="category"
                     v-model="form.category_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option disabled value="">Pilih kategori</option>
                     <option v-for="category in availableCategories" :key="category.id" :value="category.id">{{ category.name }}</option>
@@ -231,7 +231,7 @@ const submit = (): void => {
                 <select
                     id="invoice"
                     v-model="form.invoice_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option value="">Tanpa invoice</option>
                     <option v-for="invoice in props.invoices" :key="invoice.id" :value="invoice.id">
@@ -251,7 +251,7 @@ const submit = (): void => {
                 <select
                     id="customer"
                     v-model="form.customer_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option value="">Tanpa customer</option>
                     <option v-for="customer in props.customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
@@ -269,7 +269,7 @@ const submit = (): void => {
                 <select
                     id="employee"
                     v-model="form.employee_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option value="">Tidak ada</option>
                     <option v-for="employee in props.employees" :key="employee.id" :value="employee.id">{{ employee.name }}</option>
@@ -282,7 +282,7 @@ const submit = (): void => {
                 <select
                     id="payment-method"
                     v-model="form.payment_method"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option v-for="method in paymentMethods" :key="method.value" :value="method.value">{{ method.label }}</option>
                 </select>
@@ -296,7 +296,7 @@ const submit = (): void => {
                     v-model="form.transaction_date"
                     type="date"
                     :max="today"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 />
                 <p v-if="form.errors.transaction_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.transaction_date }}</p>
             </div>
@@ -309,7 +309,7 @@ const submit = (): void => {
                     id="notes"
                     v-model="form.notes"
                     rows="3"
-                    class="block w-full resize-none rounded-xl border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full resize-none rounded-xl border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 />
                 <p v-if="form.errors.notes" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.notes }}</p>
             </div>
@@ -323,7 +323,7 @@ const submit = (): void => {
                     :href="props.transaction.attachment_url"
                     target="_blank"
                     rel="noopener"
-                    class="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                    class="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-primary-600 hover:text-primary-700"
                 >
                     <Paperclip class="size-3.5" /> Lampiran saat ini
                 </a>
@@ -331,7 +331,7 @@ const submit = (): void => {
                     id="attachment"
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-700"
+                    class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-700"
                     @change="onAttachmentChange"
                 />
                 <p v-if="form.errors.attachment" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.attachment }}</p>
@@ -340,7 +340,7 @@ const submit = (): void => {
             <button
                 type="submit"
                 :disabled="form.processing || !dateHasCapital"
-                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
                 {{ form.processing ? 'Menyimpan…' : 'Simpan perubahan' }}
             </button>

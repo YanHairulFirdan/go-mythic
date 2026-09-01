@@ -14,6 +14,12 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+
+        {{-- Per-company brand palette. Must come after @vite so it overrides the
+             compiled stylesheet's default :root custom properties. --}}
+        @if (! empty($brandingCss))
+            <style>{!! $brandingCss !!}</style>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia

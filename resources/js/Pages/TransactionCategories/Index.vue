@@ -142,7 +142,7 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                 role="tab"
                 :aria-selected="activeType === tab.type"
                 :class="[
-                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
                     activeType === tab.type ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
                 ]"
                 @click="selectTab(tab.type)"
@@ -157,7 +157,7 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                 v-model="search"
                 type="search"
                 placeholder="Cari kategori"
-                class="block w-full rounded-lg border-slate-300 pl-9 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="block w-full rounded-lg border-slate-300 pl-9 text-sm focus:border-primary-500 focus:ring-primary-500"
                 aria-label="Cari kategori"
             />
         </div>
@@ -168,14 +168,14 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                     v-model="addForm.name"
                     type="text"
                     :placeholder="`Tambah kategori ${activeType === 'income' ? 'pemasukan' : 'pengeluaran'}`"
-                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 />
                 <p v-if="addForm.errors.name" class="mt-1.5 text-xs font-semibold text-rose-600">{{ addForm.errors.name }}</p>
             </div>
             <button
                 type="submit"
                 :disabled="addForm.processing || addForm.name.trim() === ''"
-                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40"
+                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-40"
                 aria-label="Tambah kategori"
             >
                 <Plus class="size-4" />
@@ -199,14 +199,14 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                         <input
                             v-model="editName"
                             type="text"
-                            class="min-w-0 flex-1 rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="min-w-0 flex-1 rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                             @keyup.enter="saveEdit(category)"
                             @keyup.esc="cancelEdit"
                         />
                         <button
                             type="button"
                             :disabled="savingEdit || editName.trim() === ''"
-                            class="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:opacity-40"
+                            class="flex size-8 items-center justify-center rounded-lg bg-primary-600 text-white transition hover:bg-primary-700 disabled:opacity-40"
                             aria-label="Simpan"
                             @click="saveEdit(category)"
                         >
@@ -236,7 +236,7 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
                         <template v-else>
                             <button
                                 type="button"
-                                class="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-700"
+                                class="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-primary-50 hover:text-primary-700"
                                 aria-label="Ubah"
                                 @click="startEdit(category)"
                             >

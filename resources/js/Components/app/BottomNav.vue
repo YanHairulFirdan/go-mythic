@@ -37,8 +37,8 @@ const currentActive = currentRoute?.startsWith('dashboard')
                 :key="item.label"
                 :href="item.href"
                 :class="[
-                    'flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
-                    currentActive === item.label ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                    'flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
+                    currentActive === item.label ? 'bg-primary-50 text-primary-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                 ]"
             >
                 <component :is="item.icon" class="size-[18px]" :stroke-width="currentActive === item.label ? 2.5 : 2" />

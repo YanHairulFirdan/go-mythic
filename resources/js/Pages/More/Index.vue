@@ -35,9 +35,9 @@ const account = [
                 v-for="item in modules"
                 :key="item.label"
                 :href="item.href"
-                class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
             >
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
                     <component :is="item.icon" class="size-[18px]" />
                 </span>
                 <span class="min-w-0 flex-1">
@@ -53,9 +53,9 @@ const account = [
                 v-for="item in account"
                 :key="item.label"
                 :href="item.href"
-                class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
             >
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
                     <component :is="item.icon" class="size-[18px]" />
                 </span>
                 <span class="min-w-0 flex-1">

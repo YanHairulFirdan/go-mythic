@@ -122,7 +122,7 @@ const hasActiveFilter = computed((): boolean =>
                 role="tab"
                 :aria-selected="form.type === tab.value"
                 :class="[
-                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
                     form.type === tab.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
                 ]"
                 @click="selectType(tab.value)"
@@ -134,7 +134,7 @@ const hasActiveFilter = computed((): boolean =>
         <div class="mt-3 grid grid-cols-2 gap-2">
             <select
                 v-model="form.category_id"
-                class="col-span-2 rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="col-span-2 rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 aria-label="Filter kategori"
             >
                 <option :value="null">Semua kategori</option>
@@ -147,7 +147,7 @@ const hasActiveFilter = computed((): boolean =>
                 <input
                     v-model="form.date_from"
                     type="date"
-                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 />
             </label>
             <label class="block">
@@ -155,7 +155,7 @@ const hasActiveFilter = computed((): boolean =>
                 <input
                     v-model="form.date_to"
                     type="date"
-                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 />
             </label>
         </div>
@@ -170,7 +170,7 @@ const hasActiveFilter = computed((): boolean =>
                     v-for="transaction in props.transactions.data"
                     :key="transaction.id"
                     :href="showHref(transaction.id)"
-                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
                 >
                     <span
                         :class="transaction.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'"
@@ -207,7 +207,7 @@ const hasActiveFilter = computed((): boolean =>
         <Link
             :href="createHref"
             aria-label="Tambah transaksi"
-            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
+            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
         >
             <Plus class="size-6" />
         </Link>

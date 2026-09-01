@@ -66,7 +66,7 @@ const submit = () => {
                 v-if="pendingPayment || step === 'plan'"
                 :href="route('dashboard')"
                 aria-label="Kembali ke beranda"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -74,7 +74,7 @@ const submit = () => {
                 v-else
                 type="button"
                 aria-label="Kembali"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 @click="goBack"
             >
                 <ChevronLeft class="size-5" />
@@ -112,7 +112,7 @@ const submit = () => {
                 <div class="pb-8 pt-5">
                     <button
                         type="button"
-                        class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                        class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                         @click="step = 'payment'"
                     >
                         {{ paid ? `Perpanjang — ${plan.price}/bulan` : `Upgrade ke Paid — ${plan.price}/bulan` }}
@@ -140,7 +140,7 @@ const submit = () => {
                 <div class="pb-8 pt-5">
                     <button
                         type="button"
-                        class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                        class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                         @click="step = 'upload'"
                     >
                         Sudah transfer, upload bukti
@@ -152,7 +152,7 @@ const submit = () => {
                 <form @submit.prevent="submit">
                     <label
                         for="proof"
-                        class="flex min-h-[140px] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50/40 focus-within:ring-2 focus-within:ring-indigo-500"
+                        class="flex min-h-[140px] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 transition hover:border-primary-300 hover:bg-primary-50/40 focus-within:ring-2 focus-within:ring-primary-500"
                     >
                         <UploadCloud class="size-6 text-slate-400" />
                         {{ proofName || 'Tap untuk upload foto bukti transfer (JPG/PNG/WEBP, maks 1 MB)' }}
@@ -169,7 +169,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing || !form.proof"
-                            class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50"
+                            class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50"
                         >
                             {{ form.processing ? 'Mengirim…' : 'Kirim untuk diverifikasi' }}
                         </button>

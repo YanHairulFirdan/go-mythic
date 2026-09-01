@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'owner_name', 'email', 'phone', 'address', 'status', 'paid_until'])]
+#[Fillable(['name', 'owner_name', 'email', 'phone', 'address', 'status', 'paid_until', 'primary_color', 'logo_path'])]
 class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */

@@ -56,7 +56,7 @@ const submitEmployee = () => {
             <Link
                 :href="route('dashboard')"
                 aria-label="Kembali ke beranda"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -78,9 +78,9 @@ const submitEmployee = () => {
                 v-for="employee in props.employees"
                 :key="employee.id"
                 :href="route('employees.show', employee.id)"
-                class="flex items-center gap-3 border-b border-slate-100 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
             >
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-700">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-xs font-bold text-primary-700">
                     {{ employee.name?.charAt(0) ?? '?' }}
                 </span>
                 <span class="min-w-0 flex-1">
@@ -104,7 +104,7 @@ const submitEmployee = () => {
         <div class="grid gap-3 pb-8 pt-5">
             <button
                 type="button"
-                class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 @click="modal = 'worker'"
             >
                 + Tambah worker
@@ -112,7 +112,7 @@ const submitEmployee = () => {
             <button
                 v-if="props.canCreateEmployee"
                 type="button"
-                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                 @click="modal = 'employee'"
             >
                 + Tambah employee ber-akun
@@ -120,7 +120,7 @@ const submitEmployee = () => {
             <Link
                 v-else
                 :href="route('subscription.index')"
-                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
             >
                 Upgrade ke Paid untuk employee ber-akun
             </Link>
@@ -133,12 +133,12 @@ const submitEmployee = () => {
                 <form class="mt-4 space-y-4" @submit.prevent="submitWorker">
                     <div>
                         <label for="worker-name" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nama</label>
-                        <input id="worker-name" v-model="workerForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="worker-name" v-model="workerForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="workerForm.errors.name" class="mt-1.5 text-xs font-semibold text-rose-600">{{ workerForm.errors.name }}</p>
                     </div>
                     <div class="flex gap-3 pt-1">
-                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
-                        <button type="submit" :disabled="workerForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{{ workerForm.processing ? 'Menyimpan…' : 'Tambah worker' }}</button>
+                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeModal">Batal</button>
+                        <button type="submit" :disabled="workerForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ workerForm.processing ? 'Menyimpan…' : 'Tambah worker' }}</button>
                     </div>
                 </form>
             </section>
@@ -151,22 +151,22 @@ const submitEmployee = () => {
                 <form class="mt-4 space-y-4" @submit.prevent="submitEmployee">
                     <div>
                         <label for="employee-name" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nama</label>
-                        <input id="employee-name" v-model="employeeForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="employee-name" v-model="employeeForm.name" type="text" required autocomplete="name" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="employeeForm.errors.name" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.name }}</p>
                     </div>
                     <div>
                         <label for="employee-username" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Username</label>
-                        <input id="employee-username" v-model="employeeForm.username" type="text" required autocomplete="username" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="employee-username" v-model="employeeForm.username" type="text" required autocomplete="username" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="employeeForm.errors.username" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.username }}</p>
                     </div>
                     <div>
                         <label for="employee-password" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kata sandi</label>
-                        <input id="employee-password" v-model="employeeForm.password" type="password" required minlength="8" autocomplete="new-password" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="employee-password" v-model="employeeForm.password" type="password" required minlength="8" autocomplete="new-password" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="employeeForm.errors.password" class="mt-1.5 text-xs font-semibold text-rose-600">{{ employeeForm.errors.password }}</p>
                     </div>
                     <div class="flex gap-3 pt-1">
-                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
-                        <button type="submit" :disabled="employeeForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{{ employeeForm.processing ? 'Menyimpan…' : 'Tambah employee' }}</button>
+                        <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="closeModal">Batal</button>
+                        <button type="submit" :disabled="employeeForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ employeeForm.processing ? 'Menyimpan…' : 'Tambah employee' }}</button>
                     </div>
                 </form>
             </section>
