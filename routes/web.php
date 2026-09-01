@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,8 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
     Route::resource('customers', CustomerController::class);
     Route::resource('invoices', InvoiceController::class);
+    Route::resource('transaction-categories', TransactionCategoryController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
     Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
     Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');

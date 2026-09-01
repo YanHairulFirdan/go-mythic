@@ -23,7 +23,8 @@
         "resources/js/types/**/*.d.ts",
         "resources/js/Pages/Admin/Dashboard.vue",
         "resources/js/Pages/Admin/Companies/Index.vue",
-        "resources/js/Components/app/CapitalAlertBanner.vue"
+        "resources/js/Components/app/CapitalAlertBanner.vue",
+        "resources/js/Pages/TransactionCategories/Index.vue"
     ],
     "exclude": ["node_modules", "public"]
 }
