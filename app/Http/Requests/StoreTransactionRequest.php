@@ -39,6 +39,15 @@ class StoreTransactionRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:2000'],
             // AC8: one optional image, not GIF, max 1 MB.
             'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            // US-INV-02: nullable link to a company invoice (income only, AC4).
+            // The SUM/balance check + lockForUpdate (AC2/AC5) run in the controller.
+            'invoice_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('invoices', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
         ];
     }
 
@@ -79,6 +88,13 @@ class StoreTransactionRequest extends FormRequest
                     'transaction_date',
                     'Belum ada modal/kas aktif untuk tanggal tersebut. Set modal dulu sebelum mencatat transaksi.',
                 );
+            }
+        });
+
+        // US-INV-02 AC4: an invoice can only be linked to an income transaction.
+        $validator->after(function (Validator $validator): void {
+            if ($this->filled('invoice_id') && $this->input('type') !== 'income') {
+                $validator->errors()->add('invoice_id', 'Invoice hanya bisa dikaitkan ke transaksi pemasukan.');
             }
         });
     }

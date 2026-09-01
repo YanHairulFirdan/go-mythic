@@ -17,9 +17,17 @@ interface CapitalPeriod {
     end_date: string;
 }
 
+interface InvoiceOption {
+    id: number;
+    customer: string | null;
+    nominal_total: number;
+    remaining: number;
+}
+
 interface Props {
     categories: Category[];
     capitalPeriods: CapitalPeriod[];
+    invoices: InvoiceOption[];
 }
 
 interface PageProps {
@@ -47,6 +55,7 @@ const form = useForm<{
     type: TransactionType;
     amount: string;
     category_id: number | '';
+    invoice_id: number | '';
     transaction_date: string;
     payment_method: string;
     notes: string;
@@ -55,6 +64,7 @@ const form = useForm<{
     type: 'income',
     amount: '',
     category_id: '',
+    invoice_id: '',
     transaction_date: today,
     payment_method: 'cash',
     notes: '',
@@ -62,6 +72,10 @@ const form = useForm<{
 });
 
 const isIncome = computed((): boolean => form.type === 'income');
+
+const rupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
+const selectedInvoice = computed((): InvoiceOption | undefined =>
+    props.invoices.find((invoice) => invoice.id === form.invoice_id));
 
 // US-MK-04/05: submit is blocked unless the chosen date falls inside a capital period.
 const dateHasCapital = computed((): boolean =>
@@ -73,6 +87,8 @@ const availableCategories = computed((): Category[] =>
 
 watch(() => form.type, () => {
     form.category_id = '';
+    // US-INV-02 AC4: invoice link is income-only.
+    form.invoice_id = '';
 });
 
 const onAttachmentChange = (event: Event): void => {
@@ -177,6 +193,26 @@ const submit = (): void => {
                     </option>
                 </select>
                 <p v-if="form.errors.category_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.category_id }}</p>
+            </div>
+
+            <div v-if="isIncome">
+                <label for="invoice" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Invoice <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
+                </label>
+                <select
+                    id="invoice"
+                    v-model="form.invoice_id"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                    <option value="">Tanpa invoice</option>
+                    <option v-for="invoice in props.invoices" :key="invoice.id" :value="invoice.id">
+                        #{{ invoice.id }} · {{ invoice.customer ?? 'Tanpa customer' }} · sisa {{ rupiah(invoice.remaining) }}
+                    </option>
+                </select>
+                <p v-if="selectedInvoice" class="mt-1 text-[11px] text-slate-500">
+                    Customer transaksi otomatis mengikuti invoice. Sisa saldo {{ rupiah(selectedInvoice.remaining) }}.
+                </p>
+                <p v-if="form.errors.invoice_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.invoice_id }}</p>
             </div>
 
             <div>
