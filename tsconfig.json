@@ -1,0 +1,34 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "jsx": "preserve",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "useDefineForClassFields": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "skipLibCheck": true,
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["resources/js/*"],
+            "ziggy-js": ["./vendor/tightenco/ziggy"]
+        }
+    },
+    "include": [
+        "resources/js/types/**/*.d.ts",
+        "resources/js/Pages/Admin/Dashboard.vue",
+        "resources/js/Pages/Admin/Companies/Index.vue",
+        "resources/js/Components/app/CapitalAlertBanner.vue",
+        "resources/js/Pages/TransactionCategories/Index.vue",
+        "resources/js/Pages/Transactions/Create.vue",
+        "resources/js/Pages/Transactions/Index.vue",
+        "resources/js/Pages/Transactions/Show.vue",
+        "resources/js/Pages/Transactions/Edit.vue"
+    ],
+    "exclude": ["node_modules", "public"]
+}

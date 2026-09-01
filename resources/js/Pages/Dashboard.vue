@@ -1,12 +1,16 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingUp } from '@lucide/vue';
+import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
 import Card from '@/Components/ui/Card.vue';
 
+const page = usePage();
+
 const props = defineProps({
     user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
+    capitalWidget: { type: Object, default: null },
     summary: {
         type: Object,
         default: () => ({
@@ -31,6 +35,12 @@ const quickActions = [
     { label: 'Lihat laporan', icon: TrendingUp, href: route('reports.profit-loss') },
     { label: 'Atur modal/kas', icon: Landmark, href: route('capital.index') },
 ];
+
+const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
+const formatDate = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '');
 </script>
 
 <template>
@@ -65,8 +75,35 @@ const quickActions = [
             </div>
         </section>
 
-        <section class="mt-4 grid grid-cols-2 gap-3">
-            <Card label="Modal kas saat ini" :amount="props.summary.capital" />
+        <!-- US-MK-02: running-capital widget (Owner only) -->
+        <section v-if="isOwner" class="mt-4" aria-label="Modal / kas usaha">
+            <div v-if="props.capitalWidget" class="rounded-2xl border border-slate-200 bg-white p-4">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total modal periode ini</span>
+                    <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                        Aktif s/d {{ formatDate(props.capitalWidget.end_date) }}
+                    </span>
+                </div>
+                <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">{{ formatRupiah(props.capitalWidget.period_total) }}</div>
+                <div class="mt-2 text-xs text-slate-500">
+                    Total modal saat ini:
+                    <span
+                        class="font-bold tabular-nums"
+                        :class="props.capitalWidget.current_total < 0 ? 'text-rose-600' : 'text-slate-700'"
+                    >{{ formatRupiah(props.capitalWidget.current_total) }}</span>
+                </div>
+            </div>
+            <Link
+                v-else
+                :href="route('capital.index')"
+                class="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm font-medium text-slate-500 transition hover:border-indigo-300 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+                Belum ada modal aktif
+                <span class="text-xs font-bold text-indigo-600">Set modal →</span>
+            </Link>
+        </section>
+
+        <section class="mt-4">
             <Card label="Transaksi bulan ini" amount="60" note="dari 150/hari">
                 <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[40%] rounded-full bg-emerald-500" /></div>
             </Card>

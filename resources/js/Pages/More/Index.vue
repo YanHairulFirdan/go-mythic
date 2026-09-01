@@ -1,14 +1,21 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
-import { ChevronRight, CreditCard, Landmark, LogOut, TrendingUp, UserRound, Users } from '@lucide/vue';
+import { computed } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ChevronRight, CreditCard, Landmark, LogOut, Tags, TrendingUp, UserRound, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 
-const modules = [
+const page = usePage();
+const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+const modules = computed(() => [
     { label: 'Laporan P&L', desc: 'Pemasukan, pengeluaran, saldo bersih', icon: TrendingUp, href: route('reports.profit-loss') },
     { label: 'Modal / Kas Usaha', desc: 'Baseline modal dan top-up', icon: Landmark, href: route('capital.index') },
+    ...(isOwner.value
+        ? [{ label: 'Kelola Kategori', desc: 'Kategori transaksi bawaan dan custom', icon: Tags, href: route('transaction-categories.index') }]
+        : []),
     { label: 'Kelola Karyawan', desc: 'Roster worker dan employee ber-akun', icon: Users, href: route('employees.index') },
     { label: 'Langganan', desc: 'Paket dan pembayaran', icon: CreditCard, href: route('subscription.index') },
-];
+]);
 
 const account = [
     { label: 'Profil', desc: 'Ubah data akun dan kata sandi', icon: UserRound, href: route('profile.edit') },

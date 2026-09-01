@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -35,6 +36,39 @@ class CapitalEntry extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function topups(): HasMany
+    {
+        return $this->hasMany(CapitalTopup::class);
+    }
+
+    /**
+     * US-MK-01B AC2 "Total Modal Periode Ini": the originally-set amount plus
+     * every top-up. `initial_amount` is kept immutable; the running total is
+     * always derived (reconciles the DBML column name with the PRD prose).
+     */
+    public function periodTotal(): float
+    {
+        return (float) $this->initial_amount + (float) $this->topups()->sum('amount');
+    }
+
+    /**
+     * US-MK-06 / US-MK-01B AC2 "Total Modal Saat Ini": Periode Ini plus every
+     * income and minus every expense dated within this entry's period. May be
+     * negative — the modal is an indicator, not a hard limit (US-MK-06 AC1).
+     * Soft-deleted transactions are excluded (US-TR-03 AC5).
+     */
+    public function currentTotal(): float
+    {
+        $inPeriod = Transaction::query()
+            ->where('company_id', $this->company_id)
+            ->whereBetween('transaction_date', [$this->start_date, $this->end_date]);
+
+        $income = (float) (clone $inPeriod)->where('type', 'income')->sum('amount');
+        $expense = (float) (clone $inPeriod)->where('type', 'expense')->sum('amount');
+
+        return $this->periodTotal() + $income - $expense;
     }
 
     /**
