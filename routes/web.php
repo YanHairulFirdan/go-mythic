@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureUserActive;
@@ -52,7 +53,8 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');
     Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
     Route::patch('/capital/{capitalEntry}', [CapitalEntryController::class, 'topUp'])->name('capital.top-up');
-    Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
+    Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('/subscription/payment', [SubscriptionController::class, 'store'])->name('subscription.payment.store');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
