@@ -11,6 +11,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionCategoryController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -34,7 +35,9 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::post('/employees/account', [EmployeeController::class, 'storeAccount'])->name('employees.account.store');
     Route::get('/transactions', fn () => Inertia::render('Transactions/Index'))->name('transactions.index');
-    Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
+    Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::get('/transactions/{transaction}/attachment', [TransactionController::class, 'attachment'])->name('transactions.attachment');
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
     Route::resource('customers', CustomerController::class);
     Route::resource('invoices', InvoiceController::class);

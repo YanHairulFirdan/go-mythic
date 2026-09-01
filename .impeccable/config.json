@@ -245,6 +245,24 @@
         ],
         "createdAt": "2026-09-01T01:45:35.416Z",
         "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase section labels + text-sm/text-xs body — identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, Employees/Index.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Create.vue"
+        ],
+        "createdAt": "2026-09-01T02:43:08.468Z",
+        "reason": "false positive: detector pairs the file input's text-slate-600 (on white) with the file:bg-indigo-50 button chip, whose own text is file:text-indigo-700 (correct contrast). slate-600 body text is on white, not on a colored fill."
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Create.vue"
+        ],
+        "createdAt": "2026-09-01T02:46:09.054Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase field labels + text-sm inputs — kept verbatim from the pre-existing prototype Transactions/Create.vue, identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, TransactionCategories/Index.vue"
       }
     ]
   }
