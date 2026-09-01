@@ -4,9 +4,12 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\CapitalEntryController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -21,9 +24,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', EnsureUserActive::class])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', EnsureUserActive::class])
+    ->name('dashboard');
 
 Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
@@ -32,15 +35,13 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::get('/transactions', fn () => Inertia::render('Transactions/Index'))->name('transactions.index');
     Route::get('/transactions/create', fn () => Inertia::render('Transactions/Create'))->name('transactions.create');
     Route::get('/transactions/{transaction}', fn () => Inertia::render('Transactions/Show'))->name('transactions.show');
-    Route::get('/customers', fn () => Inertia::render('Customers/Index'))->name('customers.index');
-    Route::get('/customers/create', fn () => Inertia::render('Customers/Create'))->name('customers.create');
-    Route::get('/customers/{customer}', fn () => Inertia::render('Customers/Show'))->name('customers.show');
-    Route::get('/customers/{customer}/edit', fn () => Inertia::render('Customers/Edit'))->name('customers.edit');
-    Route::get('/invoices', fn () => Inertia::render('Invoices/Index'))->name('invoices.index');
-    Route::get('/invoices/create', fn () => Inertia::render('Invoices/Create'))->name('invoices.create');
-    Route::get('/invoices/{invoice}', fn () => Inertia::render('Invoices/Show'))->name('invoices.show');
+    Route::resource('customers', CustomerController::class);
+    Route::resource('invoices', InvoiceController::class);
     Route::get('/reports/profit-loss', fn () => Inertia::render('Reports/ProfitLoss'))->name('reports.profit-loss');
-    Route::get('/capital', fn () => Inertia::render('Capital/Index'))->name('capital.index');
+    Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
+    Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');
+    Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
+    Route::patch('/capital/{capitalEntry}', [CapitalEntryController::class, 'topUp'])->name('capital.top-up');
     Route::get('/subscription', fn () => Inertia::render('Subscription/Index'))->name('subscription.index');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');
 
