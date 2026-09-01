@@ -25,7 +25,8 @@
         "resources/js/Pages/Admin/Companies/Index.vue",
         "resources/js/Components/app/CapitalAlertBanner.vue",
         "resources/js/Pages/TransactionCategories/Index.vue",
-        "resources/js/Pages/Transactions/Create.vue"
+        "resources/js/Pages/Transactions/Create.vue",
+        "resources/js/Pages/Transactions/Index.vue"
     ],
     "exclude": ["node_modules", "public"]
 }
