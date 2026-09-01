@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
@@ -10,10 +11,16 @@ defineProps({
     },
 });
 
+const approvingId = ref(null);
+
 const approve = (payment) => {
-    if (window.confirm('Setujui pembayaran ini?')) {
-        router.post(route('admin.payments.approve', payment.id));
+    if (approvingId.value !== null || !window.confirm('Setujui pembayaran ini?')) {
+        return;
     }
+    approvingId.value = payment.id;
+    router.post(route('admin.payments.approve', payment.id), {}, {
+        onFinish: () => { approvingId.value = null; },
+    });
 };
 </script>
 
@@ -48,8 +55,12 @@ const approve = (payment) => {
                                     <td class="whitespace-nowrap px-3 py-3">{{ payment.status }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ payment.created_at }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">
-                                        <PrimaryButton v-if="payment.status === 'pending'" @click="approve(payment)">
-                                            Setujui
+                                        <PrimaryButton
+                                            v-if="payment.status === 'pending'"
+                                            :disabled="approvingId === payment.id"
+                                            @click="approve(payment)"
+                                        >
+                                            {{ approvingId === payment.id ? 'Menyetujui…' : 'Setujui' }}
                                         </PrimaryButton>
                                         <span v-else class="text-gray-500">Selesai</span>
                                     </td>

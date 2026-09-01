@@ -49,7 +49,7 @@ const submit = () => {
             </div>
 
             <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
-                Simpan customer
+                {{ form.processing ? 'Menyimpan…' : 'Simpan customer' }}
             </button>
         </form>
     </PrototypeLayout>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronRight, ReceiptText, Search } from '@lucide/vue';
+import { ChevronRight, Plus, ReceiptText, Search } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
 
@@ -17,6 +17,7 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search ?? '');
+const reloading = ref(false);
 
 let timer;
 watch(search, () => {
@@ -26,6 +27,8 @@ watch(search, () => {
             only: ['invoices', 'filters'],
             preserveState: true,
             replace: true,
+            onStart: () => { reloading.value = true; },
+            onFinish: () => { reloading.value = false; },
         });
     }, 300);
 });
@@ -53,14 +56,7 @@ const progressPct = (invoice) => {
             <PageHeader title="Invoice" />
         </section>
 
-        <Link
-            :href="route('invoices.create')"
-            class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        >
-            + Buat invoice
-        </Link>
-
-        <div class="relative mt-3">
+        <div class="relative">
             <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <input
                 v-model="search"
@@ -71,8 +67,8 @@ const progressPct = (invoice) => {
             />
         </div>
 
-        <section class="mt-3 pb-4" aria-label="Daftar invoice">
-            <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
+        <section class="mt-3 pb-24" aria-label="Daftar invoice" :aria-busy="reloading">
+            <div :class="['divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']">
                 <Link
                     v-for="invoice in props.invoices"
                     :key="invoice.id"
@@ -104,5 +100,13 @@ const progressPct = (invoice) => {
                 </p>
             </div>
         </section>
+
+        <Link
+            :href="route('invoices.create')"
+            aria-label="Buat invoice"
+            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
+        >
+            <Plus class="size-6" />
+        </Link>
     </PrototypeLayout>
 </template>

@@ -138,7 +138,7 @@ const submitEmployee = () => {
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
-                        <button type="submit" :disabled="workerForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Tambah worker</button>
+                        <button type="submit" :disabled="workerForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{{ workerForm.processing ? 'Menyimpan…' : 'Tambah worker' }}</button>
                     </div>
                 </form>
             </section>
@@ -166,7 +166,7 @@ const submitEmployee = () => {
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="closeModal">Batal</button>
-                        <button type="submit" :disabled="employeeForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Tambah employee</button>
+                        <button type="submit" :disabled="employeeForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{{ employeeForm.processing ? 'Menyimpan…' : 'Tambah employee' }}</button>
                     </div>
                 </form>
             </section>

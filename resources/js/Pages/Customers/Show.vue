@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronLeft, Pencil, Trash2 } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -24,10 +25,17 @@ const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—');
 
+const confirmingDelete = ref(false);
+const deleting = ref(false);
+
 const destroy = () => {
-    if (window.confirm('Hapus customer ini?')) {
-        router.delete(route('customers.destroy', props.customer.id));
-    }
+    deleting.value = true;
+    router.delete(route('customers.destroy', props.customer.id), {
+        onFinish: () => {
+            deleting.value = false;
+            confirmingDelete.value = false;
+        },
+    });
 };
 </script>
 
@@ -46,13 +54,44 @@ const destroy = () => {
             <h1 class="min-w-0 truncate text-xl font-bold tracking-tight">{{ props.customer.name }}</h1>
         </section>
 
-        <div class="flex gap-3">
+        <div class="my-5 flex gap-3">
             <Link :href="route('customers.edit', props.customer.id)" class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                 <Pencil class="size-4" /> Edit
             </Link>
-            <button type="button" @click="destroy" class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+            <button type="button" @click="confirmingDelete = true" class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                 <Trash2 class="size-4" /> Hapus
             </button>
+        </div>
+
+        <div
+            v-if="confirmingDelete"
+            class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+            role="presentation"
+            @click.self="confirmingDelete = false"
+        >
+            <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="delete-customer-title">
+                <h2 id="delete-customer-title" class="text-sm font-bold text-slate-900">Hapus customer?</h2>
+                <p class="mt-1.5 text-xs text-slate-500">
+                    <strong class="text-slate-700">{{ props.customer.name }}</strong> akan dihapus. Transaksi & invoice yang sudah terkait tetap tersimpan.
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        @click="confirmingDelete = false"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        :disabled="deleting"
+                        class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                        @click="destroy"
+                    >
+                        {{ deleting ? 'Menghapus…' : 'Hapus' }}
+                    </button>
+                </div>
+            </section>
         </div>
 
         <Card label="Kontak" :amount="props.customer.contact || '—'">
