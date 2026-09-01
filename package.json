@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "type-check": "vue-tsc --noEmit"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
@@ -16,8 +17,10 @@
         "laravel-vite-plugin": "^3.1",
         "postcss": "^8.4.31",
         "tailwindcss": "^3.2.1",
+        "typescript": "^5.9.3",
         "vite": "^8.0.0",
-        "vue": "^3.4.0"
+        "vue": "^3.4.0",
+        "vue-tsc": "^2.2.12"
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
