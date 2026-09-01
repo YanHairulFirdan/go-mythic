@@ -2,6 +2,7 @@
 import { Bell, ChevronDown } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import BottomNav from '@/Components/app/BottomNav.vue';
+import CapitalAlertBanner from '@/Components/app/CapitalAlertBanner.vue';
 
 defineProps({ user: { type: Object, default: () => ({ name: 'Budi Santoso' }) } });
 </script>
@@ -9,6 +10,7 @@ defineProps({ user: { type: Object, default: () => ({ name: 'Budi Santoso' }) } 
 <template>
     <div class="min-h-screen bg-[#f7f8fc] text-slate-900 sm:p-6">
         <div class="relative mx-auto min-h-screen max-w-md overflow-hidden bg-[#f7f8fc] pb-24 sm:min-h-[760px] sm:rounded-[2rem] sm:border sm:border-slate-200 sm:shadow-xl">
+            <CapitalAlertBanner />
             <header class="flex items-center justify-between px-5 pb-3 pt-6">
                 <Link :href="route('dashboard')" class="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                     <span class="flex size-9 items-center justify-center rounded-xl bg-indigo-600 text-lg font-black text-white shadow-sm shadow-indigo-200">✦</span>
