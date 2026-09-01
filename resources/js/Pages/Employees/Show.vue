@@ -35,7 +35,7 @@ const formatRupiah = (value: number): string => `Rp${Number(value).toLocaleStrin
             <Link
                 :href="backHref"
                 aria-label="Kembali ke daftar karyawan"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>

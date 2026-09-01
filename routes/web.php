@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\CapitalEntryController;
+use App\Http\Controllers\CompanyBrandingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
@@ -59,6 +60,7 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/settings/branding', [CompanyBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');

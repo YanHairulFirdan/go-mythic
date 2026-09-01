@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\CapitalEntry;
+use App\Support\CompanyBranding;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Middleware;
@@ -40,6 +41,8 @@ class HandleInertiaRequests extends Middleware
             // banner (rendered by every PrototypeLayout page). False also when the
             // only capital entry has expired (AC4).
             'capitalActive' => $this->hasActiveCapital($request),
+            // Owner-configurable primary colour + company logo for the app shell.
+            'branding' => CompanyBranding::payload($request->user()?->company),
         ];
     }
 

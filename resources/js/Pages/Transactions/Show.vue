@@ -75,7 +75,7 @@ const rows = computed((): Array<[string, string]> => [
             <Link
                 :href="backHref"
                 aria-label="Kembali ke transaksi"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -127,7 +127,7 @@ const rows = computed((): Array<[string, string]> => [
             <a
                 :href="props.transaction.attachment_download_url ?? props.transaction.attachment_url"
                 download
-                class="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <Download class="size-4 shrink-0" />
                 Unduh lampiran
@@ -147,7 +147,7 @@ const rows = computed((): Array<[string, string]> => [
         <div class="grid grid-cols-2 gap-3 pb-8 pt-5">
             <Link
                 :href="editHref"
-                class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <Pencil class="size-4" /> Edit
             </Link>

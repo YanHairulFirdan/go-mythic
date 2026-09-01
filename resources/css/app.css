@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    /* Keep the element scrollable but hide the visual scrollbar. */
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* IE / legacy Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome / Safari */
+    }
+}
+
+@layer base {
+    /*
+     * Default brand palette (derived indigo ramp). Overridden per company by the
+     * inline <style> in resources/views/app.blade.php when the owner picks a
+     * custom colour. Keep these in sync with App\Support\ColorPalette::ramp('#4f46e5').
+     */
+    :root {
+        --c-primary-50: 241 240 253;
+        --c-primary-100: 227 225 251;
+        --c-primary-200: 199 196 247;
+        --c-primary-300: 163 159 241;
+        --c-primary-400: 121 114 235;
+        --c-primary-500: 97 89 232;
+        --c-primary-600: 79 70 229;
+        --c-primary-700: 65 57 188;
+        --c-primary-800: 52 46 151;
+        --c-primary-900: 41 36 119;
+    }
+}
