@@ -80,7 +80,8 @@ class TransactionInvoiceLinkTest extends TestCase
                 'amount' => 600_000,
                 'invoice_id' => $invoice->id,
             ]))
-            ->assertRedirect(route('transactions.index'));
+            // US-INV-03: an invoice-linked transaction returns to that invoice.
+            ->assertRedirect(route('invoices.show', $invoice));
 
         $this->assertDatabaseHas('transactions', [
             'invoice_id' => $invoice->id,

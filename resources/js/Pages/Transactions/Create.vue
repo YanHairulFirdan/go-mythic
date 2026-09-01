@@ -28,6 +28,7 @@ interface Props {
     categories: Category[];
     capitalPeriods: CapitalPeriod[];
     invoices: InvoiceOption[];
+    prefill: { invoice_id: number | null };
 }
 
 interface PageProps {
@@ -64,7 +65,7 @@ const form = useForm<{
     type: 'income',
     amount: '',
     category_id: '',
-    invoice_id: '',
+    invoice_id: props.prefill.invoice_id ?? '',
     transaction_date: today,
     payment_method: 'cash',
     notes: '',
