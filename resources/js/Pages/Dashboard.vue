@@ -86,7 +86,11 @@ const formatDate = (value) => (value
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">{{ formatRupiah(props.capitalWidget.period_total) }}</div>
                 <div class="mt-2 text-xs text-slate-500">
-                    Total modal saat ini: <span class="text-slate-400">— (menunggu modul transaksi)</span>
+                    Total modal saat ini:
+                    <span
+                        class="font-bold tabular-nums"
+                        :class="props.capitalWidget.current_total < 0 ? 'text-rose-600' : 'text-slate-700'"
+                    >{{ formatRupiah(props.capitalWidget.current_total) }}</span>
                 </div>
             </div>
             <Link

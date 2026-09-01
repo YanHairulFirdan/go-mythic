@@ -19,10 +19,10 @@ class DashboardController extends Controller
 
     /**
      * US-MK-02: running-capital widget. Owner-only (PRD 3.6 — Modal/Kas is not
-     * an Employee surface). "Total Modal Saat Ini" (period total minus net
-     * expense) waits on the transactions table (Feature 4).
+     * an Employee surface). "Total Modal Saat Ini" (US-MK-06) is Periode Ini plus
+     * income minus expense within the period; it may be negative.
      *
-     * @return array{period_total: float, start_date: string, end_date: string}|null
+     * @return array{period_total: float, current_total: float, start_date: string, end_date: string}|null
      */
     private function capitalWidget(Request $request): ?array
     {
@@ -42,6 +42,7 @@ class DashboardController extends Controller
 
         return [
             'period_total' => $active->periodTotal(),
+            'current_total' => $active->currentTotal(),
             'start_date' => $active->start_date,
             'end_date' => $active->end_date,
         ];

@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
+use App\Models\CapitalEntry;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -85,10 +87,8 @@ class TransactionController extends Controller
     public function create(Request $request): Response
     {
         return Inertia::render('Transactions/Create', [
-            'categories' => TransactionCategory::query()
-                ->where('company_id', $request->user()->company_id)
-                ->orderBy('name')
-                ->get(['id', 'name', 'type']),
+            'categories' => $this->companyCategories($request),
+            'capitalPeriods' => $this->companyCapitalPeriods($request),
         ]);
     }
 
@@ -167,10 +167,8 @@ class TransactionController extends Controller
                     ? route('transactions.attachment', $transaction)
                     : null,
             ],
-            'categories' => TransactionCategory::query()
-                ->where('company_id', $request->user()->company_id)
-                ->orderBy('name')
-                ->get(['id', 'name', 'type']),
+            'categories' => $this->companyCategories($request),
+            'capitalPeriods' => $this->companyCapitalPeriods($request),
         ]);
     }
 
@@ -241,5 +239,25 @@ class TransactionController extends Controller
 
         abort_if($transaction->company_id !== $user->company_id, 404);
         abort_if($user->role === 'employee' && $transaction->created_by !== $user->id, 404);
+    }
+
+    private function companyCategories(Request $request): Collection
+    {
+        return TransactionCategory::query()
+            ->where('company_id', $request->user()->company_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'type']);
+    }
+
+    /**
+     * US-MK-04 / US-MK-05: the form disables submit for a date not covered by any
+     * capital period.
+     */
+    private function companyCapitalPeriods(Request $request): Collection
+    {
+        return CapitalEntry::query()
+            ->where('company_id', $request->user()->company_id)
+            ->orderBy('start_date')
+            ->get(['start_date', 'end_date']);
     }
 }

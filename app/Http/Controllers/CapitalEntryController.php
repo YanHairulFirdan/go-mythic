@@ -29,9 +29,10 @@ class CapitalEntryController extends Controller
             'activeEntry' => $active ? [
                 'id' => $active->id,
                 'initial_amount' => (float) $active->initial_amount,
-                // US-MK-01B AC2: accumulated (initial + top-ups). "Total Modal
-                // Saat Ini" (minus net expense) waits on the transactions table.
+                // US-MK-01B AC2: Periode Ini = initial + top-ups. Saat Ini
+                // (US-MK-06) = Periode Ini + income − expense in the period.
                 'period_total' => $active->periodTotal(),
+                'current_total' => $active->currentTotal(),
                 'start_date' => $active->start_date,
                 'end_date' => $active->end_date,
             ] : null,
