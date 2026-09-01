@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,6 +48,9 @@ class RegisteredUserController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['whatsapp'],
             ]);
+
+            // PRD 3.2: setiap company baru langsung punya preset kategori transaksi.
+            TransactionCategory::seedDefaultsFor($company);
 
             return User::create([
                 'company_id' => $company->id,

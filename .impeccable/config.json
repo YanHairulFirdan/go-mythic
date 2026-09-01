@@ -227,6 +227,24 @@
         ],
         "createdAt": "2026-08-31T09:08:05.439Z",
         "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels, identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, Employees/Index.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/TransactionCategories/Index.vue"
+        ],
+        "createdAt": "2026-09-01T01:42:15.492Z",
+        "reason": "false positive: same inline-modal + outline-button pattern already whitelisted for Capital/Index.vue, Invoices/Show.vue, Customers/* — slate-700 text on white with slate-50 hover (~11:1 contrast), not body text on a colored fill"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/TransactionCategories/Index.vue"
+        ],
+        "createdAt": "2026-09-01T01:45:35.416Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase section labels + text-sm/text-xs body — identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, Employees/Index.vue"
       }
     ]
   }
