@@ -112,17 +112,58 @@ class TransactionController extends Controller
     }
 
     /**
+     * US-TR-05: transaction detail. Employees may only open their own rows (AC2).
+     */
+    public function show(Request $request, Transaction $transaction): Response
+    {
+        $this->authorizeAccess($request, $transaction);
+
+        $transaction->load(['category:id,name', 'creator:id,name', 'editor:id,name']);
+
+        $wasEdited = $transaction->updated_by !== null;
+
+        return Inertia::render('Transactions/Show', [
+            'transaction' => [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'amount' => (float) $transaction->amount,
+                'transaction_date' => $transaction->transaction_date,
+                'category' => $transaction->category?->name,
+                'payment_method' => $transaction->payment_method,
+                'notes' => $transaction->notes,
+                'recorded_by' => $transaction->creator?->name,
+                'created_at' => $transaction->created_at?->toIso8601String(),
+                // AC1: "last updated by" only surfaces once the row has been edited.
+                'last_updated_by' => $wasEdited ? $transaction->editor?->name : null,
+                'last_updated_at' => $wasEdited ? $transaction->updated_at?->toIso8601String() : null,
+                'attachment_url' => $transaction->attachment_path !== null
+                    ? route('transactions.attachment', $transaction)
+                    : null,
+            ],
+        ]);
+    }
+
+    /**
      * US-TR-01 AC8 / US-TR-05: the attachment follows the transaction's own
      * authorization — same tenant, and Employees only reach their own rows.
      */
     public function attachment(Request $request, Transaction $transaction): StreamedResponse
     {
+        $this->authorizeAccess($request, $transaction);
+        abort_if($transaction->attachment_path === null, 404);
+
+        return Storage::disk('local')->download($transaction->attachment_path);
+    }
+
+    /**
+     * US-TR-05 AC2: same tenant, and Employees only reach rows they recorded.
+     * 404 (not 403) so a foreign row's existence is not disclosed.
+     */
+    private function authorizeAccess(Request $request, Transaction $transaction): void
+    {
         $user = $request->user();
 
         abort_if($transaction->company_id !== $user->company_id, 404);
         abort_if($user->role === 'employee' && $transaction->created_by !== $user->id, 404);
-        abort_if($transaction->attachment_path === null, 404);
-
-        return Storage::disk('local')->download($transaction->attachment_path);
     }
 }
