@@ -34,6 +34,23 @@ class PaymentTest extends TestCase
                 ->where('pendingPayment', null));
     }
 
+    public function test_subscription_page_reflects_paid_status_and_a_pending_payment(): void
+    {
+        $owner = User::factory()->create();
+        $owner->company->update(['paid_until' => now()->addDays(20)]);
+        Payment::factory()->create([
+            'company_id' => $owner->company_id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('subscription.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('paid', true)
+                ->whereNot('paidUntil', null)
+                ->whereNot('pendingPayment', null));
+    }
+
     public function test_employee_cannot_view_or_submit_subscription_payment(): void
     {
         $employee = User::factory()->create(['role' => 'employee']);
