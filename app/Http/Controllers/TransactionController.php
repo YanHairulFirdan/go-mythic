@@ -88,16 +88,29 @@ class TransactionController extends Controller
 
     public function create(Request $request): Response
     {
+        // US-INV-03: opened from an invoice detail page with ?invoice_id=… pre-fills
+        // the link (and its derived customer). Ignored if it is not a company invoice.
+        $prefillInvoiceId = $request->integer('invoice_id') ?: null;
+        if ($prefillInvoiceId !== null) {
+            $exists = Invoice::query()
+                ->where('company_id', $request->user()->company_id)
+                ->whereKey($prefillInvoiceId)
+                ->exists();
+            $prefillInvoiceId = $exists ? $prefillInvoiceId : null;
+        }
+
         return Inertia::render('Transactions/Create', [
             'categories' => $this->companyCategories($request),
             'capitalPeriods' => $this->companyCapitalPeriods($request),
             'invoices' => $this->companyInvoices($request),
+            'prefill' => ['invoice_id' => $prefillInvoiceId],
         ]);
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
         $data = $request->safe()->except('attachment');
+        $invoiceId = $data['invoice_id'] ?? null;
 
         DB::transaction(function () use ($request, $data): void {
             // US-INV-02 AC2/AC3/AC5: lock the invoice, re-check the balance, and
@@ -121,7 +134,11 @@ class TransactionController extends Controller
             ]);
         });
 
-        return to_route('transactions.index');
+        // US-INV-03: a transaction linked to an invoice returns to that invoice
+        // (so the updated progress is visible); otherwise to the transaction list.
+        return $invoiceId !== null
+            ? to_route('invoices.show', $invoiceId)
+            : to_route('transactions.index');
     }
 
     /**
