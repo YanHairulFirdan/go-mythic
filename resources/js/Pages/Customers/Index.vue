@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronRight, Users } from '@lucide/vue';
+import { ChevronRight, Plus, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
 
@@ -20,14 +20,7 @@ defineProps({
             <PageHeader title="Customer" />
         </section>
 
-        <Link
-            :href="route('customers.create')"
-            class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        >
-            + Tambah customer
-        </Link>
-
-        <section class="mt-4 pb-4" aria-label="Daftar customer">
+        <section class="pb-24" aria-label="Daftar customer">
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
                 <Link
                     v-for="customer in customers"
@@ -49,5 +42,13 @@ defineProps({
                 </p>
             </div>
         </section>
+
+        <Link
+            :href="route('customers.create')"
+            aria-label="Tambah customer"
+            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
+        >
+            <Plus class="size-6" />
+        </Link>
     </PrototypeLayout>
 </template>

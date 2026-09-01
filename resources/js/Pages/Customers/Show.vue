@@ -46,7 +46,7 @@ const destroy = () => {
             <h1 class="min-w-0 truncate text-xl font-bold tracking-tight">{{ props.customer.name }}</h1>
         </section>
 
-        <div class="flex gap-3">
+        <div class="my-5 flex gap-3">
             <Link :href="route('customers.edit', props.customer.id)" class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                 <Pencil class="size-4" /> Edit
             </Link>
