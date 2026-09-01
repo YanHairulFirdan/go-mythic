@@ -9,7 +9,20 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    transactions: {
+        type: Array,
+        default: () => [],
+    },
+    breakdown: {
+        type: Object,
+        default: () => ({ total: 0, count: 0, last_date: null }),
+    },
 });
+
+const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
+const formatDate = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—');
 
 const destroy = () => {
     if (window.confirm('Hapus customer ini?')) {
@@ -45,5 +58,45 @@ const destroy = () => {
         <Card label="Kontak" :amount="props.customer.contact || '—'">
             <p class="mt-1 text-xs text-slate-500">{{ props.customer.address || 'Alamat belum diisi' }}</p>
         </Card>
+
+        <!-- US-CUST-03 AC2: breakdown transaksi income, on-the-fly -->
+        <section class="mt-4 grid grid-cols-3 gap-2" aria-label="Ringkasan transaksi">
+            <div class="rounded-xl border border-slate-200 bg-white p-3">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total</div>
+                <div class="mt-1 text-sm font-bold tabular-nums text-slate-800">{{ formatRupiah(props.breakdown.total) }}</div>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-3">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Transaksi</div>
+                <div class="mt-1 text-sm font-bold tabular-nums text-slate-800">{{ props.breakdown.count }}</div>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-3">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Terakhir</div>
+                <div class="mt-1 text-xs font-bold text-slate-800">{{ formatDate(props.breakdown.last_date) }}</div>
+            </div>
+        </section>
+
+        <!-- US-CUST-03 AC1: daftar transaksi income terkait -->
+        <section class="mt-4 pb-4" aria-labelledby="customer-transactions-title">
+            <h2 id="customer-transactions-title" class="mb-2 text-sm font-bold">Transaksi pemasukan</h2>
+            <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
+                <Link
+                    v-for="transaction in props.transactions"
+                    :key="transaction.id"
+                    :href="route('transactions.show', transaction.id)"
+                    class="flex items-center gap-3 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                >
+                    <span class="min-w-0 flex-1">
+                        <strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.category ?? 'Tanpa kategori' }}</strong>
+                        <small class="mt-1 block text-[10px] text-slate-400">
+                            {{ formatDate(transaction.transaction_date) }}<template v-if="transaction.invoice_id"> · Invoice #{{ transaction.invoice_id }}</template>
+                        </small>
+                    </span>
+                    <span class="shrink-0 text-xs font-extrabold tabular-nums text-emerald-600">+{{ formatRupiah(transaction.amount) }}</span>
+                </Link>
+                <p v-if="props.transactions.length === 0" class="py-8 text-center text-xs text-slate-400">
+                    Belum ada transaksi pemasukan dari customer ini.
+                </p>
+            </div>
+        </section>
     </PrototypeLayout>
 </template>

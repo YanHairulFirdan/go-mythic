@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,9 +53,33 @@ class CustomerController extends Controller
     {
         $this->authorizeTenant($request, $customer);
 
-        // Breakdown + related transactions is US-CUST-03 (needs the transactions table).
+        // US-CUST-03 AC1: income transactions linked to this customer (via an
+        // invoice or standalone). AC2: breakdown derived on-the-fly from the same
+        // rows — no stored aggregate.
+        $transactions = Transaction::query()
+            ->where('company_id', $customer->company_id)
+            ->where('customer_id', $customer->id)
+            ->where('type', 'income')
+            ->with('category:id,name')
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('id')
+            ->get(['id', 'amount', 'transaction_date', 'category_id', 'invoice_id'])
+            ->map(fn (Transaction $transaction): array => [
+                'id' => $transaction->id,
+                'amount' => (float) $transaction->amount,
+                'transaction_date' => $transaction->transaction_date,
+                'category' => $transaction->category?->name,
+                'invoice_id' => $transaction->invoice_id,
+            ]);
+
         return Inertia::render('Customers/Show', [
             'customer' => $customer->only('id', 'name', 'contact', 'address'),
+            'transactions' => $transactions,
+            'breakdown' => [
+                'total' => (float) $transactions->sum('amount'),
+                'count' => $transactions->count(),
+                'last_date' => $transactions->first()['transaction_date'] ?? null,
+            ],
         ]);
     }
 

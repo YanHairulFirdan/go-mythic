@@ -48,6 +48,23 @@ class StoreTransactionRequest extends FormRequest
                     ->where('company_id', $companyId)
                     ->whereNull('deleted_at'),
             ],
+            // US-CUST-02 AC1: nullable, income only. Locked to the invoice's
+            // customer when invoice_id is set (AC2, handled in the controller).
+            'customer_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('customers', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
+            // PRD 3.2 / US-CUST-04: nullable "pelaksana" for either type.
+            'employee_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('employees', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
         ];
     }
 
@@ -91,10 +108,16 @@ class StoreTransactionRequest extends FormRequest
             }
         });
 
-        // US-INV-02 AC4: an invoice can only be linked to an income transaction.
+        // US-INV-02 AC4 / US-CUST-02 AC1: invoice and customer links are income-only.
         $validator->after(function (Validator $validator): void {
-            if ($this->filled('invoice_id') && $this->input('type') !== 'income') {
+            if ($this->input('type') === 'income') {
+                return;
+            }
+            if ($this->filled('invoice_id')) {
                 $validator->errors()->add('invoice_id', 'Invoice hanya bisa dikaitkan ke transaksi pemasukan.');
+            }
+            if ($this->filled('customer_id')) {
+                $validator->errors()->add('customer_id', 'Customer hanya bisa dikaitkan ke transaksi pemasukan.');
             }
         });
     }
