@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -139,20 +140,95 @@ class TransactionController extends Controller
                 'attachment_url' => $transaction->attachment_path !== null
                     ? route('transactions.attachment', $transaction)
                     : null,
+                'attachment_download_url' => $transaction->attachment_path !== null
+                    ? route('transactions.attachment', ['transaction' => $transaction->id, 'download' => 1])
+                    : null,
             ],
         ]);
     }
 
     /**
+     * US-TR-02: mengedit transaksi.
+     */
+    public function edit(Request $request, Transaction $transaction): Response
+    {
+        $this->authorizeAccess($request, $transaction);
+
+        return Inertia::render('Transactions/Edit', [
+            'transaction' => [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'amount' => (float) $transaction->amount,
+                'category_id' => $transaction->category_id,
+                'transaction_date' => $transaction->transaction_date,
+                'payment_method' => $transaction->payment_method,
+                'notes' => $transaction->notes,
+                'attachment_url' => $transaction->attachment_path !== null
+                    ? route('transactions.attachment', $transaction)
+                    : null,
+            ],
+            'categories' => TransactionCategory::query()
+                ->where('company_id', $request->user()->company_id)
+                ->orderBy('name')
+                ->get(['id', 'name', 'type']),
+        ]);
+    }
+
+    /**
+     * US-TR-02: AC1 (authorization di UpdateTransactionRequest), AC2/AC3 (spatie
+     * mencatat event `updated` dengan old → new). AC4 "transfer quota" saat jenis
+     * berubah menunggu infra kuota (US-SUB-01).
+     */
+    public function update(UpdateTransactionRequest $request, Transaction $transaction): RedirectResponse
+    {
+        $data = $request->safe()->except('attachment');
+
+        DB::transaction(function () use ($request, $transaction, $data): void {
+            if ($request->hasFile('attachment')) {
+                if ($transaction->attachment_path !== null) {
+                    Storage::disk('local')->delete($transaction->attachment_path);
+                }
+                $data['attachment_path'] = $request->file('attachment')->store(self::ATTACHMENT_DIR, 'local');
+            }
+
+            $transaction->update([
+                ...$data,
+                'updated_by' => $request->user()->id,
+            ]);
+        });
+
+        return to_route('transactions.show', $transaction);
+    }
+
+    /**
+     * US-TR-03: soft-delete. spatie mencatat event `deleted` dengan snapshot
+     * properties (AC4). "Pemulihan quota" (AC5) menunggu infra kuota (US-SUB-01).
+     */
+    public function destroy(Request $request, Transaction $transaction): RedirectResponse
+    {
+        $this->authorizeAccess($request, $transaction);
+
+        $transaction->delete();
+
+        return to_route('transactions.index');
+    }
+
+    /**
      * US-TR-01 AC8 / US-TR-05: the attachment follows the transaction's own
      * authorization — same tenant, and Employees only reach their own rows.
+     * Served inline (so the detail page can preview the image); `?download=1`
+     * forces a save.
      */
     public function attachment(Request $request, Transaction $transaction): StreamedResponse
     {
         $this->authorizeAccess($request, $transaction);
         abort_if($transaction->attachment_path === null, 404);
 
-        return Storage::disk('local')->download($transaction->attachment_path);
+        $disk = Storage::disk('local');
+
+        return $request->boolean('download')
+            ? $disk->download($transaction->attachment_path)
+            : $disk->response($transaction->attachment_path);
     }
 
     /**

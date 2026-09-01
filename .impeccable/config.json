@@ -281,6 +281,15 @@
         ],
         "createdAt": "2026-09-01T03:14:58.164Z",
         "reason": "false positive: outline-link pattern (text-slate-700 on white, hover flips to text-indigo-700 on bg-indigo-50) — identical to whitelisted Customers/Show.vue, Invoices/Show.vue, Employees/Index.vue, TransactionCategories/Index.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Edit.vue"
+        ],
+        "createdAt": "2026-09-01T03:33:06.076Z",
+        "reason": "false positive: same file-input pattern as whitelisted Transactions/Create.vue — text-slate-600 body on white, the file: chip is bg-indigo-50 + text-indigo-700 (correct contrast)"
       }
     ]
   }

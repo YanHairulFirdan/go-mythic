@@ -280,8 +280,14 @@ class TransactionTest extends TestCase
         ]));
         $transaction = Transaction::sole();
 
+        // Inline by default (so the detail page can preview the image)...
+        $inline = $this->actingAs($owner)->get(route('transactions.attachment', $transaction));
+        $inline->assertOk();
+        $this->assertStringContainsString('inline', (string) $inline->headers->get('content-disposition'));
+
+        // ...and a forced download with ?download=1.
         $this->actingAs($owner)
-            ->get(route('transactions.attachment', $transaction))
+            ->get(route('transactions.attachment', ['transaction' => $transaction->id, 'download' => 1]))
             ->assertOk()
             ->assertDownload();
     }
