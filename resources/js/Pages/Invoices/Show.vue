@@ -135,7 +135,7 @@ const destroy = () => {
                         class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold text-white hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50"
                         @click="destroy"
                     >
-                        Hapus
+                        {{ deleting ? 'Menghapus…' : 'Hapus' }}
                     </button>
                 </div>
             </section>

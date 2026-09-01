@@ -17,6 +17,7 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search ?? '');
+const reloading = ref(false);
 
 let timer;
 watch(search, () => {
@@ -26,6 +27,8 @@ watch(search, () => {
             only: ['invoices', 'filters'],
             preserveState: true,
             replace: true,
+            onStart: () => { reloading.value = true; },
+            onFinish: () => { reloading.value = false; },
         });
     }, 300);
 });
@@ -64,8 +67,8 @@ const progressPct = (invoice) => {
             />
         </div>
 
-        <section class="mt-3 pb-24" aria-label="Daftar invoice">
-            <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
+        <section class="mt-3 pb-24" aria-label="Daftar invoice" :aria-busy="reloading">
+            <div :class="['divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']">
                 <Link
                     v-for="invoice in props.invoices"
                     :key="invoice.id"

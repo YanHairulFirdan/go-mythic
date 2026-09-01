@@ -102,7 +102,7 @@ const primaryBtn = 'flex min-h-12 w-full items-center justify-center rounded-xl 
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button type="submit" :disabled="profileForm.processing" :class="primaryBtn">Simpan</button>
+                    <button type="submit" :disabled="profileForm.processing" :class="primaryBtn">{{ profileForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                     <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0" leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
                         <p v-if="profileForm.recentlySuccessful" class="shrink-0 text-xs font-semibold text-emerald-600">Tersimpan.</p>
                     </Transition>
@@ -132,7 +132,7 @@ const primaryBtn = 'flex min-h-12 w-full items-center justify-center rounded-xl 
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button type="submit" :disabled="passwordForm.processing" :class="primaryBtn">Simpan</button>
+                    <button type="submit" :disabled="passwordForm.processing" :class="primaryBtn">{{ passwordForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                     <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0" leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
                         <p v-if="passwordForm.recentlySuccessful" class="shrink-0 text-xs font-semibold text-emerald-600">Tersimpan.</p>
                     </Transition>
