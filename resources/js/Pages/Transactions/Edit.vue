@@ -29,12 +29,19 @@ interface InvoiceOption {
     remaining: number;
 }
 
+interface NamedOption {
+    id: number;
+    name: string;
+}
+
 interface TransactionForm {
     id: number;
     type: TransactionType;
     amount: number;
     category_id: number;
     invoice_id: number | null;
+    customer_id: number | null;
+    employee_id: number | null;
     transaction_date: string;
     payment_method: string;
     notes: string | null;
@@ -46,6 +53,8 @@ interface Props {
     categories: Category[];
     capitalPeriods: CapitalPeriod[];
     invoices: InvoiceOption[];
+    customers: NamedOption[];
+    employees: NamedOption[];
 }
 
 const props = defineProps<Props>();
@@ -69,6 +78,8 @@ const form = useForm<{
     amount: string;
     category_id: number | '';
     invoice_id: number | '';
+    customer_id: number | '';
+    employee_id: number | '';
     transaction_date: string;
     payment_method: string;
     notes: string;
@@ -78,6 +89,8 @@ const form = useForm<{
     amount: String(props.transaction.amount),
     category_id: props.transaction.category_id,
     invoice_id: props.transaction.invoice_id ?? '',
+    customer_id: props.transaction.customer_id ?? '',
+    employee_id: props.transaction.employee_id ?? '',
     transaction_date: props.transaction.transaction_date,
     payment_method: props.transaction.payment_method,
     notes: props.transaction.notes ?? '',
@@ -89,6 +102,7 @@ const isIncome = computed((): boolean => form.type === 'income');
 const rupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 const selectedInvoice = computed((): InvoiceOption | undefined =>
     props.invoices.find((invoice) => invoice.id === form.invoice_id));
+const customerLockedByInvoice = computed((): boolean => form.invoice_id !== '');
 
 // US-MK-04/05: submit is blocked unless the chosen date falls inside a capital period.
 const dateHasCapital = computed((): boolean =>
@@ -101,8 +115,9 @@ const availableCategories = computed((): Category[] =>
 watch(() => form.type, (next, previous) => {
     if (next !== previous) {
         form.category_id = '';
-        // US-INV-02 AC4: invoice link is income-only.
+        // US-INV-02 AC4 / US-CUST-02 AC1: invoice + customer links are income-only.
         form.invoice_id = '';
+        form.customer_id = '';
     }
 });
 
@@ -227,6 +242,39 @@ const submit = (): void => {
                     Customer transaksi otomatis mengikuti invoice.
                 </p>
                 <p v-if="form.errors.invoice_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.invoice_id }}</p>
+            </div>
+
+            <div v-if="isIncome && !customerLockedByInvoice">
+                <label for="customer" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Customer <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
+                </label>
+                <select
+                    id="customer"
+                    v-model="form.customer_id"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                    <option value="">Tanpa customer</option>
+                    <option v-for="customer in props.customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
+                </select>
+                <p v-if="form.errors.customer_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.customer_id }}</p>
+            </div>
+            <p v-else-if="isIncome && selectedInvoice" class="text-[11px] text-slate-500">
+                Customer: <strong class="text-slate-700">{{ selectedInvoice.customer ?? '—' }}</strong> (dari invoice)
+            </p>
+
+            <div>
+                <label for="employee" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Pelaksana <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
+                </label>
+                <select
+                    id="employee"
+                    v-model="form.employee_id"
+                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                    <option value="">Tidak ada</option>
+                    <option v-for="employee in props.employees" :key="employee.id" :value="employee.id">{{ employee.name }}</option>
+                </select>
+                <p v-if="form.errors.employee_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.employee_id }}</p>
             </div>
 
             <div>

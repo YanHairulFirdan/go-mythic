@@ -74,10 +74,11 @@ const submitEmployee = () => {
         </div>
 
         <section class="mt-4" aria-label="Daftar karyawan">
-            <div
+            <Link
                 v-for="employee in props.employees"
                 :key="employee.id"
-                class="flex items-center gap-3 border-b border-slate-100 py-3.5"
+                :href="route('employees.show', employee.id)"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
             >
                 <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-700">
                     {{ employee.name?.charAt(0) ?? '?' }}
@@ -94,7 +95,7 @@ const submitEmployee = () => {
                 >
                     {{ employee.status }}
                 </span>
-            </div>
+            </Link>
             <p v-if="props.employees.length === 0" class="py-10 text-center text-sm text-slate-400">
                 Belum ada karyawan.
             </p>
