@@ -272,6 +272,15 @@
         ],
         "createdAt": "2026-09-01T02:57:09.496Z",
         "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels + text-xs row body — identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, TransactionCategories/Index.vue, Transactions/Create.vue; kept from the pre-existing prototype Transactions/Index.vue"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Show.vue"
+        ],
+        "createdAt": "2026-09-01T03:14:58.164Z",
+        "reason": "false positive: outline-link pattern (text-slate-700 on white, hover flips to text-indigo-700 on bg-indigo-50) — identical to whitelisted Customers/Show.vue, Invoices/Show.vue, Employees/Index.vue, TransactionCategories/Index.vue"
       }
     ]
   }
