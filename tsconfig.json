@@ -27,7 +27,8 @@
         "resources/js/Pages/TransactionCategories/Index.vue",
         "resources/js/Pages/Transactions/Create.vue",
         "resources/js/Pages/Transactions/Index.vue",
-        "resources/js/Pages/Transactions/Show.vue"
+        "resources/js/Pages/Transactions/Show.vue",
+        "resources/js/Pages/Transactions/Edit.vue"
     ],
     "exclude": ["node_modules", "public"]
 }

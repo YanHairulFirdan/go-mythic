@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip } from '@lucide/vue';
+import { computed, ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Download, Pencil, Trash2 } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 
 type TransactionType = 'income' | 'expense';
@@ -19,6 +19,7 @@ interface TransactionDetail {
     last_updated_by: string | null;
     last_updated_at: string | null;
     attachment_url: string | null;
+    attachment_download_url: string | null;
 }
 
 interface Props {
@@ -35,8 +36,19 @@ const paymentLabels: Record<string, string> = {
 };
 
 const backHref = route('transactions.index');
+const editHref = route('transactions.edit', props.transaction.id);
 
 const isIncome = computed((): boolean => props.transaction.type === 'income');
+
+const confirmingDelete = ref(false);
+const deleting = ref(false);
+
+const destroy = (): void => {
+    deleting.value = true;
+    router.delete(route('transactions.destroy', props.transaction.id), {
+        onFinish: () => { deleting.value = false; },
+    });
+};
 
 const formatRupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 const formatDate = (value: string | null): string => (value
@@ -101,16 +113,26 @@ const rows = computed((): Array<[string, string]> => [
             <p class="mt-1.5 whitespace-pre-line text-sm text-slate-700">{{ props.transaction.notes }}</p>
         </section>
 
-        <a
+        <section
             v-if="props.transaction.attachment_url"
-            :href="props.transaction.attachment_url"
-            target="_blank"
-            rel="noopener"
-            class="mt-4 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            class="mt-4 rounded-2xl border border-slate-200 bg-white p-4"
+            aria-label="Lampiran"
         >
-            <Paperclip class="size-4 shrink-0" />
-            Lihat lampiran
-        </a>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Lampiran</span>
+            <img
+                :src="props.transaction.attachment_url"
+                alt="Lampiran transaksi"
+                class="mt-2 max-h-72 w-full rounded-xl border border-slate-200 bg-slate-50 object-contain"
+            />
+            <a
+                :href="props.transaction.attachment_download_url ?? props.transaction.attachment_url"
+                download
+                class="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+                <Download class="size-4 shrink-0" />
+                Unduh lampiran
+            </a>
+        </section>
 
         <p
             v-if="props.transaction.last_updated_by"
@@ -121,5 +143,57 @@ const rows = computed((): Array<[string, string]> => [
         <p v-else class="mt-4 text-[11px] text-slate-400">
             Dicatat {{ formatDateTime(props.transaction.created_at) }}
         </p>
+
+        <div class="grid grid-cols-2 gap-3 pb-8 pt-5">
+            <Link
+                :href="editHref"
+                class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+                <Pencil class="size-4" /> Edit
+            </Link>
+            <button
+                type="button"
+                class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                @click="confirmingDelete = true"
+            >
+                <Trash2 class="size-4" /> Hapus
+            </button>
+        </div>
+
+        <div
+            v-if="confirmingDelete"
+            class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+            role="presentation"
+            @click.self="confirmingDelete = false"
+        >
+            <section
+                class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-transaction-title"
+            >
+                <h2 id="delete-transaction-title" class="text-sm font-bold text-slate-900">Hapus transaksi?</h2>
+                <p class="mt-1.5 text-xs text-slate-500">
+                    Transaksi ini akan dihapus (soft delete) dan tidak lagi muncul di daftar maupun laporan.
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        @click="confirmingDelete = false"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        :disabled="deleting"
+                        class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-40"
+                        @click="destroy"
+                    >
+                        Hapus
+                    </button>
+                </div>
+            </section>
+        </div>
     </PrototypeLayout>
 </template>

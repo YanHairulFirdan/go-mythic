@@ -118,6 +118,15 @@ class TransactionDetailTest extends TestCase
         $this->actingAs($owner)
             ->get(route('transactions.show', $withFile))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('transaction.attachment_url', route('transactions.attachment', $withFile)));
+                ->where('transaction.attachment_url', route('transactions.attachment', $withFile))
+                ->where('transaction.attachment_download_url', route('transactions.attachment', ['transaction' => $withFile->id, 'download' => 1])));
+
+        $withoutFile = $this->makeTransaction($owner);
+
+        $this->actingAs($owner)
+            ->get(route('transactions.show', $withoutFile))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('transaction.attachment_url', null)
+                ->where('transaction.attachment_download_url', null));
     }
 }
