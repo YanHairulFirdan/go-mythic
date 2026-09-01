@@ -12,10 +12,10 @@ const logoUrl = computed(() => page.props.branding?.logoUrl ?? null);
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#f7f8fc] text-slate-900 sm:p-6">
-        <div class="relative mx-auto min-h-screen max-w-md overflow-hidden bg-[#f7f8fc] pb-24 sm:min-h-[760px] sm:rounded-[2rem] sm:border sm:border-slate-200 sm:shadow-xl">
+    <div class="flex min-h-dvh justify-center bg-[#f7f8fc] text-slate-900 sm:p-6">
+        <div class="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-[#f7f8fc] sm:h-[760px] sm:rounded-[2rem] sm:border sm:border-slate-200 sm:shadow-xl">
             <CapitalAlertBanner />
-            <header class="flex items-center justify-between px-5 pb-3 pt-6">
+            <header class="flex shrink-0 items-center justify-between px-5 pb-3 pt-6">
                 <Link :href="route('dashboard')" class="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
                     <img v-if="logoUrl" :src="logoUrl" alt="Logo perusahaan" class="h-9 w-auto max-w-[150px] object-contain" />
                     <template v-else>
@@ -34,7 +34,7 @@ const logoUrl = computed(() => page.props.branding?.logoUrl ?? null);
                     </button>
                 </div>
             </header>
-            <main class="px-5"><slot /></main>
+            <main scroll-region class="scrollbar-hide flex-1 overflow-y-auto px-5 pb-6"><slot /></main>
             <BottomNav />
         </div>
     </div>

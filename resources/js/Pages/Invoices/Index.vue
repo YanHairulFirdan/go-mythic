@@ -67,7 +67,7 @@ const progressPct = (invoice) => {
             />
         </div>
 
-        <section class="mt-3 pb-24" aria-label="Daftar invoice" :aria-busy="reloading">
+        <section class="mt-3 pb-4" aria-label="Daftar invoice" :aria-busy="reloading">
             <div :class="['divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']">
                 <Link
                     v-for="invoice in props.invoices"

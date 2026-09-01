@@ -160,7 +160,7 @@ const hasActiveFilter = computed((): boolean =>
             </label>
         </div>
 
-        <section class="mt-3 pb-24" aria-label="Daftar transaksi" :aria-busy="reloading">
+        <section class="mt-3 pb-4" aria-label="Daftar transaksi" :aria-busy="reloading">
             <InfiniteScroll
                 data="transactions"
                 as="div"

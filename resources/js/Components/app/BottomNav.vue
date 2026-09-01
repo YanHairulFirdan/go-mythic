@@ -30,7 +30,7 @@ const currentActive = currentRoute?.startsWith('dashboard')
 </script>
 
 <template>
-    <nav aria-label="Navigasi utama" class="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:absolute">
+    <nav aria-label="Navigasi utama" class="shrink-0 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
         <div class="mx-auto grid max-w-md grid-cols-5 gap-1">
             <Link
                 v-for="item in items"

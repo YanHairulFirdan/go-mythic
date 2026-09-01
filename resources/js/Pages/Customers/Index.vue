@@ -20,7 +20,7 @@ defineProps({
             <PageHeader title="Customer" />
         </section>
 
-        <section class="pb-24" aria-label="Daftar customer">
+        <section class="pb-4" aria-label="Daftar customer">
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
                 <Link
                     v-for="customer in customers"

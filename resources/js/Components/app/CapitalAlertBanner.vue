@@ -21,7 +21,7 @@ const capitalHref = route('capital.index');
     <div
         v-if="!page.props.capitalActive"
         role="alert"
-        class="sticky top-0 z-20 flex items-start gap-3 border-b border-rose-200 bg-rose-50 px-5 py-3 text-rose-800"
+        class="flex shrink-0 items-start gap-3 border-b border-rose-200 bg-rose-50 px-5 py-3 text-rose-800"
     >
         <span class="mt-0.5 text-base font-black leading-none" aria-hidden="true">!</span>
         <div class="min-w-0 flex-1">

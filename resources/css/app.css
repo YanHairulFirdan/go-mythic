@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    /* Keep the element scrollable but hide the visual scrollbar. */
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* IE / legacy Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome / Safari */
+    }
+}
+
 @layer base {
     /*
      * Default brand palette (derived indigo ramp). Overridden per company by the
