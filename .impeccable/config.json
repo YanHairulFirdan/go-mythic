@@ -263,6 +263,15 @@
         ],
         "createdAt": "2026-09-01T02:46:09.054Z",
         "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase field labels + text-sm inputs — kept verbatim from the pre-existing prototype Transactions/Create.vue, identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, TransactionCategories/Index.vue"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Index.vue"
+        ],
+        "createdAt": "2026-09-01T02:57:09.496Z",
+        "reason": "matches established prototype type scale: text-xl h1 + text-[10px] uppercase labels + text-xs row body — identical to whitelisted Capital/Index.vue, Customers/*, Invoices/*, TransactionCategories/Index.vue, Transactions/Create.vue; kept from the pre-existing prototype Transactions/Index.vue"
       }
     ]
   }
