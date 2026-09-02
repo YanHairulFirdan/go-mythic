@@ -1,11 +1,13 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Clock, UploadCloud } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
 
 const props = defineProps({
+    paid: { type: Boolean, default: false },
+    subscriptionWarning: { type: String, default: null },
     plan: {
         type: Object,
         default: () => ({
@@ -22,6 +24,26 @@ const props = defineProps({
 const steps = ['plan', 'payment', 'upload', 'pending'];
 const step = ref('plan');
 const proofChosen = ref(false);
+const form = useForm({ proof: null });
+
+const chooseProof = (event) => {
+    const file = event.target.files?.[0] ?? null;
+    form.proof = file;
+    proofChosen.value = file !== null;
+};
+
+const submitProof = () => {
+    if (! form.proof) {
+        return;
+    }
+
+    form.post(route('subscription.payment.store'), {
+        forceFormData: true,
+        onSuccess: () => {
+            step.value = 'pending';
+        },
+    });
+};
 
 const title = computed(() => ({
     plan: 'Langganan',
@@ -70,7 +92,21 @@ const goBack = () => {
         </section>
 
         <template v-if="step === 'plan'">
-            <Card label="Paket saat ini" :amount="props.plan.current" :note="props.plan.detail" />
+            <Card
+                label="Paket saat ini"
+                :amount="props.paid ? 'Paid' : 'Free'"
+                :note="props.paid
+                    ? 'Employee tanpa batas · transaksi tanpa limit'
+                    : '0 Employee ber-akun · limit 150 transaksi/hari'"
+            />
+
+            <div
+                v-if="props.subscriptionWarning"
+                class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800"
+                role="alert"
+            >
+                {{ props.subscriptionWarning }}
+            </div>
 
             <div class="pb-8 pt-5">
                 <button
@@ -112,14 +148,19 @@ const goBack = () => {
         </template>
 
         <template v-else-if="step === 'upload'">
-            <button
-                type="button"
-                class="flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                @click="proofChosen = true"
-            >
+            <label class="flex min-h-[140px] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50/40 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500">
                 <UploadCloud class="size-6 text-slate-400" />
-                {{ proofChosen ? 'Bukti-transfer.jpg' : 'Tap untuk upload foto bukti transfer' }}
-            </button>
+                {{ proofChosen ? form.proof.name : 'Tap untuk upload foto bukti transfer' }}
+                <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    class="sr-only"
+                    @change="chooseProof"
+                />
+            </label>
+            <p v-if="form.errors.proof" class="mt-2 text-xs text-red-600" role="alert">
+                {{ form.errors.proof }}
+            </p>
 
             <div class="mt-4">
                 <span class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal ditransfer</span>
@@ -129,10 +170,11 @@ const goBack = () => {
             <div class="pb-8 pt-5">
                 <button
                     type="button"
-                    class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-                    @click="step = 'pending'"
+                    :disabled="!form.proof || form.processing"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="submitProof"
                 >
-                    Kirim untuk diverifikasi
+                    {{ form.processing ? 'Mengirim...' : 'Kirim untuk diverifikasi' }}
                 </button>
             </div>
         </template>

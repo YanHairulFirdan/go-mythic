@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,15 @@ class AdminPaymentController extends Controller
                 'approved_at' => $now,
             ]);
             $company->update(['paid_until' => $paidUntil]);
+            EnsureCompanySubscription::invalidate($company->id);
+
+            $company->users()
+                ->where('role', 'employee')
+                ->where('inactive_reason', 'subscription_expired')
+                ->update([
+                    'status' => 'active',
+                    'inactive_reason' => null,
+                ]);
         });
 
         return to_route('admin.payments.index');

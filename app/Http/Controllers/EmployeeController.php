@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Requests\StoreEmployeeAccountRequest;
 use App\Http\Requests\StoreWorkerRequest;
 use App\Models\Employee;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,12 +23,43 @@ class EmployeeController extends Controller
         abort_unless($user?->role === 'owner', 403);
 
         return Inertia::render('Employees/Index', [
-            'canCreateEmployee' => $user->company->paid_until?->isFuture() === true,
+            'canCreateEmployee' => EnsureCompanySubscription::isPaid(
+                $user->company_id,
+                $user->company->paid_until,
+            ),
             'employees' => Employee::query()
                 ->with(['user:id,username'])
                 ->where('company_id', $user->company_id)
                 ->latest()
                 ->get(['id', 'user_id', 'name', 'has_access_to_system', 'status']),
+        ]);
+    }
+
+    /**
+     * US-CUST-04: detail Employee/Worker dengan breakdown transaksi (SUM + COUNT
+     * di mana employee_id = orang ini), dihitung on-the-fly (AC1/AC3). Owner-only
+     * — "Kelola Karyawan" adalah surface Owner (US-RP-01 AC1).
+     */
+    public function show(Request $request, Employee $employee): Response
+    {
+        abort_unless($request->user()?->role === 'owner', 403);
+        abort_if($employee->company_id !== $request->user()->company_id, 404);
+
+        $linked = Transaction::query()
+            ->where('company_id', $employee->company_id)
+            ->where('employee_id', $employee->id);
+
+        return Inertia::render('Employees/Show', [
+            'employee' => [
+                'id' => $employee->id,
+                'name' => $employee->name,
+                'has_access_to_system' => $employee->has_access_to_system,
+                'status' => $employee->status,
+            ],
+            'breakdown' => [
+                'total' => (float) (clone $linked)->sum('amount'),
+                'count' => (clone $linked)->count(),
+            ],
         ]);
     }
 
@@ -47,7 +81,10 @@ class EmployeeController extends Controller
         $owner = $request->user();
 
         // AC2: Free (termasuk pending payment) diarahkan ke halaman pembayaran, bukan error.
-        if ($owner->company->paid_until?->isFuture() !== true) {
+        if (! EnsureCompanySubscription::isPaid(
+            $owner->company_id,
+            $owner->company->paid_until,
+        )) {
             return to_route('subscription.index');
         }
 

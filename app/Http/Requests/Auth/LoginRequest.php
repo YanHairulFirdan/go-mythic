@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -71,6 +72,20 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($user?->role === 'employee'
+            && $user->company?->paid_until !== null
+            && ! EnsureCompanySubscription::isPaid(
+                $user->company_id,
+                $user->company->paid_until,
+            )) {
+            EnsureCompanySubscription::degrade($user->company_id);
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Employee tidak aktif. Alasan: subscription_expired.',
+            ]);
+        }
+
         Auth::login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
     }
@@ -103,6 +118,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

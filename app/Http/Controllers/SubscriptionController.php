@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +18,14 @@ class SubscriptionController extends Controller
         abort_unless($user?->role === 'owner', 403);
 
         $company = $user->company;
+        $paid = EnsureCompanySubscription::isPaid($company->id, $company->paid_until);
 
         return Inertia::render('Subscription/Index', [
-            'paid' => $company->paid_until !== null && $company->paid_until->isFuture(),
+            'paid' => $paid,
+            'expired' => $company->paid_until !== null && ! $paid,
+            'subscriptionWarning' => $company->paid_until !== null && ! $paid
+                ? EnsureCompanySubscription::EXPIRED_MESSAGE
+                : null,
             'paidUntil' => $company->paid_until?->toDayDateTimeString(),
             'pendingPayment' => Payment::query()
                 ->where('company_id', $company->id)
