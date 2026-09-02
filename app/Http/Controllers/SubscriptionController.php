@@ -39,6 +39,8 @@ class SubscriptionController extends Controller
 
     public function store(StorePaymentRequest $request): RedirectResponse
     {
+        abort_unless($request->user()?->role === 'owner', 403);
+
         Payment::create([
             'company_id' => $request->user()->company_id,
             'amount' => 99000,

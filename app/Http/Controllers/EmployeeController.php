@@ -65,6 +65,8 @@ class EmployeeController extends Controller
 
     public function store(StoreWorkerRequest $request): RedirectResponse
     {
+        abort_unless($request->user()?->role === 'owner', 403);
+
         Employee::create([
             'company_id' => $request->user()->company_id,
             'name' => $request->validated('name'),
@@ -78,6 +80,8 @@ class EmployeeController extends Controller
 
     public function storeAccount(StoreEmployeeAccountRequest $request): RedirectResponse
     {
+        abort_unless($request->user()?->role === 'owner', 403);
+
         $owner = $request->user();
 
         // AC2: Free (termasuk pending payment) diarahkan ke halaman pembayaran, bukan error.

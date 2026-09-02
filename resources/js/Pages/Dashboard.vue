@@ -29,14 +29,16 @@ const props = defineProps({
     },
 });
 
-const quickActions = [
+const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+const quickActions = computed(() => [
     { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
     { label: 'Buat invoice', icon: FilePlus2, href: '#invoices' },
-    { label: 'Lihat laporan', icon: TrendingUp, href: route('reports.profit-loss') },
-    { label: 'Atur modal/kas', icon: Landmark, href: route('capital.index') },
-];
-
-const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+    ...(isOwner.value ? [
+        { label: 'Lihat laporan', icon: TrendingUp, href: route('reports.profit-loss') },
+        { label: 'Atur modal/kas', icon: Landmark, href: route('capital.index') },
+    ] : []),
+]);
 
 // US-SUB-01: per-type daily quota indicator. Empty (section hidden) for Paid.
 const quotaItems = computed(() => {
@@ -149,7 +151,7 @@ const formatDate = (value) => (value
                 </div>
                 <p v-if="item.reached" class="mt-2 text-xs font-semibold text-rose-600">
                     Kuota harian habis.
-                    <Link :href="route('subscription.index')" class="underline">Upgrade ke Paid</Link>
+                    <Link v-if="isOwner" :href="route('subscription.index')" class="underline">Upgrade ke Paid</Link>
                 </p>
                 <p v-else-if="item.nearLimit" class="mt-2 text-xs font-semibold text-amber-600">
                     Sisa {{ item.remaining }} transaksi hari ini
