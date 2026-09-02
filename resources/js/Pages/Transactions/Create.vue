@@ -133,6 +133,20 @@ const submit = (): void => {
 
         <form class="space-y-4 pb-8" @submit.prevent="submit">
             <div
+                v-if="form.errors.quota"
+                class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-rose-800"
+                role="alert"
+            >
+                <p class="text-xs font-bold">{{ form.errors.quota }}</p>
+                <Link
+                    :href="route('subscription.index')"
+                    class="mt-1.5 inline-flex items-center rounded-lg bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-rose-700"
+                >
+                    Upgrade ke Paid
+                </Link>
+            </div>
+
+            <div
                 v-if="!dateHasCapital"
                 class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-rose-800"
                 role="alert"

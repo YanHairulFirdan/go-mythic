@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\CapitalEntry;
+use App\Support\DailyTransactionQuota;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -118,6 +119,24 @@ class StoreTransactionRequest extends FormRequest
             }
             if ($this->filled('customer_id')) {
                 $validator->errors()->add('customer_id', 'Customer hanya bisa dikaitkan ke transaksi pemasukan.');
+            }
+        });
+
+        // US-SUB-01 AC3: a Free company is hard-blocked once this type reaches
+        // the 150/day limit (reset at 00:00 UTC); the message points to upgrade.
+        $validator->after(function (Validator $validator): void {
+            $type = $this->input('type');
+
+            if (! in_array($type, ['income', 'expense'], true)) {
+                return;
+            }
+
+            if (DailyTransactionQuota::for($this->user()->company)->isReached($type)) {
+                $validator->errors()->add('quota', sprintf(
+                    'Kuota transaksi %s harian (%d) sudah tercapai. Kuota diatur ulang otomatis pukul 00:00 UTC. Upgrade ke Paid untuk mencatat tanpa batas.',
+                    $type === 'income' ? 'pemasukan' : 'pengeluaran',
+                    DailyTransactionQuota::LIMIT,
+                ));
             }
         });
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CapitalEntry;
+use App\Support\DailyTransactionQuota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -14,6 +15,9 @@ class DashboardController extends Controller
     {
         return Inertia::render('Dashboard', [
             'capitalWidget' => $this->capitalWidget($request),
+            // US-SUB-01 AC1/AC2: per-type daily usage indicator for Free
+            // companies; null (hidden) once the company is Paid.
+            'quotaWidget' => DailyTransactionQuota::for($request->user()->company)->widget(),
         ]);
     }
 
