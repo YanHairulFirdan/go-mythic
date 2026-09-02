@@ -194,6 +194,33 @@ class DailyQuotaTest extends TestCase
         $this->assertDatabaseCount('transactions', DailyTransactionQuota::LIMIT + 1);
     }
 
+    /**
+     * US-SUB-05 AC2: a company that was Paid then expired follows Free rules
+     * live (150/day quota applies), same as a never-paid Free company.
+     */
+    public function test_daily_quota_applies_to_a_company_degraded_from_paid(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $owner->company->update(['paid_until' => now()->subSecond()]);
+        CapitalEntry::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-09-30',
+        ]);
+        $income = TransactionCategory::factory()->for($owner->company)->income()->create(['name' => 'Penjualan']);
+        $this->seedUsage($owner, $income, 10);
+
+        $quota = DailyTransactionQuota::for($owner->company->fresh());
+
+        $this->assertTrue($quota->applies);
+        $this->assertSame(10, $quota->used('income'));
+        $this->assertSame(DailyTransactionQuota::LIMIT - 10, $quota->remaining('income'));
+
+        $this->actingAs($owner)->get(route('dashboard'))
+            ->assertRedirect(route('subscription.index'));
+    }
+
     public function test_the_quota_resets_on_the_next_utc_day(): void
     {
         [$owner, $income] = $this->company();
