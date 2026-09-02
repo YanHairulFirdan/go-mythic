@@ -4,13 +4,13 @@ import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landm
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
-import Card from '@/Components/ui/Card.vue';
 
 const page = usePage();
 
 const props = defineProps({
     user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
     capitalWidget: { type: Object, default: null },
+    quotaWidget: { type: Object, default: null },
     summary: {
         type: Object,
         default: () => ({
@@ -37,6 +37,30 @@ const quickActions = [
 ];
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+// US-SUB-01: per-type daily quota indicator. Empty (section hidden) for Paid.
+const quotaItems = computed(() => {
+    if (!props.quotaWidget) {
+        return [];
+    }
+
+    const build = (type, label) => {
+        const data = props.quotaWidget[type];
+
+        return {
+            type,
+            label,
+            used: data.used,
+            remaining: data.remaining,
+            reached: data.reached,
+            nearLimit: data.near_limit,
+            percent: Math.min(100, Math.round((data.used / props.quotaWidget.limit) * 100)),
+        };
+    };
+
+    return [build('income', 'Pemasukan'), build('expense', 'Pengeluaran')];
+});
+
 const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -103,10 +127,35 @@ const formatDate = (value) => (value
             </Link>
         </section>
 
-        <section class="mt-4">
-            <Card label="Transaksi bulan ini" amount="60" note="dari 150/hari">
-                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[40%] rounded-full bg-emerald-500" /></div>
-            </Card>
+        <!-- US-SUB-01: Free-plan daily transaction quota, per type (AC1). Amber
+             soft warning at 80% (AC2), rose at 100%. Hidden entirely for Paid. -->
+        <section v-if="props.quotaWidget" class="mt-4 grid grid-cols-2 gap-2.5" aria-label="Kuota transaksi harian">
+            <div
+                v-for="item in quotaItems"
+                :key="item.type"
+                class="rounded-2xl border bg-white p-4"
+                :class="item.reached ? 'border-rose-200' : item.nearLimit ? 'border-amber-200' : 'border-slate-200'"
+            >
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">{{ item.label }}</div>
+                <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">
+                    {{ item.used }}<span class="text-sm font-semibold text-slate-400">/{{ props.quotaWidget.limit }}</span>
+                </div>
+                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                        class="h-full rounded-full"
+                        :class="item.reached ? 'bg-rose-500' : item.nearLimit ? 'bg-amber-500' : 'bg-emerald-500'"
+                        :style="{ width: `${item.percent}%` }"
+                    />
+                </div>
+                <p v-if="item.reached" class="mt-2 text-xs font-semibold text-rose-600">
+                    Kuota harian habis.
+                    <Link :href="route('subscription.index')" class="underline">Upgrade ke Paid</Link>
+                </p>
+                <p v-else-if="item.nearLimit" class="mt-2 text-xs font-semibold text-amber-600">
+                    Sisa {{ item.remaining }} transaksi hari ini
+                </p>
+                <p v-else class="mt-2 text-xs text-slate-500">Sisa {{ item.remaining }} transaksi hari ini</p>
+            </div>
         </section>
 
         <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800" aria-label="Perhatian">
