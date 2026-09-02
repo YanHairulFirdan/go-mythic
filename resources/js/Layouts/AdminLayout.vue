@@ -59,7 +59,7 @@ const navLinks = [
                 </Link>
                 <button
                     type="button"
-                    class="shrink-0 rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="shrink-0 rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     :aria-label="collapsed ? 'Lebarkan menu' : 'Ciutkan menu'"
                     :aria-expanded="!collapsed"
                     @click="toggle"
@@ -73,7 +73,7 @@ const navLinks = [
                     v-for="link in navLinks"
                     :key="link.route"
                     :href="route(link.route)"
-                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     :class="[
                         route().current(link.match)
                             ? 'bg-gray-100 font-medium text-gray-900'
@@ -93,7 +93,7 @@ const navLinks = [
                     :href="route('admin.logout')"
                     method="post"
                     as="button"
-                    class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     :class="collapsed && 'justify-center px-0'"
                     :title="collapsed ? 'Keluar' : undefined"
                 >

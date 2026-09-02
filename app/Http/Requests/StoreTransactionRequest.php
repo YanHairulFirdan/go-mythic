@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\CapitalEntry;
+use App\Support\DailyTransactionQuota;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -45,6 +46,23 @@ class StoreTransactionRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('invoices', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
+            // US-CUST-02 AC1: nullable, income only. Locked to the invoice's
+            // customer when invoice_id is set (AC2, handled in the controller).
+            'customer_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('customers', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereNull('deleted_at'),
+            ],
+            // PRD 3.2 / US-CUST-04: nullable "pelaksana" for either type.
+            'employee_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('employees', 'id')
                     ->where('company_id', $companyId)
                     ->whereNull('deleted_at'),
             ],
@@ -91,10 +109,34 @@ class StoreTransactionRequest extends FormRequest
             }
         });
 
-        // US-INV-02 AC4: an invoice can only be linked to an income transaction.
+        // US-INV-02 AC4 / US-CUST-02 AC1: invoice and customer links are income-only.
         $validator->after(function (Validator $validator): void {
-            if ($this->filled('invoice_id') && $this->input('type') !== 'income') {
+            if ($this->input('type') === 'income') {
+                return;
+            }
+            if ($this->filled('invoice_id')) {
                 $validator->errors()->add('invoice_id', 'Invoice hanya bisa dikaitkan ke transaksi pemasukan.');
+            }
+            if ($this->filled('customer_id')) {
+                $validator->errors()->add('customer_id', 'Customer hanya bisa dikaitkan ke transaksi pemasukan.');
+            }
+        });
+
+        // US-SUB-01 AC3: a Free company is hard-blocked once this type reaches
+        // the 150/day limit (reset at 00:00 UTC); the message points to upgrade.
+        $validator->after(function (Validator $validator): void {
+            $type = $this->input('type');
+
+            if (! in_array($type, ['income', 'expense'], true)) {
+                return;
+            }
+
+            if (DailyTransactionQuota::for($this->user()->company)->isReached($type)) {
+                $validator->errors()->add('quota', sprintf(
+                    'Kuota transaksi %s harian (%d) sudah tercapai. Kuota diatur ulang otomatis pukul 00:00 UTC. Upgrade ke Paid untuk mencatat tanpa batas.',
+                    $type === 'income' ? 'pemasukan' : 'pengeluaran',
+                    DailyTransactionQuota::LIMIT,
+                ));
             }
         });
     }

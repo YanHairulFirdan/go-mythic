@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\CapitalEntry;
+use App\Models\Customer;
+use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
@@ -103,6 +105,8 @@ class TransactionController extends Controller
             'categories' => $this->companyCategories($request),
             'capitalPeriods' => $this->companyCapitalPeriods($request),
             'invoices' => $this->companyInvoices($request),
+            'customers' => $this->companyCustomers($request),
+            'employees' => $this->companyEmployees($request),
             'prefill' => ['invoice_id' => $prefillInvoiceId],
         ]);
     }
@@ -112,15 +116,20 @@ class TransactionController extends Controller
         $data = $request->safe()->except('attachment');
         $invoiceId = $data['invoice_id'] ?? null;
 
-        DB::transaction(function () use ($request, $data): void {
-            // US-INV-02 AC2/AC3/AC5: lock the invoice, re-check the balance, and
-            // pull customer_id from it.
-            $data['customer_id'] = $this->resolveInvoiceLink(
+        DB::transaction(function () use ($request, $data, $invoiceId): void {
+            // US-INV-02 AC2/AC3/AC5: lock the invoice + re-check the balance.
+            $invoiceCustomerId = $this->resolveInvoiceLink(
                 $request,
-                $data['invoice_id'] ?? null,
+                $invoiceId,
                 (float) $data['amount'],
                 excludeTransactionId: null,
             );
+
+            // US-CUST-02 AC2: a linked invoice locks customer_id to its own;
+            // otherwise the manually-picked customer_id (may be null) stands.
+            $data['customer_id'] = $invoiceId !== null
+                ? $invoiceCustomerId
+                : ($data['customer_id'] ?? null);
 
             $attachmentPath = $request->hasFile('attachment')
                 ? $request->file('attachment')->store(self::ATTACHMENT_DIR, 'local')
@@ -190,6 +199,8 @@ class TransactionController extends Controller
                 'amount' => (float) $transaction->amount,
                 'category_id' => $transaction->category_id,
                 'invoice_id' => $transaction->invoice_id,
+                'customer_id' => $transaction->customer_id,
+                'employee_id' => $transaction->employee_id,
                 'transaction_date' => $transaction->transaction_date,
                 'payment_method' => $transaction->payment_method,
                 'notes' => $transaction->notes,
@@ -200,6 +211,8 @@ class TransactionController extends Controller
             'categories' => $this->companyCategories($request),
             'capitalPeriods' => $this->companyCapitalPeriods($request),
             'invoices' => $this->companyInvoices($request),
+            'customers' => $this->companyCustomers($request),
+            'employees' => $this->companyEmployees($request),
         ]);
     }
 
@@ -213,14 +226,21 @@ class TransactionController extends Controller
         $data = $request->safe()->except('attachment');
 
         DB::transaction(function () use ($request, $transaction, $data): void {
-            // US-INV-02: re-validate the (possibly changed / removed) invoice link;
-            // unlinking clears the invoice-derived customer.
-            $data['customer_id'] = $this->resolveInvoiceLink(
+            $invoiceId = $data['invoice_id'] ?? null;
+
+            // US-INV-02: re-validate the (possibly changed / removed) invoice link.
+            $invoiceCustomerId = $this->resolveInvoiceLink(
                 $request,
-                $data['invoice_id'] ?? null,
+                $invoiceId,
                 (float) $data['amount'],
                 excludeTransactionId: $transaction->id,
             );
+
+            // US-CUST-02 AC2: linked invoice locks customer_id; otherwise the
+            // submitted value (may be null after an unlink) stands.
+            $data['customer_id'] = $invoiceId !== null
+                ? $invoiceCustomerId
+                : ($data['customer_id'] ?? null);
 
             if ($request->hasFile('attachment')) {
                 if ($transaction->attachment_path !== null) {
@@ -287,6 +307,24 @@ class TransactionController extends Controller
             ->where('company_id', $request->user()->company_id)
             ->orderBy('name')
             ->get(['id', 'name', 'type']);
+    }
+
+    /** US-CUST-02 AC1: customers to pick from on the income form. */
+    private function companyCustomers(Request $request): Collection
+    {
+        return Customer::query()
+            ->where('company_id', $request->user()->company_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    /** PRD 3.2 / US-CUST-04: the "pelaksana" list (accounted employees + workers). */
+    private function companyEmployees(Request $request): Collection
+    {
+        return Employee::query()
+            ->where('company_id', $request->user()->company_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     /**

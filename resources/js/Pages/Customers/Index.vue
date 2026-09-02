@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronRight, Users } from '@lucide/vue';
+import { ChevronRight, Plus, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
 
@@ -20,22 +20,15 @@ defineProps({
             <PageHeader title="Customer" />
         </section>
 
-        <Link
-            :href="route('customers.create')"
-            class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        >
-            + Tambah customer
-        </Link>
-
-        <section class="mt-4 pb-4" aria-label="Daftar customer">
+        <section class="pb-4" aria-label="Daftar customer">
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
                 <Link
                     v-for="customer in customers"
                     :key="customer.id"
                     :href="route('customers.show', customer.id)"
-                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                    class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
                 >
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
                         <Users class="size-[18px]" />
                     </span>
                     <span class="min-w-0 flex-1">
@@ -49,5 +42,13 @@ defineProps({
                 </p>
             </div>
         </section>
+
+        <Link
+            :href="route('customers.create')"
+            aria-label="Tambah customer"
+            class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"
+        >
+            <Plus class="size-6" />
+        </Link>
     </PrototypeLayout>
 </template>

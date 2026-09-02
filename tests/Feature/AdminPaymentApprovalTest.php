@@ -62,6 +62,7 @@ class AdminPaymentApprovalTest extends TestCase
             'status' => 'pending',
         ]);
 
+        // approved_at is stored at second precision, so floor the lower bound.
         $before = now()->startOfSecond();
 
         $this->actingAs($admin, 'admin')

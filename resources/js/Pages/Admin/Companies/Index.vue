@@ -72,7 +72,7 @@ const formatDate = (value: string | null): string => (value
                             v-model="form.search"
                             type="search"
                             placeholder="Nama usaha atau email Owner"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         />
                     </div>
                     <div>
@@ -80,7 +80,7 @@ const formatDate = (value: string | null): string => (value
                         <select
                             id="status"
                             v-model="form.status"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         >
                             <option value="">Semua</option>
                             <option value="paid">Paid</option>

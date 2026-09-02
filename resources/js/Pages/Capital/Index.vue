@@ -77,7 +77,7 @@ const submitTopUp = () => {
             <Link
                 :href="route('dashboard')"
                 aria-label="Kembali ke beranda"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -90,7 +90,7 @@ const submitTopUp = () => {
             <form class="mt-4 space-y-4 pb-8" @submit.prevent="submit">
                 <div>
                     <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
-                    <input id="initial_amount" v-model.number="form.initial_amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                    <input id="initial_amount" v-model.number="form.initial_amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                     <p v-if="form.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.initial_amount }}</p>
                 </div>
 
@@ -103,7 +103,7 @@ const submitTopUp = () => {
                             type="button"
                             :aria-pressed="form.duration === duration.value"
                             :class="form.duration === duration.value ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                            class="rounded-lg px-2 py-2 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                            class="rounded-lg px-2 py-2 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                             @click="form.duration = duration.value"
                         >
                             {{ duration.label }}
@@ -116,23 +116,23 @@ const submitTopUp = () => {
                 <div v-if="isCustom" class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="start_date" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Mulai</label>
-                        <input id="start_date" v-model="form.start_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="start_date" v-model="form.start_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="form.errors.start_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.start_date }}</p>
                     </div>
                     <div>
                         <label for="end_date" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Selesai</label>
-                        <input id="end_date" v-model="form.end_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500" />
+                        <input id="end_date" v-model="form.end_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
                         <p v-if="form.errors.end_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.end_date }}</p>
                     </div>
                 </div>
 
-                <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
-                    Simpan modal
+                <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50">
+                    {{ form.processing ? 'Menyimpan…' : 'Simpan modal' }}
                 </button>
 
                 <Link
                     :href="route('capital.history')"
-                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
                     Riwayat modal
                 </Link>
@@ -161,14 +161,14 @@ const submitTopUp = () => {
             <div class="grid gap-3 pb-8 pt-5">
                 <button
                     type="button"
-                    class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                     @click="openTopUp"
                 >
                     Top-up Modal
                 </button>
                 <Link
                     :href="route('capital.history')"
-                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
                     Riwayat modal
                 </Link>
@@ -202,19 +202,19 @@ const submitTopUp = () => {
 
                         <div>
                             <label for="topup-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Tambahan modal</label>
-                            <input id="topup-amount" v-model.number="topUpForm.amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                            <input id="topup-amount" v-model.number="topUpForm.amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                             <p v-if="topUpForm.errors.amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ topUpForm.errors.amount }}</p>
                         </div>
 
                         <div>
                             <label for="topup-extend" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Perpanjang tanggal selesai <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span></label>
-                            <input id="topup-extend" v-model="topUpForm.extended_end_date" type="date" :min="minExtendDate" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500" />
+                            <input id="topup-extend" v-model="topUpForm.extended_end_date" type="date" :min="minExtendDate" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
                             <p v-if="topUpForm.errors.extended_end_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ topUpForm.errors.extended_end_date }}</p>
                         </div>
 
                         <div class="flex gap-3 pt-1">
-                            <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="topUpOpen = false">Batal</button>
-                            <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">Simpan</button>
+                            <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="topUpOpen = false">Batal</button>
+                            <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ topUpForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                         </div>
                     </form>
                 </section>

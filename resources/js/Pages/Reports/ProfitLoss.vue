@@ -54,7 +54,7 @@ const periodLabel = computed(() => (selectedPeriod.value === 'Custom'
                 role="tab"
                 :aria-selected="selectedPeriod === period"
                 :class="selectedPeriod === period ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 @click="selectedPeriod = period"
             >
                 {{ period }}
@@ -64,11 +64,11 @@ const periodLabel = computed(() => (selectedPeriod.value === 'Custom'
         <div v-if="selectedPeriod === 'Custom'" class="mt-3 grid grid-cols-2 gap-3">
             <div>
                 <label for="range-from" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Dari</label>
-                <input id="range-from" v-model="customRange.from" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500" />
+                <input id="range-from" v-model="customRange.from" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
             </div>
             <div>
                 <label for="range-to" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Sampai</label>
-                <input id="range-to" v-model="customRange.to" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500" />
+                <input id="range-to" v-model="customRange.to" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
             </div>
         </div>
 
@@ -88,10 +88,10 @@ const periodLabel = computed(() => (selectedPeriod.value === 'Custom'
         </section>
 
         <section class="mt-3" aria-label="Saldo bersih">
-            <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-                <div class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-500">Saldo bersih</div>
-                <div class="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-indigo-700">{{ props.report.net }}</div>
-                <p class="mt-1 text-xs text-indigo-500">Pemasukan dikurangi pengeluaran pada periode ini</p>
+            <div class="rounded-2xl border border-primary-200 bg-primary-50 p-4">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-primary-500">Saldo bersih</div>
+                <div class="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-primary-700">{{ props.report.net }}</div>
+                <p class="mt-1 text-xs text-primary-500">Pemasukan dikurangi pengeluaran pada periode ini</p>
             </div>
         </section>
 

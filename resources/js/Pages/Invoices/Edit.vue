@@ -38,7 +38,7 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
             <Link
                 :href="route('invoices.show', props.invoice.id)"
                 aria-label="Kembali ke detail invoice"
-                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 <ChevronLeft class="size-5" />
             </Link>
@@ -49,9 +49,9 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
             <div>
                 <div class="mb-1.5 flex items-center justify-between">
                     <label for="customer_id" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Customer</label>
-                    <Link :href="route('customers.create')" class="text-xs font-bold text-indigo-600 hover:text-indigo-700">+ Customer baru</Link>
+                    <Link :href="route('customers.create')" class="text-xs font-bold text-primary-600 hover:text-primary-700">+ Customer baru</Link>
                 </div>
-                <select id="customer_id" v-model="form.customer_id" required class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500">
+                <select id="customer_id" v-model="form.customer_id" required class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500">
                     <option disabled value="">Pilih customer</option>
                     <option v-for="customer in props.customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
                 </select>
@@ -60,7 +60,7 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
 
             <div>
                 <label for="employee_id" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Penanggung jawab <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span></label>
-                <select id="employee_id" v-model="form.employee_id" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500">
+                <select id="employee_id" v-model="form.employee_id" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500">
                     <option value="">Tanpa penanggung jawab</option>
                     <option v-for="employee in props.employees" :key="employee.id" :value="employee.id">{{ employee.name }}</option>
                 </select>
@@ -70,7 +70,7 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
             <section aria-labelledby="items-title">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 id="items-title" class="text-sm font-bold">Rincian item</h2>
-                    <button type="button" class="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" @click="addItem">
+                    <button type="button" class="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="addItem">
                         <Plus class="size-3.5" /> Tambah item
                     </button>
                 </div>
@@ -80,13 +80,13 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
                         <div class="flex items-start gap-2">
                             <div class="min-w-0 flex-1">
                                 <label :for="`item-desc-${index}`" class="sr-only">Deskripsi item {{ index + 1 }}</label>
-                                <input :id="`item-desc-${index}`" v-model="item.description" type="text" required placeholder="Deskripsi layanan / produk" class="block w-full rounded-xl border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                                <input :id="`item-desc-${index}`" v-model="item.description" type="text" required placeholder="Deskripsi layanan / produk" class="block w-full rounded-xl border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                             </div>
                             <button v-if="form.items.length > 1" type="button" :aria-label="`Hapus item ${index + 1}`" class="flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500" @click="removeItem(index)">
                                 <Trash2 class="size-4" />
                             </button>
                         </div>
-                        <div class="mt-2 flex items-center rounded-xl border border-slate-200 px-3 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                        <div class="mt-2 flex items-center rounded-xl border border-slate-200 px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                             <span class="text-sm font-semibold text-slate-400">Rp</span>
                             <label :for="`item-amount-${index}`" class="sr-only">Nominal item {{ index + 1 }}</label>
                             <input :id="`item-amount-${index}`" v-model.number="item.amount" type="number" min="1" step="any" required placeholder="0" class="w-full border-0 px-2 py-2.5 text-sm font-bold tabular-nums text-slate-700 placeholder:text-slate-300 focus:ring-0" />
@@ -100,8 +100,8 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
 
             <Card label="Total invoice" :amount="formattedTotal" />
 
-            <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50">
-                Simpan perubahan
+            <button type="submit" :disabled="form.processing" class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50">
+                {{ form.processing ? 'Menyimpan…' : 'Simpan perubahan' }}
             </button>
         </form>
     </PrototypeLayout>

@@ -4,13 +4,13 @@ import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landm
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
-import Card from '@/Components/ui/Card.vue';
 
 const page = usePage();
 
 const props = defineProps({
     user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
     capitalWidget: { type: Object, default: null },
+    quotaWidget: { type: Object, default: null },
     summary: {
         type: Object,
         default: () => ({
@@ -37,6 +37,30 @@ const quickActions = [
 ];
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+// US-SUB-01: per-type daily quota indicator. Empty (section hidden) for Paid.
+const quotaItems = computed(() => {
+    if (!props.quotaWidget) {
+        return [];
+    }
+
+    const build = (type, label) => {
+        const data = props.quotaWidget[type];
+
+        return {
+            type,
+            label,
+            used: data.used,
+            remaining: data.remaining,
+            reached: data.reached,
+            nearLimit: data.near_limit,
+            percent: Math.min(100, Math.round((data.used / props.quotaWidget.limit) * 100)),
+        };
+    };
+
+    return [build('income', 'Pemasukan'), build('expense', 'Pengeluaran')];
+});
+
 const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -54,21 +78,21 @@ const formatDate = (value) => (value
             </h1>
         </section>
 
-        <section class="relative overflow-hidden rounded-3xl bg-indigo-600 p-5 text-white shadow-lg shadow-indigo-200" aria-labelledby="profit-title">
-            <div class="absolute -right-14 -top-16 size-44 rounded-full border-[22px] border-indigo-400/20" />
-            <div class="absolute -bottom-20 right-8 size-40 rounded-full border-[18px] border-indigo-400/10" />
+        <section class="relative overflow-hidden rounded-3xl bg-primary-600 p-5 text-white shadow-lg shadow-primary-200" aria-labelledby="profit-title">
+            <div class="absolute -right-14 -top-16 size-44 rounded-full border-[22px] border-primary-400/20" />
+            <div class="absolute -bottom-20 right-8 size-40 rounded-full border-[18px] border-primary-400/10" />
             <div class="relative">
                 <div class="flex items-center justify-between">
-                    <p id="profit-title" class="text-xs font-semibold text-indigo-100">Laba bersih · Bulan ini</p>
-                    <span class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-indigo-50">
+                    <p id="profit-title" class="text-xs font-semibold text-primary-100">Laba bersih · Bulan ini</p>
+                    <span class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-primary-50">
                         <TrendingUp class="size-3" /> +12,8%
                     </span>
                 </div>
                 <p class="mt-3 text-[2rem] font-extrabold tracking-tight">{{ props.summary.netProfit }}</p>
-                <div class="mt-5 h-2 overflow-hidden rounded-full bg-indigo-400/50" aria-label="Perbandingan pemasukan dan pengeluaran">
+                <div class="mt-5 h-2 overflow-hidden rounded-full bg-primary-400/50" aria-label="Perbandingan pemasukan dan pengeluaran">
                     <div class="h-full w-[72%] rounded-full bg-emerald-300" />
                 </div>
-                <div class="mt-2 flex justify-between text-[10px] text-indigo-100">
+                <div class="mt-2 flex justify-between text-[10px] text-primary-100">
                     <span>Pemasukan {{ props.summary.income }}</span>
                     <span>Pengeluaran {{ props.summary.expense }}</span>
                 </div>
@@ -96,17 +120,42 @@ const formatDate = (value) => (value
             <Link
                 v-else
                 :href="route('capital.index')"
-                class="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm font-medium text-slate-500 transition hover:border-indigo-300 hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm font-medium text-slate-500 transition hover:border-primary-300 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
                 Belum ada modal aktif
-                <span class="text-xs font-bold text-indigo-600">Set modal →</span>
+                <span class="text-xs font-bold text-primary-600">Set modal →</span>
             </Link>
         </section>
 
-        <section class="mt-4">
-            <Card label="Transaksi bulan ini" amount="60" note="dari 150/hari">
-                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full w-[40%] rounded-full bg-emerald-500" /></div>
-            </Card>
+        <!-- US-SUB-01: Free-plan daily transaction quota, per type (AC1). Amber
+             soft warning at 80% (AC2), rose at 100%. Hidden entirely for Paid. -->
+        <section v-if="props.quotaWidget" class="mt-4 grid grid-cols-2 gap-2.5" aria-label="Kuota transaksi harian">
+            <div
+                v-for="item in quotaItems"
+                :key="item.type"
+                class="rounded-2xl border bg-white p-4"
+                :class="item.reached ? 'border-rose-200' : item.nearLimit ? 'border-amber-200' : 'border-slate-200'"
+            >
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">{{ item.label }}</div>
+                <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">
+                    {{ item.used }}<span class="text-sm font-semibold text-slate-400">/{{ props.quotaWidget.limit }}</span>
+                </div>
+                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                        class="h-full rounded-full"
+                        :class="item.reached ? 'bg-rose-500' : item.nearLimit ? 'bg-amber-500' : 'bg-emerald-500'"
+                        :style="{ width: `${item.percent}%` }"
+                    />
+                </div>
+                <p v-if="item.reached" class="mt-2 text-xs font-semibold text-rose-600">
+                    Kuota harian habis.
+                    <Link :href="route('subscription.index')" class="underline">Upgrade ke Paid</Link>
+                </p>
+                <p v-else-if="item.nearLimit" class="mt-2 text-xs font-semibold text-amber-600">
+                    Sisa {{ item.remaining }} transaksi hari ini
+                </p>
+                <p v-else class="mt-2 text-xs text-slate-500">Sisa {{ item.remaining }} transaksi hari ini</p>
+            </div>
         </section>
 
         <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800" aria-label="Perhatian">
@@ -126,8 +175,8 @@ const formatDate = (value) => (value
                 <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400">MVP</span>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
-                <Link v-for="action in quickActions" :key="action.label" :href="action.href" class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                    <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100"><component :is="action.icon" class="size-[18px]" /></span>
+                <Link v-for="action in quickActions" :key="action.label" :href="action.href" class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-primary-200 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                    <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 transition group-hover:bg-primary-100"><component :is="action.icon" class="size-[18px]" /></span>
                     <span class="text-xs font-semibold leading-tight text-slate-700">{{ action.label }}</span>
                 </Link>
             </div>
@@ -136,10 +185,10 @@ const formatDate = (value) => (value
         <section class="mt-7 pb-4" aria-labelledby="recent-title">
             <div class="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" class="text-sm font-bold">Transaksi terbaru</h2>
-                <Link :href="route('transactions.index')" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Lihat semua <span aria-hidden="true">→</span></Link>
+                <Link :href="route('transactions.index')" class="text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Lihat semua <span aria-hidden="true">→</span></Link>
             </div>
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
-                <Link v-for="transaction in props.recentTransactions" :key="transaction.name" href="#transaction-detail" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                <Link v-for="transaction in props.recentTransactions" :key="transaction.name" href="#transaction-detail" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500">
                     <span :class="transaction.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" class="flex size-9 shrink-0 items-center justify-center rounded-xl"><ArrowUpRight v-if="transaction.type === 'income'" class="size-[18px]" /><ArrowDownLeft v-else class="size-[18px]" /></span>
                     <span class="min-w-0 flex-1"><strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.name }}</strong><small class="mt-1 block text-[10px] text-slate-400">{{ transaction.date }}</small></span>
                     <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'" class="text-xs font-extrabold tabular-nums">{{ transaction.amount }}</span>
