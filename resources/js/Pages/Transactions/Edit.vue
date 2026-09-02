@@ -3,8 +3,25 @@ import { computed, watch } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import QuotaRadial from '@/Components/ui/QuotaRadial.vue';
 
 type TransactionType = 'income' | 'expense';
+
+type QuotaState = 'normal' | 'warning' | 'full';
+
+interface QuotaType {
+    used: number;
+    remaining: number;
+    state: QuotaState;
+    near_limit: boolean;
+    reached: boolean;
+}
+
+interface QuotaWidget {
+    limit: number;
+    income: QuotaType;
+    expense: QuotaType;
+}
 
 interface Category {
     id: number;
@@ -55,6 +72,7 @@ interface Props {
     invoices: InvoiceOption[];
     customers: NamedOption[];
     employees: NamedOption[];
+    quota: QuotaWidget | null;
 }
 
 const props = defineProps<Props>();
@@ -148,7 +166,47 @@ const submit = (): void => {
             <h1 class="text-xl font-bold tracking-tight">Edit transaksi</h1>
         </section>
 
+        <!-- US-TR-01B / US-TR-02 AC4: per-type radial quota (Free only). Switching
+             jenis ke tipe yang penuh akan ditolak server-side. -->
+        <section
+            v-if="props.quota"
+            class="mb-4 rounded-2xl border border-slate-200 bg-white p-4"
+            aria-label="Kuota transaksi harian"
+        >
+            <div class="grid grid-cols-2 gap-2">
+                <QuotaRadial
+                    :used="props.quota.income.used"
+                    :limit="props.quota.limit"
+                    :state="props.quota.income.state"
+                    label="Pemasukan"
+                />
+                <QuotaRadial
+                    :used="props.quota.expense.used"
+                    :limit="props.quota.limit"
+                    :state="props.quota.expense.state"
+                    label="Pengeluaran"
+                />
+            </div>
+            <p class="mt-3 text-center text-[11px] text-slate-500">
+                Sisa kuota transaksi hari ini · reset otomatis 00:00 UTC
+            </p>
+        </section>
+
         <form class="space-y-4 pb-8" @submit.prevent="submit">
+            <div
+                v-if="form.errors.quota"
+                class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-rose-800"
+                role="alert"
+            >
+                <p class="text-xs font-bold">{{ form.errors.quota }}</p>
+                <Link
+                    :href="route('subscription.index')"
+                    class="mt-1.5 inline-flex items-center rounded-lg bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-rose-700"
+                >
+                    Upgrade ke Paid
+                </Link>
+            </div>
+
             <div
                 v-if="!dateHasCapital"
                 class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-rose-800"

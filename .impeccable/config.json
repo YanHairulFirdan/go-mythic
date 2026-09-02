@@ -290,6 +290,15 @@
         ],
         "createdAt": "2026-09-01T03:33:06.076Z",
         "reason": "false positive: same file-input pattern as whitelisted Transactions/Create.vue — text-slate-600 body on white, the file: chip is bg-indigo-50 + text-indigo-700 (correct contrast)"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Transactions/Edit.vue"
+        ],
+        "createdAt": "2026-09-02T02:56:38.379Z",
+        "reason": "model decided: flagged line is the pre-existing page <h1> (Edit.vue untouched by this US-TR-03 slice — only TransactionController docblock + new test changed); text-[10px]/[11px]/xs/sm/xl micro-scale is the house style across resources/js/Pages. Same ignore already sanctioned on the US-TR-02 branch."
       }
     ]
   }

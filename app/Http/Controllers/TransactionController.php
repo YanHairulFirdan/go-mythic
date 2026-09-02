@@ -216,13 +216,17 @@ class TransactionController extends Controller
             'invoices' => $this->companyInvoices($request),
             'customers' => $this->companyCustomers($request),
             'employees' => $this->companyEmployees($request),
+            // US-TR-01B: per-type radial quota indicator; null once Paid.
+            'quota' => DailyTransactionQuota::for($request->user()->company)->widget(),
         ]);
     }
 
     /**
      * US-TR-02: AC1 (authorization di UpdateTransactionRequest), AC2/AC3 (spatie
-     * mencatat event `updated` dengan old → new). AC4 "transfer quota" saat jenis
-     * berubah menunggu infra kuota (US-SUB-01).
+     * mencatat event `updated` dengan old → new). AC4: membalik income↔expense
+     * memindahkan kuota harian otomatis (Transaction::booted membuang cache
+     * hitungan hari itu); UpdateTransactionRequest menolak pembalikan bila kuota
+     * tipe tujuan sudah penuh di Free, tanpa mengubah data.
      */
     public function update(UpdateTransactionRequest $request, Transaction $transaction): RedirectResponse
     {
@@ -263,7 +267,10 @@ class TransactionController extends Controller
 
     /**
      * US-TR-03: soft-delete. spatie mencatat event `deleted` dengan snapshot
-     * properties (AC4). "Pemulihan quota" (AC5) menunggu infra kuota (US-SUB-01).
+     * properties (AC4). AC5: baris ter-soft-delete otomatis lepas dari kuota
+     * harian (Transaction::booted membuang cache hitungan hari itu) dan dari
+     * semua agregasi — progress/freeze Invoice, breakdown Customer/Employee,
+     * modal berjalan — karena semuanya lewat global scope SoftDeletes.
      */
     public function destroy(Request $request, Transaction $transaction): RedirectResponse
     {
