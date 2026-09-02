@@ -100,6 +100,8 @@ class CapitalEntryController extends Controller
      */
     public function topUp(TopUpCapitalEntryRequest $request, CapitalEntry $capitalEntry): RedirectResponse
     {
+        $this->authorizeOwner($request);
+
         DB::transaction(function () use ($request, $capitalEntry): void {
             $extendedEndDate = $request->validated('extended_end_date');
 
