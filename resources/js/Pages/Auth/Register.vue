@@ -1,14 +1,15 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    name: '',
+    business_name: '',
+    owner_name: '',
     email: '',
+    whatsapp: '',
     password: '',
     password_confirmation: '',
 });
@@ -22,92 +23,163 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Register" />
+        <Head title="Daftar Toko" />
+
+        <div class="mb-4">
+            <h1 class="text-[19px] font-extrabold tracking-[-0.03em] text-[#172033]">
+                Buat akun toko
+            </h1>
+            <p class="mt-1 text-[11px] text-[#7b8498]">
+                Untuk pemilik usaha — karyawan dibuatkan akun oleh Owner.
+            </p>
+        </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
-
+                <label
+                    for="business_name"
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Nama toko / usaha
+                </label>
                 <TextInput
-                    id="name"
+                    id="business_name"
                     type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.business_name ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
+                    v-model="form.business_name"
                     required
                     autofocus
-                    autocomplete="name"
+                    autocomplete="organization"
                 />
-
-                <InputError class="mt-2" :message="form.errors.name" />
+                <InputError class="mt-2" :message="form.errors.business_name" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+            <div>
+                <label
+                    for="owner_name"
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Nama pemilik
+                </label>
+                <TextInput
+                    id="owner_name"
+                    type="text"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.owner_name ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
+                    v-model="form.owner_name"
+                    required
+                    autocomplete="name"
+                />
+                <InputError class="mt-2" :message="form.errors.owner_name" />
+            </div>
 
+            <div>
+                <label
+                    for="email"
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Email
+                </label>
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.email ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
                     v-model="form.email"
                     required
                     autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <div>
+                <label
+                    for="whatsapp"
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Nomor WhatsApp
+                </label>
+                <TextInput
+                    id="whatsapp"
+                    type="tel"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.whatsapp ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
+                    v-model="form.whatsapp"
+                    required
+                    autocomplete="tel"
+                />
+                <InputError class="mt-2" :message="form.errors.whatsapp" />
+            </div>
 
+            <div>
+                <label
+                    for="password"
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Kata sandi
+                </label>
+                <p class="mb-1 text-[11px] text-[#7b8498]">Minimal 8 karakter</p>
                 <TextInput
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.password ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
                     v-model="form.password"
                     required
                     autocomplete="new-password"
                 />
-
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel
+            <div>
+                <label
                     for="password_confirmation"
-                    value="Confirm Password"
-                />
-
+                    class="mb-1 mt-3 block text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#636b7d]"
+                >
+                    Konfirmasi kata sandi
+                </label>
                 <TextInput
                     id="password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    :class="[
+                        'block w-full rounded-[10px] px-3 py-[11px] text-xs text-[#172033] shadow-none focus:ring-[#4f46e5]',
+                        form.errors.password_confirmation ? 'border-[#d94b5b] focus:border-[#d94b5b]' : 'border-[#e8eaf1] focus:border-[#4f46e5]',
+                    ]"
                     v-model="form.password_confirmation"
                     required
                     autocomplete="new-password"
                 />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
+                <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Already registered?
-                </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Register
-                </PrimaryButton>
-            </div>
+            <PrimaryButton
+                class="mt-4 flex min-h-[42px] w-full justify-center rounded-[11px] bg-[#4f46e5] px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.02em] shadow-[0_4px_12px_rgba(31,28,74,0.12)] transition hover:bg-[#3730a3] focus:bg-[#3730a3] focus:ring-[#a9a5ff] active:bg-[#3730a3]"
+                :class="{ 'opacity-25': form.processing }"
+                :disabled="form.processing"
+            >
+                Daftar sekarang
+            </PrimaryButton>
         </form>
+
+        <div class="mt-4 text-center text-[11px] text-[#7b8498]">
+            Sudah punya akun?
+            <Link
+                :href="route('login')"
+                class="font-extrabold text-[#4f46e5] hover:text-[#3730a3] focus:outline-none focus:ring-2 focus:ring-[#a9a5ff] focus:ring-offset-2"
+            >
+                Masuk
+            </Link>
+        </div>
     </GuestLayout>
 </template>

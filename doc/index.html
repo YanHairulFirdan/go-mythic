@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sparta Ledger — Clickable Flow Prototype</title>
+    <style>
+      :root {
+        --indigo: #4f46e5;
+        --indigo-dark: #3730a3;
+        --ink: #172033;
+        --muted: #7b8498;
+        --line: #e8eaf1;
+        --canvas: #f3f2fb;
+        --card: #fff;
+        --green: #159570;
+        --red: #d94b5b;
+        --amber: #a96e13;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font:
+          14px/1.45 "Plus Jakarta Sans",
+          Inter,
+          system-ui,
+          sans-serif;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        border: 0;
+        cursor: pointer;
+      }
+      .prototype {
+        min-height: 100vh;
+        padding: 28px 16px;
+      }
+      .intro {
+        max-width: 880px;
+        margin: 0 auto 22px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .intro h1 {
+        margin: 5px 0 5px;
+        font-size: clamp(24px, 5vw, 38px);
+        letter-spacing: -0.04em;
+      }
+      .intro p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .workspace {
+        max-width: 880px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: minmax(280px, 390px) 1fr;
+        gap: 26px;
+        align-items: start;
+      }
+      .phone {
+        background: #fff;
+        border: 1px solid #e5e3f0;
+        border-radius: 30px;
+        padding: 10px;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+      .phone::before {
+        content: "";
+        display: block;
+        width: 74px;
+        height: 5px;
+        border-radius: 10px;
+        background: #d9d8e5;
+        margin: 2px auto 8px;
+      }
+      .screen {
+        min-height: 700px;
+        border-radius: 22px;
+        background: #fbfbfe;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .screen-body {
+        padding: 16px 15px 86px;
+        overflow: auto;
+        flex: 1;
+      }
+      .status {
+        display: flex;
+        justify-content: space-between;
+        color: #8a91a2;
+        font-size: 10px;
+        margin-bottom: 15px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .topbar h2 {
+        font-size: 19px;
+        margin: 0;
+        letter-spacing: -0.03em;
+        flex: 1;
+      }
+      .topbar small {
+        color: var(--muted);
+      }
+      .back {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 18px;
+        line-height: 26px;
+      }
+      .icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 20px;
+        line-height: 25px;
+      }
+      .hero {
+        background: linear-gradient(145deg, #4f46e5, #685fe9);
+        color: #fff;
+        border-radius: 18px;
+        padding: 17px;
+        margin-bottom: 12px;
+        box-shadow: 0 10px 24px rgba(31, 28, 74, 0.12);
+      }
+      .hero .label,
+      .card .label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .hero .label {
+        color: #d9d8ff;
+      }
+      .amount {
+        font-size: 25px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 5px 0 12px;
+      }
+      .split {
+        height: 7px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 9px;
+        overflow: hidden;
+        display: flex;
+      }
+      .split i:first-child {
+        width: 72%;
+        background: #8be7bf;
+      }
+      .split i:last-child {
+        width: 28%;
+        background: #ff9da5;
+      }
+      .split-note {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        margin-top: 7px;
+        color: #eee;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 14px;
+        margin: 10px 0;
+      }
+      .card .label {
+        margin-bottom: 5px;
+      }
+      .card .amount {
+        font-size: 20px;
+        margin: 0;
+      }
+      .card .sub,
+      .muted {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+      }
+      .stat-grid .card {
+        margin: 0;
+      }
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 19px 0 8px;
+      }
+      .section-head strong {
+        font-size: 12px;
+      }
+      .link {
+        background: none;
+        color: var(--indigo);
+        font-size: 11px;
+        font-weight: 800;
+        padding: 0;
+      }
+      .alert {
+        background: #fff8e8;
+        border: 1px solid #f6dfae;
+        color: var(--amber);
+        border-radius: 11px;
+        padding: 10px;
+        font-size: 11px;
+        margin: 10px 0;
+      }
+      .alert.red {
+        background: #fff0f2;
+        border-color: #f5c7cd;
+        color: var(--red);
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 42px;
+        border-radius: 11px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        padding: 10px 12px;
+        margin: 9px 0;
+      }
+      .btn.primary {
+        background: var(--indigo);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(31, 28, 74, 0.12);
+      }
+      .btn.outline {
+        background: #fff;
+        border: 1px solid #d8d9e5;
+        color: var(--indigo);
+      }
+      .btn.danger {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn:focus-visible,
+      .icon:focus-visible,
+      .back:focus-visible,
+      .nav-item:focus-visible,
+      .chip:focus-visible,
+      .row:focus-visible {
+        outline: 3px solid #a9a5ff;
+        outline-offset: 2px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        width: 100%;
+        text-align: left;
+        padding: 12px;
+        margin: 7px 0;
+      }
+      .row .grow {
+        flex: 1;
+      }
+      .row strong {
+        display: block;
+        font-size: 12px;
+      }
+      .row small {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .row .value {
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .row .value.plus {
+        color: var(--green);
+      }
+      .row .value.minus {
+        color: var(--red);
+      }
+      .dot {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        background: #eef0ff;
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .dot.green {
+        background: #e6f8f0;
+        color: var(--green);
+      }
+      .dot.red {
+        background: #fff0f2;
+        color: var(--red);
+      }
+      .fab {
+        position: absolute;
+        right: 24px;
+        bottom: 75px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 26px;
+        box-shadow: 0 5px 14px rgba(31, 28, 74, 0.14);
+      }
+      .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        background: #fff;
+        border-top: 1px solid var(--line);
+        padding: 8px 3px 5px;
+        border-radius: 0 0 22px 22px;
+      }
+      .nav-item {
+        background: none;
+        color: #9aa0b1;
+        font-size: 9px;
+        text-align: center;
+        padding: 4px;
+        border-radius: 8px;
+      }
+      .nav-item.active {
+        color: var(--indigo);
+        font-weight: 800;
+        background: #f0efff;
+      }
+      .nav-item b {
+        display: block;
+        font-size: 16px;
+        line-height: 17px;
+      }
+      .field-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 800;
+        margin: 14px 0 5px;
+        color: #636b7d;
+      }
+      .field {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 12px;
+        color: #6e7689;
+        font-size: 12px;
+      }
+      .field.amount-field {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--ink);
+      }
+      .toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        background: #efeff6;
+        border-radius: 11px;
+        padding: 4px;
+      }
+      .chip {
+        background: transparent;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .chip.selected {
+        background: #fff;
+        color: var(--indigo);
+        box-shadow: 0 2px 6px rgba(24, 29, 61, 0.08);
+      }
+      .detail {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 11px;
+      }
+      .detail:last-child {
+        border: 0;
+      }
+      .detail span:first-child {
+        color: var(--muted);
+      }
+      .detail span:last-child {
+        text-align: right;
+        font-weight: 700;
+      }
+      .progress {
+        height: 8px;
+        background: #ececf3;
+        border-radius: 9px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress i {
+        display: block;
+        height: 100%;
+        background: var(--indigo);
+        border-radius: 9px;
+      }
+      .modal-overlay {
+        position: absolute;
+        inset: 10px;
+        background: rgba(23, 32, 51, 0.34);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+      .modal-box {
+        width: calc(100% - 28px);
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 12px 30px rgba(31, 28, 74, 0.16);
+      }
+      .modal-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .modal-actions .btn {
+        margin: 0;
+      }
+      .empty {
+        text-align: center;
+        padding: 55px 20px;
+        color: var(--muted);
+      }
+      .empty strong {
+        display: block;
+        color: var(--ink);
+        font-size: 16px;
+        margin: 10px 0 5px;
+      }
+      .timeline {
+        margin: 15px 0 5px;
+        padding-left: 15px;
+      }
+      .timeline .card {
+        position: relative;
+      }
+      .timeline .card::before {
+        content: "";
+        position: absolute;
+        left: -22px;
+        top: 18px;
+        width: 9px;
+        height: 9px;
+        background: var(--indigo);
+        border: 3px solid #f1f0ff;
+        border-radius: 50%;
+      }
+      .legend {
+        font-size: 10px;
+        color: var(--muted);
+        background: #f4f3fc;
+        border-radius: 10px;
+        padding: 9px;
+        margin-top: 12px;
+      }
+      .flow-panel {
+        background: #fff;
+        border: 1px solid #e5e3f0;
+        border-radius: 18px;
+        padding: 18px;
+      }
+      .flow-panel h3 {
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+      .flow-panel p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 13px;
+      }
+      .flow-list {
+        display: grid;
+        gap: 7px;
+      }
+      .flow-list button {
+        padding: 10px 11px;
+        text-align: left;
+        background: #f7f7fb;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        font-size: 11px;
+      }
+      .flow-list button.active {
+        border-color: #bdb9ff;
+        background: #f0efff;
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        background: #172033;
+        color: #fff;
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-size: 11px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      @media (max-width: 720px) {
+        .prototype {
+          padding: 18px 10px;
+        }
+        .workspace {
+          display: block;
+        }
+        .flow-panel {
+          margin-top: 18px;
+        }
+        .phone {
+          max-width: 390px;
+          margin: auto;
+        }
+        .intro {
+          margin-bottom: 15px;
+        }
+        .screen {
+          min-height: 680px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="prototype">
+      <header class="intro">
+        <div class="eyebrow">Indigo Ledger · Clickable flow prototype</div>
+        <h1>Sparta Ledger</h1>
+        <p>Wireframe interaktif offline. Klik CTA, navigasi, item, atau tombol kembali untuk mengikuti alur MVP.</p>
+      </header>
+      <div class="workspace">
+        <section class="phone" aria-label="Prototype mobile screen"><div id="app" class="screen"></div></section>
+        <aside class="flow-panel">
+          <h3>Flow map</h3>
+          <p>Entry point cepat untuk review alur. State hanya simulasi di browser.</p>
+          <div id="flowList" class="flow-list"></div>
+          <div class="legend">Scope: Beranda, transaksi, invoice, laporan, modal/kas, subscription, auth. Login/register/reset hanya simulasi offline; backend auth, email reset, payment gateway, dan persistence nyata tidak termasuk.</div>
+        </aside>
+      </div>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script>
+      (function () {
+        "use strict";
+        var state = { route: "dashboard", stack: [], transactionType: "income", capital: false, capitalTopUp: false, capitalTopUpModal: false, proofChosen: false, proofSubmitted: false, invoiceItemAdded: false, invoiceItemModal: false, customerPicker: false, invoicePicker: false, selectedCustomer: "", selectedInvoice: "", invoiceCustomer: "Toko Bintang", invoiceCustomerPicker: false, deleteModal: false, customerEdit: false, customerSaved: false, customerCreated: false, reportPeriod: "Bulan ini", reportPeriodPicker: false, adminTenantStatus: "Paid", adminStatusModal: false, adminProofModal: false, adminProofVerified: false, adminEmployeeStatus: "Aktif", adminEmployeeModal: false, auditFilter: "Semua", auditModal: false, paymentModal: false, paymentAdded: false, expenseCategory: "Perlengkapan", expenseMethod: "Cash", expenseCategoryPicker: false, expenseMethodPicker: false, expenseSaved: false };
+        var flowRoutes = ["login", "loginError", "loginDisabled", "register", "registerFieldError", "registerEmailTaken", "forgotPassword", "resetPassword", "resetFieldError", "resetExpired", "dashboard", "transactions", "transactionIncome", "transactionExpense", "transactionDetail", "customers", "customerCreate", "customerDetail", "customerEdit", "invoices", "invoiceCreate", "invoiceDetail", "report", "capitalSetup", "subscription", "adminTenants", "adminEmployees", "adminAudit"];
+        var labels = { login: "Masuk", loginError: "Login gagal", loginDisabled: "Akun dinonaktifkan", register: "Daftar toko", registerFieldError: "Periksa data pendaftaran", registerEmailTaken: "Email sudah terdaftar", forgotPassword: "Lupa kata sandi", resetPassword: "Atur ulang kata sandi", resetFieldError: "Periksa kata sandi baru", resetExpired: "Tautan reset kedaluwarsa", dashboard: "Beranda", transactions: "Daftar transaksi", transactionIncome: "Tambah transaksi · pemasukan", transactionExpense: "Tambah transaksi · pengeluaran", transactionDetail: "Detail transaksi", customers: "Daftar customer", customerCreate: "Tambah customer", customerDetail: "Detail customer", invoices: "Daftar invoice", invoiceCreate: "Buat invoice", invoiceDetail: "Detail invoice", report: "Laporan P&L", capitalSetup: "Atur modal/kas", subscription: "Langganan", adminTenants: "Super Admin · tenant", adminEmployees: "Super Admin · employee", adminAudit: "Super Admin · audit log" };
+        var app = document.getElementById("app"),
+          flowList = document.getElementById("flowList"),
+          toast = document.getElementById("toast");
+        function esc(value) {
+          return String(value).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+        function button(text, attrs, cls) {
+          return '<button class="' + (cls || "btn primary") + '" ' + (attrs || "") + ">" + text + "</button>";
+        }
+        function nav(active) {
+          return (
+            '<nav class="bottom-nav" aria-label="Navigasi utama">' +
+            [
+              ["transactions", "↕", "Transaksi"],
+              ["customers", "♙", "Customer"],
+              ["invoices", "▤", "Invoice"],
+              ["report", "▥", "Laporan"],
+              ["subscription", "◉", "Lainnya"],
+            ]
+              .map(function (item) {
+                return '<button class="nav-item ' + (active === item[0] ? "active" : "") + '" data-route="' + item[0] + '"><b>' + item[1] + "</b>" + item[2] + "</button>";
+              })
+              .join("") +
+            "</nav>"
+          );
+        }
+        function top(title, back) {
+          return '<div class="status"><span>9:41</span><span>●●●</span></div><div class="topbar">' + (back ? '<button class="back" data-action="back" aria-label="Kembali">‹</button>' : "") + "<h2>" + title + "</h2></div>";
+        }
+        function login() {
+          return (
+            top("Masuk ke akun", false) +
+            '<div class="card" style="text-align:center"><div style="font-size:28px;color:var(--indigo);font-weight:800">✦</div><div class="amount" style="font-size:21px;margin:4px 0">Sparta Ledger</div><div class="sub">Catat keuangan tokomu, kapan saja</div></div><div class="field-label">Email / Username</div><div class="field">nama@toko.com</div><div class="field-label">Kata sandi</div><div class="field">••••••••</div><div class="section-head"><span class="muted">□ Ingat saya</span><button class="link" data-route="forgotPassword">Lupa kata sandi?</button></div>' +
+            button("MASUK", 'data-action="submitLogin"') +
+            '<div class="section-head" style="justify-content:center;gap:4px"><span class="muted">Belum punya akun?</span><button class="link" data-route="register">Daftar toko baru</button></div><div class="section-head" style="justify-content:center"><button class="link" data-route="loginError">Lihat state login gagal</button></div><div class="section-head" style="justify-content:center"><button class="link" data-route="loginDisabled">Lihat state akun nonaktif</button></div><div class="legend">Login hanya simulasi offline. Tidak ada validasi atau penyimpanan kredensial nyata.</div>'
+          );
+        }
+        function register() {
+          return (
+            top("Buat akun toko", false) +
+            '<p class="muted">Untuk pemilik usaha — karyawan dibuatkan akun oleh Owner.</p><div class="field-label">Nama toko / usaha</div><div class="field">Sparta Cleaning Service</div><div class="field-label">Nama pemilik</div><div class="field">Budi Santoso</div><div class="field-label">Email</div><div class="field">nama@toko.com</div><div class="field-label">Nomor WhatsApp</div><div class="field">08xx-xxxx-xxxx</div><div class="field-label">Kata sandi</div><div class="field">Minimal 8 karakter</div><div class="field-label">Konfirmasi kata sandi</div><div class="field">Ulangi kata sandi</div><div class="card"><div class="sub">□ Saya setuju dengan <span class="link">Syarat & Ketentuan</span></div></div>' +
+            button("DAFTAR SEKARANG", 'data-action="submitRegister"') +
+            '<div class="section-head" style="justify-content:center;gap:4px"><span class="muted">Sudah punya akun?</span><button class="link" data-route="login">Masuk</button></div><div class="section-head" style="justify-content:center"><button class="link" data-route="registerFieldError">Lihat state field wajib salah</button></div><div class="section-head" style="justify-content:center"><button class="link" data-route="registerEmailTaken">Lihat state email sudah terdaftar</button></div><div class="legend">Submit membuat company + akun Owner, tanpa verifikasi email, lalu langsung masuk ke dashboard. Semua hanya simulasi offline.</div>'
+          );
+        }
+        function loginError() {
+          return top("Masuk ke akun", true) + '<div class="alert red">Email/username atau kata sandi tidak cocok.</div><div class="field-label">Email / Username</div><div class="field">nama@toko.com</div><div class="field-label">Kata sandi</div><div class="field">••••••••</div><div class="section-head"><span class="muted">□ Ingat saya</span><button class="link" data-route="forgotPassword">Lupa kata sandi?</button></div>' + button("MASUK", 'data-action="submitLogin"') + '<div class="legend">State gagal masuk hanya simulasi offline; kredensial tidak dibaca atau disimpan.</div>';
+        }
+        function loginDisabled() {
+          return top("Akun tidak dapat masuk", true) + '<div class="empty"><strong>Akun ini dinonaktifkan</strong><p>Hubungi Owner untuk mengaktifkan kembali akses akun.</p></div>' + button("Kembali ke Masuk", 'data-route="login"', "btn outline") + '<div class="legend">State akun nonaktif hanya simulasi offline.</div>';
+        }
+        function registerFieldError() {
+          return top("Periksa data pendaftaran", true) + '<div class="alert red">Lengkapi nama toko dan samakan konfirmasi kata sandi.</div><div class="field-label">Nama toko / usaha *</div><div class="field" style="border-color:var(--red)">Wajib diisi</div><div class="field-label">Konfirmasi kata sandi *</div><div class="field" style="border-color:var(--red)">Kata sandi tidak sama</div>' + button("Kembali ke pendaftaran", 'data-route="register"') + '<div class="legend">Field error hanya state tampilan; tidak ada validasi nyata.</div>';
+        }
+        function registerEmailTaken() {
+          return top("Email sudah terdaftar", true) + '<div class="alert red">Email nama@toko.com sudah digunakan.</div>' + button("Masuk dengan akun ini", 'data-route="login"') + button("Gunakan email lain", 'data-route="register"', "btn outline") + '<div class="legend">Duplicate-email state hanya simulasi offline.</div>';
+        }
+        function forgotPassword() {
+          return top("Lupa kata sandi?", true) + '<p class="muted">Masukkan email akunmu. Kami kirim tautan untuk atur ulang kata sandi.</p><div class="field-label">Email</div><div class="field">nama@toko.com</div>' + button("KIRIM TAUTAN RESET", 'data-action="sendResetLink"') + '<div class="section-head" style="justify-content:center"><button class="link" data-route="login">Ingat kata sandi? Kembali ke Masuk</button></div><div class="legend">Reset hanya simulasi offline. Tidak ada email atau token reset nyata.</div>';
+        }
+        function resetPassword() {
+          return top("Buat kata sandi baru", true) + '<div class="alert">Tautan reset dikirim ke nama@toko.com (simulasi).</div><div class="field-label">Kata sandi baru</div><div class="field">Minimal 8 karakter</div><div class="field-label">Konfirmasi kata sandi baru</div><div class="field">Ulangi kata sandi</div>' + button("SIMPAN KATA SANDI", 'data-action="saveResetPassword"') + '<div class="section-head" style="justify-content:center"><button class="link" data-route="resetFieldError">Lihat state kata sandi tidak valid</button></div><div class="section-head" style="justify-content:center"><button class="link" data-route="resetExpired">Lihat state tautan kedaluwarsa</button></div><div class="legend">Password baru hanya tampilan; tidak disimpan.</div>';
+        }
+        function resetFieldError() {
+          return top("Periksa kata sandi baru", true) + '<div class="alert red">Kata sandi minimal 8 karakter dan kedua isian harus sama.</div><div class="field-label">Kata sandi baru</div><div class="field" style="border-color:var(--red)">Terlalu pendek</div><div class="field-label">Konfirmasi kata sandi baru</div><div class="field" style="border-color:var(--red)">Tidak sama</div>' + button("Coba lagi", 'data-route="resetPassword"') + button("Lihat tautan kedaluwarsa", 'data-route="resetExpired"', "btn outline") + '<div class="legend">Reset error hanya state tampilan; kata sandi tidak dibaca atau disimpan.</div>';
+        }
+        function resetExpired() {
+          return top("Tautan sudah tidak berlaku", true) + '<div class="empty"><strong>Tautan reset kata sandi ini sudah kedaluwarsa atau sudah pernah dipakai.</strong><p>Minta tautan baru untuk melanjutkan.</p></div>' + button("MINTA TAUTAN BARU", 'data-route="forgotPassword"') + button("Kembali ke Masuk", 'data-route="login"', "btn outline");
+        }
+        function dashboard() {
+          return (
+            top("Beranda", false) +
+            '<div class="hero"><div class="label">Laba bersih · Bulan ini</div><div class="amount">Rp4.250.000</div><div class="split"><i></i><i></i></div><div class="split-note"><span>Pemasukan Rp7,1jt</span><span>Pengeluaran Rp2,8jt</span></div></div><p class="muted">Semua angka dirangkum otomatis, tanpa rekap Excel manual.</p><div class="card"><div class="label">Modal kas saat ini</div><div class="amount">Rp12.900.000</div></div><div class="alert">⚠ 3 invoice belum lunas · 1 terpakai sebagian</div>' +
+            button("Catat transaksi", 'data-route="transactionIncome"') +
+            button("Buat invoice", 'data-route="invoiceCreate"', "btn outline") +
+            button("Lihat laporan", 'data-route="report"', "btn outline") +
+            button("Atur modal/kas", 'data-route="capitalSetup"', "btn outline") +
+            '<div class="section-head"><strong>Transaksi terbaru</strong><button class="link" data-route="transactions">Lihat semua →</button></div>' +
+            tx("Jasa Cleaning Rumah", "20 Agu 2026", "+Rp850.000", "plus", "transactionDetail") +
+            tx("Belanja bahan", "19 Agu 2026", "-Rp250.000", "minus", "transactionDetail") +
+            nav("")
+          );
+        }
+        function tx(name, date, amount, kind, route) {
+          return '<button class="row" data-route="' + route + '"><span class="dot ' + (kind === "plus" ? "green" : "red") + '">' + (kind === "plus" ? "↗" : "↘") + '</span><span class="grow"><strong>' + name + "</strong><small>" + date + '</small></span><span class="value ' + kind + '">' + amount + "</span></button>";
+        }
+        function transactions() {
+          return top("Transaksi", false) + '<div class="stat-grid"><div class="card"><div class="label">Pemasukan</div><div class="amount">42/150</div></div><div class="card"><div class="label">Pengeluaran</div><div class="amount">18/150</div></div></div><div class="toggle" style="margin:12px 0"><button class="chip selected">Semua</button><button class="chip">Hari ini</button></div>' + tx("Jasa Cleaning — Toko Bintang", "Customer · INV-0042", "+Rp850.000", "plus", "transactionDetail") + tx("Beli perlengkapan", "Detergen & lap microfiber", "-Rp320.000", "minus", "transactionDetail") + '<button class="fab" data-route="transactionIncome" aria-label="Tambah transaksi">+</button>' + nav("transactions");
+        }
+        function pickerRow(icon, title, detail, action, attrs) {
+          return '<button class="row" data-action="' + action + '" ' + (attrs || "") + '><span class="dot green">' + icon + '</span><span class="grow"><strong>' + title + "</strong><small>" + detail + "</small></span><span>›</span></button>";
+        }
+        function customerPickerModal() {
+          if (!state.customerPicker) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Pilih customer</div>' + pickerRow("♙", "Toko Bintang", "0812-3456-7890", "selectCustomer", 'data-customer="Toko Bintang"') + pickerRow("♙", "Pak Wayan", "Jl. Sunset Road No.12", "selectCustomer", 'data-customer="Pak Wayan"') + pickerRow("♙", "Villa Kertalangu", "14 transaksi", "selectCustomer", 'data-customer="Villa Kertalangu"') + button("Batal", 'data-action="closeCustomerPicker"', "btn outline") + "</div></div>";
+        }
+        function invoicePickerModal() {
+          if (!state.invoicePicker) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Pilih invoice</div>' + pickerRow("▤", "INV-0042 · Toko Bintang", "Sisa Rp650.000", "selectInvoice", 'data-invoice="INV-0042" data-customer="Toko Bintang"') + pickerRow("▤", "INV-0040 · Pak Wayan", "Sisa Rp1.800.000", "selectInvoice", 'data-invoice="INV-0040" data-customer="Pak Wayan"') + button("Batal", 'data-action="closeInvoicePicker"', "btn outline") + "</div></div>";
+        }
+        function transactionForm(type) {
+          var income = type === "income",
+            customer = state.selectedCustomer || "Pilih customer",
+            invoice = state.selectedInvoice || "Pilih invoice";
+          return (
+            top("Tambah transaksi", true) +
+            '<div class="radial-wrap card"><div class="label">Kuota harian</div><div class="amount">' +
+            (income ? "42/150" : "18/150") +
+            '</div><div class="sub">Sisa kuota transaksi ' +
+            (income ? "pemasukan" : "pengeluaran") +
+            ' hari ini</div></div><div class="toggle"><button class="chip ' +
+            (income ? "selected" : "") +
+            '" data-route="transactionIncome">Pemasukan</button><button class="chip ' +
+            (!income ? "selected" : "") +
+            '" data-route="transactionExpense">Pengeluaran</button></div><div class="field-label">Nominal</div><div class="field amount-field">Rp ' +
+            (income ? "850.000" : "320.000") +
+            '</div><div class="field-label">Kategori</div>' +
+            (income ? '<div class="field">Jasa Cleaning Rumah ▾</div>' : '<button class="field" data-action="openExpenseCategory">' + state.expenseCategory + " ▾</button>") +
+            '<div class="field-label">Metode pembayaran</div>' +
+            (income ? '<div class="field">Transfer Bank ▾</div>' : '<button class="field" data-action="openExpenseMethod">' + state.expenseMethod + " ▾</button>") +
+            '<div class="field-label">Tanggal</div><div class="field">14 Agustus 2026</div>' +
+            (income ? '<div class="field-label">Customer</div><button class="field" data-action="openCustomerPicker" ' + (state.selectedInvoice ? "disabled" : "") + ">" + customer + (state.selectedInvoice ? " · terkunci" : " ▾") + '</button><div class="field-label">Invoice</div><button class="field" data-action="openInvoicePicker">' + invoice + (state.selectedInvoice ? " · sisa Rp650.000" : " ▾") + "</button>" : "") +
+            '<div class="field-label">Catatan</div><div class="field">' +
+            (income ? "Opsional" : "Detergen & lap microfiber") +
+            "</div>" +
+            button("Simpan transaksi", income ? 'data-route="transactionDetail"' : 'data-action="saveExpense"') +
+            customerPickerModal() +
+            invoicePickerModal() +
+            expensePickerModal("category") +
+            expensePickerModal("method")
+          );
+        }
+        function expensePickerModal(type) {
+          var open = type === "category" ? state.expenseCategoryPicker : state.expenseMethodPicker;
+          if (!open) return "";
+          var title = type === "category" ? "Pilih kategori" : "Pilih metode pembayaran",
+            action = type === "category" ? "selectExpenseCategory" : "selectExpenseMethod",
+            close = type === "category" ? "closeExpenseCategory" : "closeExpenseMethod",
+            items = type === "category" ? ["Perlengkapan", "Operasional", "Transportasi"] : ["Cash", "Transfer Bank", "E-Wallet"];
+          return (
+            '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">' +
+            title +
+            "</div>" +
+            items
+              .map(function (item) {
+                return '<button class="row" data-action="' + action + '" data-value="' + item + '"><span class="dot">' + (type === "category" ? "▦" : "$") + '</span><span class="grow"><strong>' + item + "</strong></span><span>›</span></button>";
+              })
+              .join("") +
+            button("Batal", 'data-action="' + close + '"', "btn outline") +
+            "</div></div>"
+          );
+        }
+        function invoiceCustomerPickerModal() {
+          if (!state.invoiceCustomerPicker) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Pilih customer</div>' + pickerRow("♙", "Toko Bintang", "0812-3456-7890", "selectInvoiceCustomer", 'data-customer="Toko Bintang"') + pickerRow("♙", "Pak Wayan", "Jl. Sunset Road No.12", "selectInvoiceCustomer", 'data-customer="Pak Wayan"') + pickerRow("♙", "Villa Kertalangu", "14 transaksi", "selectInvoiceCustomer", 'data-customer="Villa Kertalangu"') + button("Batal", 'data-action="closeInvoiceCustomerPicker"', "btn outline") + "</div></div>";
+        }
+        function deleteModal() {
+          if (!state.deleteModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Hapus transaksi?</div><p class="muted">Transaksi ini akan dihapus dari daftar. Tindakan ini tidak dapat dibatalkan.</p><div class="modal-actions">' + button("Batal", 'data-action="closeDelete"', "btn outline") + button("Hapus transaksi", 'data-action="confirmDelete"', "btn danger") + "</div></div></div>";
+        }
+        function transactionDetail() {
+          var expense = state.expenseSaved;
+          return (
+            top("Detail transaksi", true) +
+            '<div class="card"><div class="label">Nominal</div><div class="amount" style="color:' +
+            (expense ? "var(--red)" : "var(--green)") +
+            '">' +
+            (expense ? "-Rp320.000" : "+Rp850.000") +
+            "</div></div>" +
+            [
+              ["Jenis", expense ? "Pengeluaran" : "Pemasukan"],
+              ["Kategori", expense ? state.expenseCategory : "Jasa Cleaning Rumah"],
+              ["Tanggal", "14 Agu 2026"],
+              ["Metode", expense ? state.expenseMethod : "Transfer Bank"],
+              ["Customer", expense ? "—" : "Toko Bintang"],
+              ["Invoice", expense ? "—" : "INV-0042"],
+              ["Dikerjakan oleh", "Made Wirawan"],
+              ["Dicatat oleh", "Budi Santoso"],
+            ]
+              .map(function (x) {
+                return '<div class="detail"><span>' + x[0] + "</span><span>" + x[1] + "</span></div>";
+              })
+              .join("") +
+            button("Edit", expense ? 'data-route="transactionExpense"' : 'data-route="transactionIncome"', "btn outline") +
+            button("Hapus", 'data-action="openDelete"', "btn danger") +
+            deleteModal()
+          );
+        }
+        function deleteConfirm() {
+          return top("Detail transaksi", true) + '<div class="empty"><strong>Hapus transaksi ini?</strong><p>Transaksi Rp850.000 akan dihapus. Data tetap tersimpan untuk audit.</p></div>' + button("Batal", 'data-action="back"', "btn outline") + button("Hapus transaksi", 'data-action="openDelete"', "btn danger") + deleteModal();
+        }
+        function customers() {
+          return top("Customer", false) + (state.customerCreated ? '<div class="alert">Customer baru tersimpan.</div>' : "") + button("+ Tambah customer", 'data-route="customerCreate"', "btn outline") + tx("Toko Bintang", "0812-3456-7890", "Rp2.450.000", "plus", "customerDetail") + tx("Pak Wayan", "Jl. Sunset Road No.12", "Rp1.800.000", "plus", "customerDetail") + tx("Villa Kertalangu", "14 transaksi", "Rp4.200.000", "plus", "customerDetail") + (state.customerCreated ? tx("Bali Coffee Co.", "0819-0000-1122", "Belum ada transaksi", "", "customerDetail") : "") + nav("customers");
+        }
+        function customerCreate() {
+          return top("Tambah customer", true) + '<div class="field-label">Nama *</div><div class="field">Bali Coffee Co.</div><div class="field-label">Kontak</div><div class="field">0819-0000-1122</div><div class="field-label">Alamat</div><div class="field">Jl. Teuku Umar No.21, Denpasar</div><div class="field-label">Catatan</div><div class="field">Customer baru</div>' + button("Simpan customer", 'data-action="saveCustomer"');
+        }
+        function customerDetail() {
+          return top("Toko Bintang", true) + (state.customerSaved ? '<div class="alert">Perubahan customer tersimpan.</div>' : "") + button("Edit customer", 'data-action="openCustomerEdit"', "btn outline") + '<div class="card"><div class="label">Kontak</div><div class="amount" style="font-size:17px">0812-3456-7890</div><div class="sub">Jl. Diponegoro No.8, Denpasar</div></div><div class="stat-grid"><div class="card"><div class="label">Total nominal</div><div class="amount" style="font-size:16px">Rp2.450.000</div></div><div class="card"><div class="label">Transaksi</div><div class="amount" style="font-size:16px">9</div></div></div><div class="section-head"><strong>Transaksi terkait</strong></div>' + tx("Jasa Cleaning — Invoice #INV-0042", "14 Agu 2026", "+Rp850.000", "plus", "transactionDetail") + tx("Jasa Cleaning tanpa invoice", "2 Agu 2026", "+Rp400.000", "plus", "transactionDetail");
+        }
+        function customerEdit() {
+          return top("Edit customer", true) + '<div class="field-label">Nama *</div><div class="field">Toko Bintang</div><div class="field-label">Kontak</div><div class="field">0812-3456-7890</div><div class="field-label">Alamat</div><div class="field">Jl. Diponegoro No.8, Denpasar</div><div class="field-label">Catatan</div><div class="field">Customer prioritas</div>' + button("Simpan perubahan", 'data-action="saveCustomerEdit"');
+        }
+        function invoices() {
+          return top("Invoice", false) + button("+ Buat invoice", 'data-route="invoiceCreate"', "btn outline") + tx("INV-0042 — Toko Bintang", "Dibuat 12 Agu 2026", "57% terpakai", "", "invoiceDetail") + tx("INV-0041 — Villa Kertalangu", "Dibuat 10 Agu 2026", "100% — lunas", "", "invoiceDetail") + tx("INV-0040 — Pak Wayan", "Dibuat 8 Agu 2026", "0% — belum ada transaksi", "", "invoiceDetail") + nav("invoices");
+        }
+        function invoiceCreate() {
+          var item = state.invoiceItemAdded ? '<div class="detail"><span>Cleaning balkon</span><span>Rp250.000</span></div>' : "";
+          var modal = state.invoiceItemModal ? '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Tambah item invoice</div><div class="field-label">Nama item</div><div class="field">Nama layanan / produk</div><div class="field-label">Nominal</div><div class="field amount-field">Rp 250.000</div><div class="modal-actions">' + button("Batal", 'data-action="closeInvoiceItem"', "btn outline") + button("Tambah item", 'data-action="confirmInvoiceItem"') + "</div></div></div>" : "";
+          return top("Buat invoice", true) + '<div class="field-label">Customer *</div><button class="field" data-action="openInvoiceCustomerPicker">' + state.invoiceCustomer + ' ▾</button><div class="field-label">Penanggung jawab</div><div class="field">Made Wirawan (Worker) ▾</div><div class="section-head"><strong>Rincian item</strong><button class="link" data-action="addInvoiceItem">+ Tambah item</button></div><div class="detail"><span>Cleaning ruang tamu & dapur</span><span>Rp900.000</span></div><div class="detail"><span>Cleaning 2 kamar mandi</span><span>Rp600.000</span></div>' + item + '<div class="card"><div class="label">Total invoice</div><div class="amount">Rp' + (state.invoiceItemAdded ? "1.750.000" : "1.500.000") + "</div></div>" + button("Simpan invoice", 'data-route="invoiceDetail"') + modal + invoiceCustomerPickerModal();
+        }
+        function invoiceDetail() {
+          var paid = state.paymentAdded ? "Rp1.500.000" : "Rp850.000",
+            balance = state.paymentAdded ? "Lunas" : "Sisa Rp650.000",
+            width = state.paymentAdded ? 100 : 57;
+          return top("INV-0042", true) + '<div class="card"><div class="label">Customer</div><div class="amount" style="font-size:17px">' + state.invoiceCustomer + '</div><div class="sub">Penanggung jawab: Made Wirawan</div></div><div class="section-head"><strong>Rincian item</strong></div><div class="detail"><span>Cleaning ruang tamu & dapur</span><span>Rp900.000</span></div><div class="detail"><span>Cleaning 2 kamar mandi</span><span>Rp600.000</span></div><div class="card"><div class="label">Progress pembayaran</div><div class="amount">' + paid + ' / Rp1.500.000</div><div class="progress"><i style="width:' + width + '%"></i></div><div class="sub">' + balance + "</div></div>" + (state.paymentAdded ? button("Pembayaran lunas", 'data-action="toast"', "btn outline") : button("+ Catat pembayaran", 'data-action="openPayment"')) + paymentModal();
+        }
+        function paymentModal() {
+          if (!state.paymentModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Catat pembayaran</div><div class="field-label">Nominal</div><div class="field amount-field">Rp 650.000</div><div class="field-label">Metode pembayaran</div><div class="field">Transfer Bank ▾</div><div class="field-label">Tanggal</div><div class="field">14 Agustus 2026</div><div class="modal-actions">' + button("Batal", 'data-action="closePayment"', "btn outline") + button("Simpan pembayaran", 'data-action="confirmPayment"') + "</div></div></div>";
+        }
+        function reportPeriodPicker() {
+          if (!state.reportPeriodPicker) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Pilih periode</div>' + pickerRow("◷", "Bulan ini", "1–31 Agustus 2026", "selectReportPeriod", 'data-period="Bulan ini"') + pickerRow("◷", "Bulan lalu", "1–31 Juli 2026", "selectReportPeriod", 'data-period="Bulan lalu"') + pickerRow("◷", "Kuartal ini", "1 Juli–30 September 2026", "selectReportPeriod", 'data-period="Kuartal ini"') + button("Batal", 'data-action="closeReportPeriod"', "btn outline") + "</div></div>";
+        }
+        function report() {
+          return (
+            top("Laporan P&L", true) +
+            '<div class="toggle"><button class="chip selected">Bulan ini</button><button class="chip">Custom</button></div><button class="card" style="width:100%;text-align:left" data-action="openReportPeriod"><div class="label">Periode</div><div class="amount" style="font-size:17px">' +
+            state.reportPeriod +
+            '</div></button><div class="stat-grid" style="margin-top:12px"><div class="card"><div class="label">Pemasukan</div><div class="amount" style="color:var(--green)">Rp12,4jt</div></div><div class="card"><div class="label">Pengeluaran</div><div class="amount" style="color:var(--red)">Rp4,15jt</div></div></div><div class="card"><div class="label">Saldo bersih</div><div class="amount">Rp8.250.000</div></div><div class="section-head"><strong>Breakdown pemasukan</strong></div><div class="detail"><span>Jasa Cleaning Rumah</span><span>Rp8.900.000</span></div><div class="detail"><span>Jasa Cleaning Kantor</span><span>Rp3.500.000</span></div><div class="section-head"><strong>Breakdown pengeluaran</strong></div><div class="detail"><span>Upah Worker</span><span>Rp2.800.000</span></div><div class="detail"><span>Perlengkapan</span><span>Rp1.350.000</span></div>' +
+            reportPeriodPicker() +
+            nav("report")
+          );
+        }
+        function capitalSetup() {
+          return top("Modal / Kas Usaha", true) + (state.capital ? '<div class="alert">Modal aktif sudah tersedia. Tambah top-up dari layar ini.</div>' : '<p class="muted">Belum ada modal aktif — set dulu sebagai baseline.</p>') + '<div class="field-label">Nominal modal</div><div class="field amount-field">Rp 3.000.000</div><div class="field-label">Masa berlaku</div><div class="toggle"><button class="chip">1 Minggu</button><button class="chip selected">1 Bulan</button></div>' + button(state.capital ? "Lihat modal aktif" : "Simpan modal", 'data-action="saveCapital"');
+        }
+        function capitalTopUpModal() {
+          if (!state.capitalTopUpModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Tambah top-up modal</div><div class="field-label">Nominal</div><div class="field amount-field">Rp2.500.000</div><div class="field-label">Metode</div><div class="field">Transfer Bank</div><div class="modal-actions">' + button("Batal", 'data-action="closeCapitalTopUp"', "btn outline") + button("Simpan", 'data-action="saveCapitalTopUp"') + "</div></div></div>";
+        }
+        function capitalActive() {
+          var total = state.capitalTopUp ? "5.500.000" : "3.000.000";
+          return top("Modal / Kas Usaha", true) + '<div class="card"><div class="label">Total modal saat ini <span style="float:right;color:var(--green)">Aktif</span></div><div class="amount">Rp' + total + '</div><div class="sub">Periode 14 Agu – 13 Sep 2026</div></div>' + (state.capitalTopUp ? '<div class="alert">Top-up Rp2.500.000 tersimpan.</div>' : "") + button("Tambah top-up", 'data-action="openCapitalTopUp"') + button("Kembali ke beranda", 'data-route="dashboard"', "btn outline") + capitalTopUpModal();
+        }
+        function subscription() {
+          return top("Langganan", true) + '<div class="card"><div class="label">Paket saat ini</div><div class="amount" style="font-size:19px">Free</div><div class="sub">0 Employee ber-akun · limit 150 transaksi/hari</div></div>' + button("Upgrade ke Paid — Rp99.000/bulan", 'data-route="payment"') + '<div class="legend">Paid: Employee tanpa batas, transaksi tanpa limit. Pay-before-use dengan transfer manual.</div>';
+        }
+        function payment() {
+          return top("Upgrade ke Paid", true) + '<div class="card"><div class="label">Harga</div><div class="amount">Rp99.000<span class="sub">/bulan</span></div><div class="sub">Employee tanpa batas, transaksi tanpa limit</div></div><div class="section-head"><strong>Instruksi transfer</strong></div><div class="detail"><span>Bank</span><span>BCA 123-456-7890</span></div><div class="detail"><span>a.n.</span><span>PT Sparta Digital</span></div><div class="detail"><span>Nominal</span><span>Rp99.000</span></div>' + button("Sudah transfer, upload bukti", 'data-route="upload"');
+        }
+        function adminTenants() {
+          return top("Super Admin", false) + '<div class="card"><div class="label">Tenant aktif</div><div class="amount">24</div><div class="sub">' + (state.adminProofVerified ? "2" : "3") + " menunggu verifikasi pembayaran</div></div>" + (state.adminProofVerified ? "" : '<div class="section-head"><strong>Menunggu verifikasi</strong></div>' + pickerRow("◉", "Bali Coffee Co.", "Paid · Rp99.000 · 14 Agu 2026", "openAdminProof", 'data-tenant="Bali Coffee Co."') + "") + '<div class="section-head"><strong>Semua tenant</strong></div>' + pickerRow("▣", "Toko Bintang", "Paid · 14 transaksi hari ini", "openAdminTenant", 'data-tenant="Toko Bintang"') + pickerRow("▣", "Bali Coffee Co.", "Free · 0 transaksi hari ini", "openAdminTenant", 'data-tenant="Bali Coffee Co."') + pickerRow("▣", "Villa Kertalangu", "Paid · 87 transaksi hari ini", "openAdminTenant", 'data-tenant="Villa Kertalangu"') + nav("");
+        }
+        function adminTenantDetail() {
+          var status = state.adminTenantStatus;
+          return top("Detail tenant", true) + '<div class="card"><div class="label">Tenant</div><div class="amount" style="font-size:18px">' + (state.adminTenant || "Toko Bintang") + '</div><div class="sub">Owner: Budi Santoso · Bergabung 12 Mei 2026</div></div><div class="detail"><span>Status langganan</span><span>' + status + '</span></div><div class="detail"><span>Transaksi bulan ini</span><span>428</span></div><div class="detail"><span>Employee</span><span>4 akun</span></div>' + button("Ubah status langganan", 'data-action="openAdminStatus"', "btn outline") + adminStatusModal();
+        }
+        function adminStatusModal() {
+          if (!state.adminStatusModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Ubah status langganan</div>' + pickerRow("◉", "Paid", "Tenant dapat transaksi tanpa limit", "selectAdminStatus", 'data-status="Paid"') + pickerRow("○", "Free", "Berlaku limit 150 transaksi/hari", "selectAdminStatus", 'data-status="Free"') + button("Batal", 'data-action="closeAdminStatus"', "btn outline") + "</div></div>";
+        }
+        function adminProofDetail() {
+          return top("Verifikasi pembayaran", true) + '<div class="card"><div class="label">Tenant</div><div class="amount" style="font-size:18px">Bali Coffee Co.</div><div class="sub">Paket Paid · Rp99.000</div></div><div class="empty" style="border:1px dashed #d8d9e5;border-radius:12px;padding:40px 15px">Bukti-transfer.jpg<br><span class="muted">14 Agustus 2026 · Bank BCA</span></div>' + button("Setujui pembayaran", 'data-action="approveAdminProof"') + button("Tolak pembayaran", 'data-action="rejectAdminProof"', "btn danger") + adminProofModal();
+        }
+        function adminProofModal() {
+          if (!state.adminProofModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">' + (state.adminProofVerified ? "Pembayaran disetujui" : "Tolak pembayaran?") + '</div><p class="muted">' + (state.adminProofVerified ? "Status tenant akan menjadi Paid." : "Tenant perlu mengunggah bukti pembayaran baru.") + '</p><div class="modal-actions">' + button("Batal", 'data-action="closeAdminProof"', "btn outline") + button(state.adminProofVerified ? "Tutup" : "Konfirmasi", 'data-action="confirmAdminProof"') + "</div></div></div>";
+        }
+        function adminEmployees() {
+          return top("Super Admin", false) + '<div class="card"><div class="label">Employee aktif</div><div class="amount">86</div><div class="sub">Pada 24 tenant</div></div>' + pickerRow("♙", "Made Wirawan", "Toko Bintang · Worker · Aktif", "openAdminEmployee", 'data-employee="Made Wirawan"') + pickerRow("♙", "Sari Dewi", "Villa Kertalangu · Worker · Aktif", "openAdminEmployee", 'data-employee="Sari Dewi"') + pickerRow("♙", "Andi Pratama", "Bali Coffee Co. · Worker · Nonaktif", "openAdminEmployee", 'data-employee="Andi Pratama"') + nav("");
+        }
+        function adminEmployeeDetail() {
+          return top("Detail employee", true) + '<div class="card"><div class="label">Nama</div><div class="amount" style="font-size:18px">' + (state.adminEmployee || "Made Wirawan") + '</div><div class="sub">Tenant: Toko Bintang · Role: Worker</div></div><div class="detail"><span>Status akun</span><span>' + state.adminEmployeeStatus + '</span></div><div class="detail"><span>Transaksi bulan ini</span><span>36</span></div>' + button("Ubah status akun", 'data-action="openAdminEmployeeStatus"', "btn outline") + adminEmployeeModal();
+        }
+        function adminEmployeeModal() {
+          if (!state.adminEmployeeModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Ubah status akun</div>' + pickerRow("●", "Aktif", "Employee dapat masuk dan menerima tugas", "selectAdminEmployeeStatus", 'data-status="Aktif"') + pickerRow("○", "Nonaktif", "Employee tidak dapat masuk", "selectAdminEmployeeStatus", 'data-status="Nonaktif"') + button("Batal", 'data-action="closeAdminEmployeeStatus"', "btn outline") + "</div></div>";
+        }
+        function auditFilterModal() {
+          if (!state.auditModal) return "";
+          return '<div class="modal-overlay"><div class="modal-box"><div class="modal-title">Filter aktivitas</div>' + pickerRow("•", "Semua", "Tampilkan semua aktivitas", "selectAuditFilter", 'data-filter="Semua"') + pickerRow("↗", "Transaksi", "Pemasukan dan pengeluaran", "selectAuditFilter", 'data-filter="Transaksi"') + pickerRow("◉", "Langganan", "Pembayaran dan status tenant", "selectAuditFilter", 'data-filter="Langganan"') + button("Batal", 'data-action="closeAuditFilter"', "btn outline") + "</div></div>";
+        }
+        function adminAudit() {
+          return top("Audit log", false) + button("Filter: " + state.auditFilter, 'data-action="openAuditFilter"', "btn outline") + auditRow("Budi Santoso", "Membuat transaksi pemasukan Rp850.000", "Toko Bintang · 14 Agu 2026 · 10:42", "Transaksi") + auditRow("Admin Sparta", "Menyetujui pembayaran Rp99.000", "Bali Coffee Co. · 14 Agu 2026 · 09:18", "Langganan") + auditRow("Made Wirawan", "Mengubah status akun menjadi Aktif", "Toko Bintang · 13 Agu 2026 · 16:05", "Employee") + auditFilterModal();
+        }
+        function auditRow(actor, title, detail, type) {
+          if (state.auditFilter !== "Semua" && state.auditFilter !== type) return "";
+          return '<button class="row" data-action="openAuditDetail" data-audit-title="' + title + '" data-audit-detail="' + detail + '"><span class="dot">◷</span><span class="grow"><strong>' + title + "</strong><small>" + actor + " · " + detail + "</small></span><span>›</span></button>";
+        }
+        function auditDetail() {
+          return top("Detail aktivitas", true) + '<div class="card"><div class="label">Aktivitas</div><div class="amount" style="font-size:17px">' + (state.auditTitle || "Aktivitas tenant") + '</div><div class="sub">' + (state.auditDetail || "14 Agustus 2026 · Audit log") + '</div></div><div class="legend">Log bersifat read-only untuk kebutuhan audit dan penelusuran aktivitas.</div>';
+        }
+        function upload() {
+          return top("Upload bukti bayar", true) + '<div class="empty" style="border:1px dashed #d8d9e5;border-radius:12px;padding:40px 15px" data-action="chooseProof">' + (state.proofChosen ? "Bukti-transfer.jpg" : "Tap untuk upload foto bukti transfer") + '</div><div class="field-label">Nominal ditransfer</div><div class="field amount-field">Rp 99.000</div>' + button("Kirim untuk diverifikasi", 'data-action="submitProof"');
+        }
+        function pending() {
+          return top("Langganan", true) + '<div class="empty"><div style="font-size:38px">◷</div><strong>Menunggu verifikasi</strong><p>Bukti bayar sedang direview admin. Biasanya diproses dalam 1x24 jam.</p></div><div class="alert">Selama menunggu, akun tetap berada di paket Free.</div>' + (state.proofSubmitted ? '<div class="legend">Bukti-transfer.jpg · Terkirim 14 Agustus 2026</div>' : "");
+        }
+        var screens = {
+          login: login,
+          loginError: loginError,
+          loginDisabled: loginDisabled,
+          register: register,
+          registerFieldError: registerFieldError,
+          registerEmailTaken: registerEmailTaken,
+          forgotPassword: forgotPassword,
+          resetPassword: resetPassword,
+          resetFieldError: resetFieldError,
+          resetExpired: resetExpired,
+          dashboard: dashboard,
+          transactions: transactions,
+          transactionIncome: function () {
+            return transactionForm("income");
+          },
+          transactionExpense: function () {
+            return transactionForm("expense");
+          },
+          transactionDetail: transactionDetail,
+          deleteConfirm: deleteConfirm,
+          customers: customers,
+          customerCreate: customerCreate,
+          customerDetail: customerDetail,
+          customerEdit: customerEdit,
+          invoices: invoices,
+          invoiceCreate: invoiceCreate,
+          invoiceDetail: invoiceDetail,
+          report: report,
+          capitalSetup: capitalSetup,
+          capitalActive: capitalActive,
+          subscription: subscription,
+          payment: payment,
+          upload: upload,
+          pending: pending,
+          adminTenants: adminTenants,
+          adminTenantDetail: adminTenantDetail,
+          adminProofDetail: adminProofDetail,
+          adminEmployees: adminEmployees,
+          adminEmployeeDetail: adminEmployeeDetail,
+          adminAudit: adminAudit,
+          auditDetail: auditDetail,
+        };
+        function render() {
+          app.innerHTML = '<div class="screen-body">' + (screens[state.route] || screens.dashboard)() + "</div>";
+          flowList.innerHTML = flowRoutes
+            .map(function (route) {
+              return '<button class="' + (route === state.route ? "active" : "") + '" data-route="' + route + '">' + esc(labels[route]) + "</button>";
+            })
+            .join("");
+        }
+        function route(next, push) {
+          if (!screens[next] || next === state.route) return;
+          if (push !== false) {
+            state.stack.push(state.route);
+            history.pushState({ route: next }, "", location.pathname + "#" + next);
+          }
+          state.route = next;
+          render();
+        }
+        function hydrate() {
+          var next = location.hash.slice(1);
+          state.route = screens[next] ? next : "dashboard";
+          state.stack = [];
+        }
+        function back() {
+          if (state.stack.length) {
+            var previous = state.stack.pop();
+            state.route = previous;
+            history.replaceState({ route: previous }, "", location.pathname + "#" + previous);
+            render();
+          } else {
+            route("dashboard", false);
+          }
+        }
+        function showToast() {
+          toast.classList.add("show");
+          clearTimeout(showToast.timer);
+          showToast.timer = setTimeout(function () {
+            toast.classList.remove("show");
+          }, 1400);
+        }
+        document.addEventListener("click", function (event) {
+          var target = event.target.closest("[data-route],[data-action]");
+          if (!target) return;
+          var next = target.getAttribute("data-route"),
+            action = target.getAttribute("data-action");
+          if (action === "back") return back();
+          if (action === "submitLogin" || action === "submitRegister") return route("dashboard");
+          if (action === "sendResetLink") return route("resetPassword");
+          if (action === "saveResetPassword") {
+            showToast();
+            return route("login");
+          }
+          if (action === "saveCapital") {
+            state.capital = true;
+            return route("capitalActive");
+          }
+          if (action === "addInvoiceItem") {
+            state.invoiceItemModal = true;
+            return render();
+          }
+          if (action === "closeInvoiceItem") {
+            state.invoiceItemModal = false;
+            return render();
+          }
+          if (action === "confirmInvoiceItem") {
+            state.invoiceItemModal = false;
+            state.invoiceItemAdded = true;
+            showToast();
+            return render();
+          }
+          if (action === "openDelete") {
+            state.deleteModal = true;
+            return render();
+          }
+          if (action === "closeDelete") {
+            state.deleteModal = false;
+            return render();
+          }
+          if (action === "confirmDelete") {
+            state.deleteModal = false;
+            return route("transactions");
+          }
+          if (action === "saveCustomer") {
+            state.customerCreated = true;
+            showToast();
+            return route("customers");
+          }
+          if (action === "openCustomerEdit") {
+            state.customerEdit = true;
+            return route("customerEdit");
+          }
+          if (action === "saveCustomerEdit") {
+            state.customerEdit = false;
+            state.customerSaved = true;
+            return route("customerDetail");
+          }
+          if (action === "openAuditFilter") {
+            state.auditModal = true;
+            return render();
+          }
+          if (action === "closeAuditFilter") {
+            state.auditModal = false;
+            return render();
+          }
+          if (action === "selectAuditFilter") {
+            state.auditFilter = target.getAttribute("data-filter");
+            state.auditModal = false;
+            return render();
+          }
+          if (action === "openAuditDetail") {
+            state.auditTitle = target.getAttribute("data-audit-title");
+            state.auditDetail = target.getAttribute("data-audit-detail");
+            return route("auditDetail");
+          }
+          if (action === "openAdminEmployee") {
+            state.adminEmployee = target.getAttribute("data-employee");
+            return route("adminEmployeeDetail");
+          }
+          if (action === "openAdminEmployeeStatus") {
+            state.adminEmployeeModal = true;
+            return render();
+          }
+          if (action === "closeAdminEmployeeStatus") {
+            state.adminEmployeeModal = false;
+            return render();
+          }
+          if (action === "selectAdminEmployeeStatus") {
+            state.adminEmployeeStatus = target.getAttribute("data-status");
+            state.adminEmployeeModal = false;
+            showToast();
+            return render();
+          }
+          if (action === "openAdminProof") {
+            state.adminProofModal = false;
+            return route("adminProofDetail");
+          }
+          if (action === "approveAdminProof") {
+            state.adminProofVerified = true;
+            state.adminProofModal = true;
+            return render();
+          }
+          if (action === "rejectAdminProof") {
+            state.adminProofVerified = false;
+            state.adminProofModal = true;
+            return render();
+          }
+          if (action === "closeAdminProof") {
+            state.adminProofModal = false;
+            return render();
+          }
+          if (action === "confirmAdminProof") {
+            state.adminProofModal = false;
+            return route("adminTenants");
+          }
+          if (action === "openAdminTenant") {
+            state.adminTenant = target.getAttribute("data-tenant");
+            return route("adminTenantDetail");
+          }
+          if (action === "openAdminStatus") {
+            state.adminStatusModal = true;
+            return render();
+          }
+          if (action === "closeAdminStatus") {
+            state.adminStatusModal = false;
+            return render();
+          }
+          if (action === "selectAdminStatus") {
+            state.adminTenantStatus = target.getAttribute("data-status");
+            state.adminStatusModal = false;
+            showToast();
+            return render();
+          }
+          if (action === "chooseProof") {
+            state.proofChosen = true;
+            return render();
+          }
+          if (action === "submitProof") {
+            state.proofSubmitted = true;
+            return route("pending");
+          }
+          if (action === "openCapitalTopUp") {
+            state.capitalTopUpModal = true;
+            return render();
+          }
+          if (action === "closeCapitalTopUp") {
+            state.capitalTopUpModal = false;
+            return render();
+          }
+          if (action === "saveCapitalTopUp") {
+            state.capitalTopUpModal = false;
+            state.capitalTopUp = true;
+            showToast();
+            return render();
+          }
+          if (action === "openReportPeriod") {
+            state.reportPeriodPicker = true;
+            return render();
+          }
+          if (action === "closeReportPeriod") {
+            state.reportPeriodPicker = false;
+            return render();
+          }
+          if (action === "selectReportPeriod") {
+            state.reportPeriod = target.getAttribute("data-period");
+            state.reportPeriodPicker = false;
+            return render();
+          }
+          if (action === "openExpenseCategory") {
+            state.expenseCategoryPicker = true;
+            return render();
+          }
+          if (action === "closeExpenseCategory") {
+            state.expenseCategoryPicker = false;
+            return render();
+          }
+          if (action === "selectExpenseCategory") {
+            state.expenseCategory = target.getAttribute("data-value");
+            state.expenseCategoryPicker = false;
+            return render();
+          }
+          if (action === "openExpenseMethod") {
+            state.expenseMethodPicker = true;
+            return render();
+          }
+          if (action === "closeExpenseMethod") {
+            state.expenseMethodPicker = false;
+            return render();
+          }
+          if (action === "selectExpenseMethod") {
+            state.expenseMethod = target.getAttribute("data-value");
+            state.expenseMethodPicker = false;
+            return render();
+          }
+          if (action === "saveExpense") {
+            state.expenseSaved = true;
+            return route("transactionDetail");
+          }
+          if (action === "openPayment") {
+            state.paymentModal = true;
+            return render();
+          }
+          if (action === "closePayment") {
+            state.paymentModal = false;
+            return render();
+          }
+          if (action === "confirmPayment") {
+            state.paymentModal = false;
+            state.paymentAdded = true;
+            showToast();
+            return render();
+          }
+          if (action === "openInvoiceCustomerPicker") {
+            state.invoiceCustomerPicker = true;
+            return render();
+          }
+          if (action === "closeInvoiceCustomerPicker") {
+            state.invoiceCustomerPicker = false;
+            return render();
+          }
+          if (action === "selectInvoiceCustomer") {
+            state.invoiceCustomer = target.getAttribute("data-customer");
+            state.invoiceCustomerPicker = false;
+            return render();
+          }
+          if (action === "openCustomerPicker" && !state.selectedInvoice) {
+            state.customerPicker = true;
+            return render();
+          }
+          if (action === "closeCustomerPicker") {
+            state.customerPicker = false;
+            return render();
+          }
+          if (action === "selectCustomer") {
+            state.selectedCustomer = target.getAttribute("data-customer");
+            state.selectedInvoice = "";
+            state.customerPicker = false;
+            return render();
+          }
+          if (action === "openInvoicePicker") {
+            state.invoicePicker = true;
+            return render();
+          }
+          if (action === "closeInvoicePicker") {
+            state.invoicePicker = false;
+            return render();
+          }
+          if (action === "selectInvoice") {
+            state.selectedInvoice = target.getAttribute("data-invoice");
+            state.selectedCustomer = target.getAttribute("data-customer");
+            state.invoicePicker = false;
+            return render();
+          }
+          if (action === "toast") return showToast();
+          if (next) route(next);
+        });
+        window.addEventListener("popstate", function () {
+          var next = location.hash.slice(1);
+          if (screens[next]) {
+            state.route = next;
+            state.stack = [];
+            render();
+          }
+        });
+        window.__prototypeCheck = function () {
+          var required = ["login", "loginError", "loginDisabled", "register", "registerFieldError", "registerEmailTaken", "forgotPassword", "resetPassword", "resetFieldError", "resetExpired", "dashboard", "transactions", "transactionIncome", "transactionExpense", "transactionDetail", "customers", "customerCreate", "customerDetail", "customerEdit", "invoices", "invoiceCreate", "invoiceDetail", "report", "capitalSetup", "subscription", "payment", "upload", "pending", "adminTenants", "adminTenantDetail", "adminProofDetail", "adminEmployees", "adminEmployeeDetail", "adminAudit", "auditDetail"];
+          required.forEach(function (route) {
+            if (typeof screens[route] !== "function") throw new Error("Missing screen: " + route);
+          });
+          flowRoutes.forEach(function (route) {
+            if (typeof screens[route] !== "function") throw new Error("Missing flow screen: " + route);
+          });
+          return true;
+        };
+        hydrate();
+        window.__prototypeCheck();
+        render();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,172 @@
+// Sparta Ledger — Database Schema (MVP)
+// Source: PRD-Aplikasi-Pencatatan-Keuangan-UMKM-v1.3 (1).md
+// View at https://dbdiagram.io
+
+Table companies {
+  id bigint [pk, increment]
+  name varchar
+  owner_name varchar
+  email varchar
+  phone varchar
+  address text
+  status varchar [note: 'active | closed']
+  paid_until timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+}
+
+Table users {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  name varchar
+  email varchar
+  password varchar
+  role varchar [note: 'owner | employee']
+  status varchar [note: 'active | inactive']
+  inactive_reason varchar [null, note: 'manual | subscription_expired | company_closed | admin_ban']
+  remember_token varchar [null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+
+  indexes {
+    (company_id, email) [unique]
+  }
+}
+
+Table employees {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  user_id bigint [ref: > users.id, null, note: 'set only when has_access_to_system=true']
+  name varchar
+  has_access_to_system boolean
+  status varchar [note: 'active | inactive']
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+
+  indexes {
+    (company_id, user_id) [unique]
+  }
+
+  note: 'Roster tim. has_access_to_system=false + user_id=NULL = daily worker (no login).'
+}
+
+Table transaction_categories {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  name varchar
+  type varchar [note: 'income | expense']
+  is_default boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+
+  indexes {
+    (company_id, type, name) [unique]
+  }
+}
+
+Table customers {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  name varchar
+  contact varchar [null]
+  address text [null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+}
+
+Table invoices {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  customer_id bigint [ref: > customers.id]
+  employee_id bigint [ref: > employees.id, null, note: 'worker penanggung jawab, optional']
+  created_by bigint [ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+
+  note: 'No status/total column. Total = SUM(invoice_items.amount). Frozen once first linked transaction exists.'
+}
+
+Table invoice_items {
+  id bigint [pk, increment]
+  invoice_id bigint [ref: > invoices.id]
+  description varchar
+  amount decimal [note: '> 0']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table transactions {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  category_id bigint [ref: > transaction_categories.id]
+  customer_id bigint [ref: > customers.id, null, note: 'income only']
+  invoice_id bigint [ref: > invoices.id, null, note: 'income only']
+  employee_id bigint [ref: > employees.id, null, note: 'pelaksana, distinct from created_by']
+  created_by bigint [ref: > users.id]
+  updated_by bigint [ref: > users.id, null]
+  type varchar [note: 'income | expense']
+  amount decimal
+  transaction_date date
+  payment_method varchar [note: 'cash | transfer | qris | other']
+  notes text [null]
+  attachment_path varchar [null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+}
+
+Table capital_entries {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  initial_amount decimal
+  start_date date
+  end_date date
+  created_by bigint [ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [null]
+
+  note: 'Only one active (non-overlapping) entry per company at a time.'
+}
+
+Table capital_topups {
+  id bigint [pk, increment]
+  capital_entry_id bigint [ref: > capital_entries.id]
+  amount decimal
+  changed_by bigint [ref: > users.id]
+  changed_at timestamp
+  extended_end_date date [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table payments {
+  id bigint [pk, increment]
+  company_id bigint [ref: > companies.id]
+  amount decimal
+  attachment_path varchar
+  status varchar [note: 'pending | approved']
+  approved_by bigint [ref: > admins.id, null]
+  approved_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table admins {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  password varchar
+  created_at timestamp
+  updated_at timestamp
+
+  note: 'Separate guard from users. Internal super admin only.'
+}
+
+// activity_log table managed by spatie/laravel-activitylog package (not defined here)
