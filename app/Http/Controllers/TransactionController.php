@@ -263,7 +263,10 @@ class TransactionController extends Controller
 
     /**
      * US-TR-03: soft-delete. spatie mencatat event `deleted` dengan snapshot
-     * properties (AC4). "Pemulihan quota" (AC5) menunggu infra kuota (US-SUB-01).
+     * properties (AC4). AC5: baris ter-soft-delete otomatis lepas dari kuota
+     * harian (Transaction::booted membuang cache hitungan hari itu) dan dari
+     * semua agregasi — progress/freeze Invoice, breakdown Customer/Employee,
+     * modal berjalan — karena semuanya lewat global scope SoftDeletes.
      */
     public function destroy(Request $request, Transaction $transaction): RedirectResponse
     {
