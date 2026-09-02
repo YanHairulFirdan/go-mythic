@@ -7,6 +7,7 @@ import Card from '@/Components/ui/Card.vue';
 
 const props = defineProps({
     paid: { type: Boolean, default: false },
+    subscriptionWarning: { type: String, default: null },
     paidUntil: { type: String, default: null },
     pendingPayment: { type: String, default: null },
 });
@@ -100,12 +101,20 @@ const submit = () => {
         <template v-else>
             <template v-if="step === 'plan'">
                 <Card
-                    :label="paid ? 'Paket saat ini' : 'Paket saat ini'"
+                    label="Paket saat ini"
                     :amount="paid ? 'Paid' : 'Free'"
                     :note="paid ? `Aktif sampai ${paidUntil}` : '0 Employee ber-akun · limit 150 transaksi/hari'"
                 />
 
-                <div v-if="paid" class="mt-3 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm font-semibold text-emerald-700" role="status">
+                <div
+                    v-if="subscriptionWarning"
+                    class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800"
+                    role="alert"
+                >
+                    {{ subscriptionWarning }}
+                </div>
+
+                <div v-else-if="paid" class="mt-3 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm font-semibold text-emerald-700" role="status">
                     <CheckCircle2 class="size-4 shrink-0" /> Langganan aktif — perpanjang kapan saja sebelum jatuh tempo.
                 </div>
 

@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Middleware\AuthenticateAdmin;
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Middleware\EnsureUserActive;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -23,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'active' => EnsureUserActive::class,
+            'subscription' => EnsureCompanySubscription::class,
         ]);
 
         $middleware->alias([

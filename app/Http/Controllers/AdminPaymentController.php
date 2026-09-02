@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +43,6 @@ class AdminPaymentController extends Controller
                 'approved_by' => auth('admin')->id(),
                 'approved_at' => $now,
             ]);
-
             $companyChanges = ['paid_until' => $paidUntil];
 
             // US-SUB-07 AC4: an approved payment reactivates a soft-closed company
@@ -58,6 +58,15 @@ class AdminPaymentController extends Controller
             }
 
             $company->update($companyChanges);
+            EnsureCompanySubscription::invalidate($company->id);
+
+            $company->users()
+                ->where('role', 'employee')
+                ->where('inactive_reason', 'subscription_expired')
+                ->update([
+                    'status' => 'active',
+                    'inactive_reason' => null,
+                ]);
         });
 
         return to_route('admin.payments.index');

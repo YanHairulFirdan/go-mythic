@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Middleware\EnsureUserActive;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -28,10 +29,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', EnsureUserActive::class])
+    ->middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::class])
     ->name('dashboard');
 
-Route::middleware(['auth', EnsureUserActive::class])->group(function () {
+Route::middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::post('/employees/account', [EmployeeController::class, 'storeAccount'])->name('employees.account.store');
@@ -61,8 +62,6 @@ Route::middleware(['auth', EnsureUserActive::class])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/settings/branding', [CompanyBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
 });
 
 Route::prefix('admin')->group(function () {

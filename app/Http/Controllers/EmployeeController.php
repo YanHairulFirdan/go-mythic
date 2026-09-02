@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Requests\StoreEmployeeAccountRequest;
 use App\Http\Requests\StoreWorkerRequest;
 use App\Models\Employee;
@@ -22,7 +23,10 @@ class EmployeeController extends Controller
         abort_unless($user?->role === 'owner', 403);
 
         return Inertia::render('Employees/Index', [
-            'canCreateEmployee' => $user->company->paid_until?->isFuture() === true,
+            'canCreateEmployee' => EnsureCompanySubscription::isPaid(
+                $user->company_id,
+                $user->company->paid_until,
+            ),
             'employees' => Employee::query()
                 ->with(['user:id,username'])
                 ->where('company_id', $user->company_id)
@@ -77,7 +81,10 @@ class EmployeeController extends Controller
         $owner = $request->user();
 
         // AC2: Free (termasuk pending payment) diarahkan ke halaman pembayaran, bukan error.
-        if ($owner->company->paid_until?->isFuture() !== true) {
+        if (! EnsureCompanySubscription::isPaid(
+            $owner->company_id,
+            $owner->company->paid_until,
+        )) {
             return to_route('subscription.index');
         }
 
