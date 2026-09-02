@@ -163,6 +163,65 @@ class SubscriptionStatusTest extends TestCase
         $this->actingAs($owner->fresh())->get(route('dashboard'))->assertOk();
     }
 
+    /**
+     * US-SUB-05 AC1/AC3 + US-SUB-06 AC1/AC2: live degrade on an Owner request
+     * is recovered by approval, while a manually inactive Employee stays off.
+     */
+    public function test_full_cycle_degrade_then_payment_approval_recovers_expiry_employees_only(): void
+    {
+        $owner = User::factory()->create();
+        $expiredEmployee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'active',
+        ]);
+        Employee::factory()->create([
+            'company_id' => $owner->company_id,
+            'user_id' => $expiredEmployee->id,
+            'name' => $expiredEmployee->name,
+            'has_access_to_system' => true,
+            'status' => 'active',
+        ]);
+        $manualEmployee = User::factory()->create([
+            'company_id' => $owner->company_id,
+            'role' => 'employee',
+            'status' => 'inactive',
+            'inactive_reason' => 'manual',
+        ]);
+        $owner->company->update(['paid_until' => now()->subSecond()]);
+
+        $this->actingAs($owner)->get(route('dashboard'))
+            ->assertRedirect(route('subscription.index'));
+
+        $this->assertDatabaseHas('users', [
+            'id' => $expiredEmployee->id,
+            'status' => 'inactive',
+            'inactive_reason' => 'subscription_expired',
+        ]);
+
+        $admin = Admin::factory()->create();
+        $payment = Payment::factory()->create([
+            'company_id' => $owner->company_id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.payments.approve', $payment))
+            ->assertRedirect(route('admin.payments.index'));
+
+        $this->assertDatabaseHas('users', [
+            'id' => $expiredEmployee->id,
+            'status' => 'active',
+            'inactive_reason' => null,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $manualEmployee->id,
+            'status' => 'inactive',
+            'inactive_reason' => 'manual',
+        ]);
+        $this->assertTrue($owner->company->fresh()->isPaid());
+    }
+
     public function test_admin_approval_reactivates_employees_degraded_by_expiry_but_not_manual_deactivations(): void
     {
         $owner = User::factory()->create();
