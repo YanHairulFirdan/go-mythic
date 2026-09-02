@@ -111,6 +111,60 @@ class QuotaRestoreOnDeleteTest extends TestCase
         $this->assertSame(3, DailyTransactionQuota::for($owner->company->fresh())->used('income'));
     }
 
+    /**
+     * The daily quota is keyed by `created_at` in the current UTC day, so a row
+     * inserted on an earlier day was never part of today's count — deleting it
+     * frees nothing today.
+     */
+    public function test_soft_deleting_a_transaction_created_on_a_previous_utc_day_does_not_change_todays_quota(): void
+    {
+        [$owner, $income] = $this->company();
+
+        // 3 recorded today...
+        $this->seedUsage($owner, $income, 3);
+        // ...and 2 recorded yesterday (created_at in the previous UTC day).
+        Transaction::factory()->count(2)->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'category_id' => $income->id,
+            'type' => 'income',
+            'transaction_date' => '2026-09-17',
+            'created_at' => now()->subDay(),
+        ]);
+
+        // Yesterday's rows never counted toward today.
+        $this->assertSame(3, DailyTransactionQuota::for($owner->company->fresh())->used('income'));
+
+        $yesterday = Transaction::where('company_id', $owner->company_id)
+            ->whereDate('created_at', now()->subDay()->toDateString())
+            ->firstOrFail();
+
+        $this->actingAs($owner)->delete(route('transactions.destroy', $yesterday))
+            ->assertRedirect(route('transactions.index'));
+
+        $this->assertSoftDeleted($yesterday);
+        // Today's quota is unchanged — nothing was freed.
+        $this->assertSame(3, DailyTransactionQuota::for($owner->company->fresh())->used('income'));
+    }
+
+    /**
+     * Contrast: the key is `created_at`, not the user-picked `transaction_date`.
+     * A row recorded today but back-dated still counts today, so deleting it
+     * does free a slot.
+     */
+    public function test_soft_deleting_a_backdated_transaction_recorded_today_frees_a_slot(): void
+    {
+        [$owner, $income] = $this->company();
+
+        // transaction_date well in the past, but created_at is now (see seedUsage).
+        $this->seedUsage($owner, $income, 4);
+        $this->assertSame(4, DailyTransactionQuota::for($owner->company->fresh())->used('income'));
+
+        Transaction::where('company_id', $owner->company_id)->firstOrFail()->delete();
+
+        $this->assertSame(3, DailyTransactionQuota::for($owner->company->fresh())->used('income'));
+    }
+
     public function test_soft_deleted_transaction_is_excluded_from_invoice_progress(): void
     {
         [$owner, $income] = $this->company();
