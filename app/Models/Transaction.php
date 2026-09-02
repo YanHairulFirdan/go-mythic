@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DailyTransactionQuota;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +42,20 @@ class Transaction extends Model
         return [
             'amount' => 'decimal:2',
         ];
+    }
+
+    /**
+     * US-TR-01B: keep the Redis daily-quota counters coherent. Any create,
+     * update (incl. an income<->expense switch), soft-delete or restore drops
+     * the day's cached per-type counts so the next read recomputes from the DB.
+     */
+    protected static function booted(): void
+    {
+        $flush = static fn (self $transaction) => DailyTransactionQuota::forget($transaction->company_id);
+
+        static::saved($flush);
+        static::deleted($flush);
+        static::restored($flush);
     }
 
     /**

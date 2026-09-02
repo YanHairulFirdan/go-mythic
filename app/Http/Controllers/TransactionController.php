@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
+use App\Support\DailyTransactionQuota;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -108,6 +109,8 @@ class TransactionController extends Controller
             'customers' => $this->companyCustomers($request),
             'employees' => $this->companyEmployees($request),
             'prefill' => ['invoice_id' => $prefillInvoiceId],
+            // US-TR-01B: per-type radial quota indicator; null once Paid.
+            'quota' => DailyTransactionQuota::for($request->user()->company)->widget(),
         ]);
     }
 
