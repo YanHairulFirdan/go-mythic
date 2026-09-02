@@ -82,62 +82,72 @@ class StoreTransactionRequest extends FormRequest
         ];
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(fn (Validator $v) => $this->afterCapitalActive($v));
+        $validator->after(fn (Validator $v) => $this->afterIncomeOnlyLinks($v));
+        $validator->after(fn (Validator $v) => $this->afterQuota($v));
+    }
+
     /**
      * AC2 + AC7 (US-MK-04): the transaction date must fall inside an active
      * capital entry — this rejects both "no modal at all" and "date outside the
      * modal period".
      */
-    public function withValidator(Validator $validator): void
+    protected function afterCapitalActive(Validator $validator): void
     {
-        $validator->after(function (Validator $validator): void {
-            $date = $this->input('transaction_date');
+        $date = $this->input('transaction_date');
 
-            if (! is_string($date) || $validator->errors()->has('transaction_date')) {
-                return;
-            }
+        if (! is_string($date) || $validator->errors()->has('transaction_date')) {
+            return;
+        }
 
-            $covered = CapitalEntry::query()
-                ->where('company_id', $this->user()->company_id)
-                ->activeOn($date)
-                ->exists();
+        $covered = CapitalEntry::query()
+            ->where('company_id', $this->user()->company_id)
+            ->activeOn($date)
+            ->exists();
 
-            if (! $covered) {
-                $validator->errors()->add(
-                    'transaction_date',
-                    'Belum ada modal/kas aktif untuk tanggal tersebut. Set modal dulu sebelum mencatat transaksi.',
-                );
-            }
-        });
+        if (! $covered) {
+            $validator->errors()->add(
+                'transaction_date',
+                'Belum ada modal/kas aktif untuk tanggal tersebut. Set modal dulu sebelum mencatat transaksi.',
+            );
+        }
+    }
 
-        // US-INV-02 AC4 / US-CUST-02 AC1: invoice and customer links are income-only.
-        $validator->after(function (Validator $validator): void {
-            if ($this->input('type') === 'income') {
-                return;
-            }
-            if ($this->filled('invoice_id')) {
-                $validator->errors()->add('invoice_id', 'Invoice hanya bisa dikaitkan ke transaksi pemasukan.');
-            }
-            if ($this->filled('customer_id')) {
-                $validator->errors()->add('customer_id', 'Customer hanya bisa dikaitkan ke transaksi pemasukan.');
-            }
-        });
+    /** US-INV-02 AC4 / US-CUST-02 AC1: invoice and customer links are income-only. */
+    protected function afterIncomeOnlyLinks(Validator $validator): void
+    {
+        if ($this->input('type') === 'income') {
+            return;
+        }
+        if ($this->filled('invoice_id')) {
+            $validator->errors()->add('invoice_id', 'Invoice hanya bisa dikaitkan ke transaksi pemasukan.');
+        }
+        if ($this->filled('customer_id')) {
+            $validator->errors()->add('customer_id', 'Customer hanya bisa dikaitkan ke transaksi pemasukan.');
+        }
+    }
 
-        // US-SUB-01 AC3: a Free company is hard-blocked once this type reaches
-        // the 150/day limit (reset at 00:00 UTC); the message points to upgrade.
-        $validator->after(function (Validator $validator): void {
-            $type = $this->input('type');
+    /**
+     * US-SUB-01 AC3: creating a transaction on a Free company is hard-blocked
+     * once that type reaches the 150/day limit (reset at 00:00 UTC); the message
+     * points to upgrade. UpdateTransactionRequest narrows this for edits.
+     */
+    protected function afterQuota(Validator $validator): void
+    {
+        $type = $this->input('type');
 
-            if (! in_array($type, ['income', 'expense'], true)) {
-                return;
-            }
+        if (! in_array($type, ['income', 'expense'], true)) {
+            return;
+        }
 
-            if (DailyTransactionQuota::for($this->user()->company)->isReached($type)) {
-                $validator->errors()->add('quota', sprintf(
-                    'Kuota transaksi %s harian (%d) sudah tercapai. Kuota diatur ulang otomatis pukul 00:00 UTC. Upgrade ke Paid untuk mencatat tanpa batas.',
-                    $type === 'income' ? 'pemasukan' : 'pengeluaran',
-                    DailyTransactionQuota::LIMIT,
-                ));
-            }
-        });
+        if (DailyTransactionQuota::for($this->user()->company)->isReached($type)) {
+            $validator->errors()->add('quota', sprintf(
+                'Kuota transaksi %s harian (%d) sudah tercapai. Kuota diatur ulang otomatis pukul 00:00 UTC. Upgrade ke Paid untuk mencatat tanpa batas.',
+                $type === 'income' ? 'pemasukan' : 'pengeluaran',
+                DailyTransactionQuota::LIMIT,
+            ));
+        }
     }
 }
