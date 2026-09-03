@@ -27,7 +27,7 @@ class RoleAuthorizationTest extends TestCase
                 ->where('auth.user.role', 'employee'));
     }
 
-    public function test_owner_more_page_is_available(): void
+    public function test_owner_more_page_shows_owner_modules(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
 
@@ -37,6 +37,16 @@ class RoleAuthorizationTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('More/Index')
                 ->where('auth.user.role', 'owner'));
+    }
+
+    public function test_owner_can_open_the_analytic_report(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Reports/ProfitLoss'));
     }
 
     public function test_employee_can_access_transaction_input_and_only_own_list(): void
