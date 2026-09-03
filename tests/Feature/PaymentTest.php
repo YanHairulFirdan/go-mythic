@@ -51,6 +51,21 @@ class PaymentTest extends TestCase
                 ->whereNot('pendingPayment', null));
     }
 
+    public function test_subscription_page_excludes_another_companys_pending_payment(): void
+    {
+        $owner = User::factory()->create();
+        $foreignOwner = User::factory()->create();
+        Payment::factory()->create([
+            'company_id' => $foreignOwner->company_id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('subscription.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('pendingPayment', null));
+    }
+
     public function test_employee_cannot_view_or_submit_subscription_payment(): void
     {
         $employee = User::factory()->create(['role' => 'employee']);
