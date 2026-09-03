@@ -83,6 +83,28 @@ class EmployeeAccountTest extends TestCase
         $this->assertDatabaseCount('employees', 0);
     }
 
+    /**
+     * US-SUB-05 AC1/AC3 (degrade path): a company that was Paid then expired is
+     * back to Free rules live, so employee-account creation is blocked the same
+     * as a never-paid Free company (US-SUB-05 AC2: 0 kuota Employee).
+     */
+    public function test_employee_account_creation_is_blocked_after_live_degrade(): void
+    {
+        $owner = User::factory()->create();
+        $owner->company->update(['paid_until' => now()->subSecond()]);
+
+        $this->actingAs($owner)
+            ->post(route('employees.account.store'), [
+                'name' => 'Post-Degrade Employee',
+                'username' => 'post.degrade.employee',
+                'password' => 'secret-password',
+            ])
+            ->assertRedirect(route('subscription.index'));
+
+        $this->assertDatabaseCount('employees', 0);
+        $this->assertDatabaseCount('users', 1);
+    }
+
     public function test_paid_owner_can_create_employee_account_with_active_roster_row(): void
     {
         $owner = User::factory()->create();
