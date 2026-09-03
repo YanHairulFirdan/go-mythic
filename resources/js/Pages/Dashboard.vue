@@ -11,6 +11,8 @@ const props = defineProps({
     user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
     capitalWidget: { type: Object, default: null },
     quotaWidget: { type: Object, default: null },
+    // US-INV-06: { outstanding, partial } or null when every invoice is covered.
+    invoiceReminderWidget: { type: Object, default: null },
     summary: {
         type: Object,
         default: () => ({
@@ -160,16 +162,23 @@ const formatDate = (value) => (value
             </div>
         </section>
 
-        <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800" aria-label="Perhatian">
-            <div class="flex gap-3">
-                <span class="mt-0.5 text-base" aria-hidden="true">!</span>
-                <div>
-                    <p class="font-bold">3 invoice belum lunas</p>
-                    <p class="mt-0.5 text-xs text-amber-700">1 invoice terpakai sebagian · Periksa sebelum jatuh tempo</p>
-                </div>
-                <ChevronRight class="ml-auto mt-0.5 size-4 shrink-0" />
+        <!-- US-INV-06: invoices not yet fully covered by linked transactions.
+             Counts are on-the-fly (US-INV-04); hidden when nothing is outstanding. -->
+        <Link
+            v-if="props.invoiceReminderWidget"
+            :href="route('invoices.index')"
+            class="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800 transition hover:border-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            aria-label="Ringkasan invoice belum tuntas"
+        >
+            <span class="mt-0.5 text-base" aria-hidden="true">!</span>
+            <div>
+                <p class="font-bold">{{ props.invoiceReminderWidget.outstanding }} invoice belum lunas</p>
+                <p v-if="props.invoiceReminderWidget.partial > 0" class="mt-0.5 text-xs text-amber-700">
+                    {{ props.invoiceReminderWidget.partial }} invoice terpakai sebagian
+                </p>
             </div>
-        </section>
+            <ChevronRight class="ml-auto mt-0.5 size-4 shrink-0" />
+        </Link>
 
         <section class="mt-6" aria-labelledby="quick-actions-title">
             <div class="mb-3 flex items-center justify-between">
