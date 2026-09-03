@@ -228,8 +228,8 @@ class SubscriptionStatusTest extends TestCase
         $expiredEmployee = User::factory()->create([
             'company_id' => $owner->company_id,
             'role' => 'employee',
-            'status' => 'inactive',
-            'inactive_reason' => 'subscription_expired',
+            'status' => 'active',
+            'inactive_reason' => null,
         ]);
         $manualEmployee = User::factory()->create([
             'company_id' => $owner->company_id,
@@ -244,11 +244,22 @@ class SubscriptionStatusTest extends TestCase
         ]);
         $owner->company->update(['paid_until' => now()->subSecond()]);
 
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('subscription.index'));
+
+        $this->assertDatabaseHas('users', [
+            'id' => $expiredEmployee->id,
+            'status' => 'inactive',
+            'inactive_reason' => 'subscription_expired',
+        ]);
+
         $this->actingAs($admin, 'admin')
             ->post(route('admin.payments.approve', $payment))
             ->assertRedirect(route('admin.payments.index'));
 
         $this->assertDatabaseHas('users', ['id' => $expiredEmployee->id, 'status' => 'active', 'inactive_reason' => null]);
         $this->assertDatabaseHas('users', ['id' => $manualEmployee->id, 'status' => 'inactive', 'inactive_reason' => 'manual']);
+        $this->actingAs($expiredEmployee->fresh())->get(route('dashboard'))->assertOk();
     }
 }

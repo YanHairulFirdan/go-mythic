@@ -15,16 +15,17 @@ class RoleAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_employee_more_page_hides_owner_modules(): void
+    public function test_employee_dashboard_and_more_expose_no_analytic_entry(): void
     {
         $employee = User::factory()->create(['role' => 'employee']);
 
-        $this->actingAs($employee)
-            ->get(route('more.index'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('More/Index')
-                ->where('auth.user.role', 'employee'));
+        foreach ([route('dashboard'), route('more.index')] as $url) {
+            $this->actingAs($employee)
+                ->get($url)
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('auth.user.role', 'employee'));
+        }
     }
 
     public function test_owner_more_page_shows_owner_modules(): void

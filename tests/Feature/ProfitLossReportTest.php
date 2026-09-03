@@ -15,9 +15,9 @@ class ProfitLossReportTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function transaction(int $companyId, string $type, float $amount, string $date, ?int $createdBy = null): Transaction
+    private function transaction(int $companyId, string $type, float $amount, string $date, ?int $createdBy = null, ?TransactionCategory $category = null): Transaction
     {
-        $category = TransactionCategory::factory()->for(Company::find($companyId))->create(['type' => $type]);
+        $category ??= TransactionCategory::factory()->for(Company::find($companyId))->create(['type' => $type]);
 
         return Transaction::factory()->create([
             'company_id' => $companyId,
@@ -59,6 +59,56 @@ class ProfitLossReportTest extends TestCase
                 ->where('report.net', 1_200_000));
 
         Carbon::setTestNow();
+    }
+
+    public function test_default_period_is_current_month(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-01');
+        $this->transaction($owner->company_id, 'income', 999_000, '2026-08-31');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('report.period', 'month')
+                ->where('report.period_label', 'September 2026')
+                ->where('report.income', 100_000));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_summary_updates_immediately_after_new_transaction(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-15');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->where('report.income', 100_000));
+
+        $this->transaction($owner->company_id, 'income', 200_000, '2026-09-15');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->where('report.income', 300_000));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_summary_is_text_only_without_chart_data(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Reports/ProfitLoss')
+                ->has('report.income')
+                ->has('report.expense')
+                ->has('report.net')
+                ->missing('report.chart'));
     }
 
     public function test_today_period_only_counts_today(): void
@@ -153,5 +203,116 @@ class ProfitLossReportTest extends TestCase
         $this->actingAs($owner)
             ->get(route('reports.profit-loss'))
             ->assertInertia(fn (Assert $page) => $page->where('report.income', 0));
+    }
+
+    private function transactionInCategory(int $companyId, string $type, float $amount, string $date, string $categoryName): Transaction
+    {
+        $category = TransactionCategory::factory()
+            ->for(Company::find($companyId))
+            ->create(['type' => $type, 'name' => $categoryName]);
+
+        return Transaction::factory()->create([
+            'company_id' => $companyId,
+            'created_by' => User::factory()->create(['company_id' => $companyId])->id,
+            'category_id' => $category->id,
+            'type' => $type,
+            'amount' => $amount,
+            'transaction_date' => $date,
+        ]);
+    }
+
+    public function test_breakdown_lists_categories_sorted_descending_by_total(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $kecil = TransactionCategory::factory()->for($owner->company)->create(['type' => 'income', 'name' => 'Kecil']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-01', category: $kecil);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-05', category: $kecil);
+        $this->transactionInCategory($owner->company_id, 'income', 700_000, '2026-09-10', 'Besar');
+        $this->transactionInCategory($owner->company_id, 'income', 100_000, '2026-09-12', 'Sedang');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('report.incomeBreakdown', 3)
+                ->where('report.incomeBreakdown.0.label', 'Besar')
+                ->where('report.incomeBreakdown.0.amount', 700_000)
+                ->where('report.incomeBreakdown.0.percent', 70)
+                ->where('report.incomeBreakdown.1.label', 'Kecil')
+                ->where('report.incomeBreakdown.1.amount', 200_000)
+                ->where('report.incomeBreakdown.1.percent', 20)
+                ->where('report.incomeBreakdown.2.label', 'Sedang')
+                ->where('report.incomeBreakdown.2.percent', 10));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_income_and_expense_breakdowns_are_separate_lists(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transactionInCategory($owner->company_id, 'income', 300_000, now()->toDateString(), 'Jasa');
+        $this->transactionInCategory($owner->company_id, 'expense', 100_000, now()->toDateString(), 'Upah');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('report.incomeBreakdown', 1)
+                ->where('report.incomeBreakdown.0.label', 'Jasa')
+                ->has('report.expenseBreakdown', 1)
+                ->where('report.expenseBreakdown.0.label', 'Upah'));
+    }
+
+    public function test_category_with_no_transactions_in_period_is_absent_from_breakdown(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transactionInCategory($owner->company_id, 'income', 100_000, '2026-09-15', 'Ada');
+        TransactionCategory::factory()
+            ->for($owner->company)
+            ->create(['type' => 'income', 'name' => 'Kosong']);
+
+        Carbon::setTestNow('2026-09-15');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('report.incomeBreakdown', 1)
+                ->where('report.incomeBreakdown.0.label', 'Ada'));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_breakdown_respects_same_period_filter_as_summary(): void
+    {
+        // Tuesday; week = Mon 2026-09-14 .. Sun 2026-09-20
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transactionInCategory($owner->company_id, 'income', 50_000, '2026-09-14', 'Dalam Minggu');
+        $this->transactionInCategory($owner->company_id, 'income', 500_000, '2026-09-13', 'Luar Minggu');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss', ['period' => 'week']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('report.incomeBreakdown', 1)
+                ->where('report.incomeBreakdown.0.label', 'Dalam Minggu')
+                ->where('report.incomeBreakdown.0.amount', 50_000)
+                ->where('report.incomeBreakdown.0.percent', 100));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_breakdown_excludes_soft_deleted_transactions(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $tx = $this->transactionInCategory($owner->company_id, 'income', 200_000, now()->toDateString(), 'Jasa');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->has('report.incomeBreakdown', 1));
+
+        $tx->delete();
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->has('report.incomeBreakdown', 0));
     }
 }

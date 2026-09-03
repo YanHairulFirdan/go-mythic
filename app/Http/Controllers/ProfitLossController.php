@@ -50,6 +50,27 @@ class ProfitLossController extends Controller
         $income = $baseQuery('income');
         $expense = $baseQuery('expense');
 
+        $breakdown = function (string $type) use ($user, $dateFrom, $dateTo, $income, $expense): array {
+            $total = $type === 'income' ? $income : $expense;
+
+            return Transaction::query()
+                ->where('company_id', $user->company_id)
+                ->whereBetween('transaction_date', [$dateFrom, $dateTo])
+                ->where('type', $type)
+                ->selectRaw('category_id, SUM(amount) as total')
+                ->groupBy('category_id')
+                ->orderByDesc('total')
+                ->with('category:id,name')
+                ->get()
+                ->map(fn ($row) => [
+                    'label' => $row->category->name,
+                    'amount' => (float) $row->total,
+                    'percent' => $total > 0 ? round((float) $row->total / $total * 100, 1) : 0,
+                ])
+                ->values()
+                ->all();
+        };
+
         return Inertia::render('Reports/ProfitLoss', [
             'report' => [
                 'period' => $period,
@@ -59,8 +80,8 @@ class ProfitLossController extends Controller
                 'income' => $income,
                 'expense' => $expense,
                 'net' => $income - $expense,
-                'incomeBreakdown' => [],
-                'expenseBreakdown' => [],
+                'incomeBreakdown' => $breakdown('income'),
+                'expenseBreakdown' => $breakdown('expense'),
             ],
         ]);
     }
