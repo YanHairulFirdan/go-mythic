@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfitLossController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
@@ -49,11 +50,7 @@ Route::middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::c
     Route::resource('invoices', InvoiceController::class);
     Route::resource('transaction-categories', TransactionCategoryController::class)
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::get('/reports/profit-loss', function () {
-        abort_unless(request()->user()?->role === 'owner', 403);
-
-        return Inertia::render('Reports/ProfitLoss');
-    })->name('reports.profit-loss');
+    Route::get('/reports/profit-loss', [ProfitLossController::class, 'index'])->name('reports.profit-loss');
     Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
     Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');
     Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
