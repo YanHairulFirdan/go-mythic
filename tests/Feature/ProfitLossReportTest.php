@@ -61,6 +61,56 @@ class ProfitLossReportTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_default_period_is_current_month(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-01');
+        $this->transaction($owner->company_id, 'income', 999_000, '2026-08-31');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('report.period', 'month')
+                ->where('report.period_label', 'September 2026')
+                ->where('report.income', 100_000));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_summary_updates_immediately_after_new_transaction(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-15');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->where('report.income', 100_000));
+
+        $this->transaction($owner->company_id, 'income', 200_000, '2026-09-15');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->where('report.income', 300_000));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_summary_is_text_only_without_chart_data(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Reports/ProfitLoss')
+                ->has('report.income')
+                ->has('report.expense')
+                ->has('report.net')
+                ->missing('report.chart'));
+    }
+
     public function test_today_period_only_counts_today(): void
     {
         Carbon::setTestNow('2026-09-15');
