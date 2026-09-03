@@ -116,7 +116,7 @@ const applyCustomRange = () => {
                 <div v-for="row in props.report.incomeBreakdown" :key="row.label" class="border-b border-slate-100 py-3.5 last:border-b-0">
                     <div class="flex items-center justify-between gap-4 text-xs">
                         <span class="text-slate-600">{{ row.label }}</span>
-                        <strong class="font-semibold tabular-nums text-slate-800">{{ row.amount }}</strong>
+                        <strong class="font-semibold tabular-nums text-slate-800">{{ formatRupiah(row.amount) }}</strong>
                     </div>
                     <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
                         <div class="h-full rounded-full bg-emerald-500" :style="{ width: `${row.percent}%` }" />
@@ -131,7 +131,7 @@ const applyCustomRange = () => {
                 <div v-for="row in props.report.expenseBreakdown" :key="row.label" class="border-b border-slate-100 py-3.5 last:border-b-0">
                     <div class="flex items-center justify-between gap-4 text-xs">
                         <span class="text-slate-600">{{ row.label }}</span>
-                        <strong class="font-semibold tabular-nums text-slate-800">{{ row.amount }}</strong>
+                        <strong class="font-semibold tabular-nums text-slate-800">{{ formatRupiah(row.amount) }}</strong>
                     </div>
                     <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
                         <div class="h-full rounded-full bg-rose-500" :style="{ width: `${row.percent}%` }" />
