@@ -8,7 +8,6 @@ import Button from '@/Components/ui/Button.vue';
 const page = usePage();
 
 const props = defineProps({
-    user: { type: Object, default: null },
     capitalWidget: { type: Object, default: null },
     quotaWidget: { type: Object, default: null },
     // US-INV-06: { outstanding, partial } or null when every invoice is covered.
@@ -40,8 +39,7 @@ const props = defineProps({
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
 
-const currentUser = computed(() => page.props.auth?.user ?? props.user);
-const displayName = computed(() => currentUser.value?.name ?? '');
+const displayName = computed(() => page.props.auth?.user?.name ?? '');
 
 const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
@@ -139,7 +137,7 @@ const quotaItems = computed(() => {
 <template>
     <Head title="Beranda" />
 
-    <PrototypeLayout :user="currentUser">
+    <PrototypeLayout>
         <section class="pb-5 pt-4">
             <p class="text-sm text-slate-500">Selamat datang kembali,</p>
             <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-950">

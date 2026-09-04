@@ -4,11 +4,13 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import BottomNav from '@/Components/app/BottomNav.vue';
 import CapitalAlertBanner from '@/Components/app/CapitalAlertBanner.vue';
-
-defineProps({ user: { type: Object, default: () => ({ name: 'Budi Santoso' }) } });
+import Dropdown from '@/Components/Dropdown.vue';
+import DropdownLink from '@/Components/DropdownLink.vue';
 
 const page = usePage();
 const logoUrl = computed(() => page.props.branding?.logoUrl ?? null);
+const authUser = computed(() => page.props.auth?.user ?? null);
+const initial = computed(() => (authUser.value?.name ?? '').charAt(0).toUpperCase());
 </script>
 
 <template>
@@ -28,10 +30,27 @@ const logoUrl = computed(() => page.props.branding?.logoUrl ?? null);
                         <Bell class="size-[17px]" />
                         <span class="absolute right-2 top-2 size-1.5 rounded-full bg-rose-500" />
                     </button>
-                    <button class="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
-                        <span class="flex size-5 items-center justify-center rounded-full bg-primary-100 text-[10px] font-bold text-primary-700">{{ user.name?.charAt(0) || 'B' }}</span>
-                        <ChevronDown class="size-3.5" />
-                    </button>
+                    <Dropdown align="right" width="48" content-classes="py-1 bg-white">
+                        <template #trigger>
+                            <button
+                                type="button"
+                                aria-label="Menu akun"
+                                class="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                            >
+                                <span class="flex size-5 items-center justify-center rounded-full bg-primary-100 text-[10px] font-bold text-primary-700">{{ initial }}</span>
+                                <ChevronDown class="size-3.5" />
+                            </button>
+                        </template>
+
+                        <template #content>
+                            <div v-if="authUser" class="border-b border-slate-100 px-4 py-3">
+                                <p class="truncate text-sm font-semibold text-slate-800">{{ authUser.name }}</p>
+                                <p class="truncate text-xs text-slate-500">{{ authUser.email }}</p>
+                            </div>
+                            <DropdownLink :href="route('profile.edit')">Profil</DropdownLink>
+                            <DropdownLink :href="route('logout')" method="post" as="button">Keluar</DropdownLink>
+                        </template>
+                    </Dropdown>
                 </div>
             </header>
             <main scroll-region class="scrollbar-hide flex-1 overflow-y-auto px-5 pb-6"><slot /></main>
