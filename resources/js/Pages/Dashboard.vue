@@ -30,12 +30,11 @@ const props = defineProps({
             period_end: null,
         }),
     },
+    // Latest rows the viewer may see (Employee: only their own), newest first.
+    // Each: { id, type, amount, transaction_date, category }.
     recentTransactions: {
         type: Array,
-        default: () => [
-            { name: 'Jasa Cleaning Rumah', date: '20 Agu 2026', amount: '+Rp850.000', type: 'income' },
-            { name: 'Belanja bahan', date: '19 Agu 2026', amount: '-Rp250.000', type: 'expense' },
-        ],
+        default: () => [],
     },
 });
 
@@ -95,6 +94,14 @@ const summaryCaption = computed(() => {
 
     return `${direction} ${formatRupiah(Math.abs(delta))} dari ${formatRupiah(s.baseline_amount)} bulan lalu`;
 });
+
+const recentItems = computed(() => props.recentTransactions.map((transaction) => ({
+    id: transaction.id,
+    type: transaction.type,
+    label: transaction.category ?? (transaction.type === 'income' ? 'Pemasukan' : 'Pengeluaran'),
+    date: formatDate(transaction.transaction_date),
+    amount: `${transaction.type === 'income' ? '+' : '−'}${formatRupiah(transaction.amount)}`,
+})));
 
 const quickActions = computed(() => [
     { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
@@ -258,12 +265,13 @@ const quotaItems = computed(() => {
                 <Link :href="route('transactions.index')" class="text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Lihat semua <span aria-hidden="true">→</span></Link>
             </div>
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
-                <Link v-for="transaction in props.recentTransactions" :key="transaction.name" href="#transaction-detail" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500">
+                <Link v-for="transaction in recentItems" :key="transaction.id" :href="route('transactions.show', transaction.id)" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500">
                     <span :class="transaction.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" class="flex size-9 shrink-0 items-center justify-center rounded-xl"><ArrowUpRight v-if="transaction.type === 'income'" class="size-[18px]" /><ArrowDownLeft v-else class="size-[18px]" /></span>
-                    <span class="min-w-0 flex-1"><strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.name }}</strong><small class="mt-1 block text-[10px] text-slate-400">{{ transaction.date }}</small></span>
+                    <span class="min-w-0 flex-1"><strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.label }}</strong><small class="mt-1 block text-[10px] text-slate-400">{{ transaction.date }}</small></span>
                     <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'" class="text-xs font-extrabold tabular-nums">{{ transaction.amount }}</span>
                     <ChevronRight class="size-4 text-slate-300" />
                 </Link>
+                <p v-if="recentItems.length === 0" class="py-6 text-center text-xs text-slate-400">Belum ada transaksi.</p>
             </div>
         </section>
     </PrototypeLayout>

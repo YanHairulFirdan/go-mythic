@@ -6,6 +6,7 @@ use App\Models\CapitalEntry;
 use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Support\DailyTransactionQuota;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -20,6 +21,8 @@ class DashboardController extends Controller
             // capital period for an Owner (laba ÷ modal) or the running month
             // otherwise. The greeting name comes from the shared `auth.user` prop.
             'summary' => $this->summaryWidget($request),
+            // Newest transactions the viewer may see (Employee: only their own).
+            'recentTransactions' => $this->recentTransactions($request),
             'capitalWidget' => $this->capitalWidget($request),
             // US-SUB-01 AC1/AC2: per-type daily usage indicator for Free
             // companies; null (hidden) once the company is Paid.
@@ -112,6 +115,38 @@ class DashboardController extends Controller
             'period_start' => null,
             'period_end' => null,
         ];
+    }
+
+    /**
+     * "Transaksi terbaru" list: the five most recent transactions, newest first,
+     * scoped to the company. Employees only see rows they recorded (US-TR-04
+     * AC1). Empty array renders the section's empty state.
+     *
+     * @return list<array{id: int, type: string, amount: float, transaction_date: string, category: string|null}>
+     */
+    private function recentTransactions(Request $request): array
+    {
+        $user = $request->user();
+
+        return Transaction::query()
+            ->where('company_id', $user->company_id)
+            ->when(
+                $user->role === 'employee',
+                fn (Builder $query) => $query->where('created_by', $user->id),
+            )
+            ->with('category:id,name')
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (Transaction $transaction): array => [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'amount' => (float) $transaction->amount,
+                'transaction_date' => $transaction->transaction_date,
+                'category' => $transaction->category?->name,
+            ])
+            ->all();
     }
 
     /**
