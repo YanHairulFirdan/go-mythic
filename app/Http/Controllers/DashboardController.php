@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CapitalEntry;
 use App\Models\Invoice;
+use App\Models\Transaction;
 use App\Support\DailyTransactionQuota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,10 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Dashboard', [
+            // Performance card: real income/expense/net, framed around the active
+            // capital period for an Owner (laba ÷ modal) or the running month
+            // otherwise. The greeting name comes from the shared `auth.user` prop.
+            'summary' => $this->summaryWidget($request),
             'capitalWidget' => $this->capitalWidget($request),
             // US-SUB-01 AC1/AC2: per-type daily usage indicator for Free
             // companies; null (hidden) once the company is Paid.
@@ -23,6 +28,90 @@ class DashboardController extends Controller
             // linked transactions; null (card hidden) when nothing is outstanding.
             'invoiceReminderWidget' => $this->invoiceReminderWidget($request),
         ]);
+    }
+
+    /**
+     * The dashboard performance card. Income, expense and net are always summed
+     * from the company's non-soft-deleted transactions (same query shape as
+     * US-AN-01 AC1/AC3); `income_ratio_percent` drives the comparison bar width.
+     *
+     * Two framings, chosen per request:
+     *  - `basis: 'capital'` — Owner with an active capital entry (US-MK). The
+     *    window is that entry's [start_date, end_date], and `change_percent` is
+     *    net profit as a percentage of the capital total (laba ÷ modal), a
+     *    return figure that cannot blow up on a tiny denominator (modal is
+     *    validated > 0, US-MK-01 AC4). `baseline_amount` is the capital total.
+     *  - `basis: 'month'` — everyone else (Employee, or Owner with no active
+     *    capital). The window is the running calendar month, and `change_percent`
+     *    is the month-over-month change of net profit; null when the previous
+     *    full month's net is exactly zero. `baseline_amount` is that prior net.
+     *
+     * @return array{basis: string, income: float, expense: float, net_profit: float, income_ratio_percent: int, change_percent: float|null, baseline_amount: float|null, period_start: string|null, period_end: string|null}
+     */
+    private function summaryWidget(Request $request): array
+    {
+        $user = $request->user();
+        $companyId = $user->company_id;
+        $now = Carbon::now();
+
+        $sumBetween = fn (string $type, string $from, string $to): float => (float) Transaction::query()
+            ->where('company_id', $companyId)
+            ->where('type', $type)
+            ->whereBetween('transaction_date', [$from, $to])
+            ->sum('amount');
+
+        $ratio = fn (float $income, float $expense): int => $income + $expense > 0
+            ? (int) round($income / ($income + $expense) * 100)
+            : 0;
+
+        if ($user->role === 'owner') {
+            $capital = CapitalEntry::query()
+                ->where('company_id', $companyId)
+                ->activeOn($now->toDateString())
+                ->latest('start_date')
+                ->first();
+
+            if ($capital !== null) {
+                $income = $sumBetween('income', $capital->start_date, $capital->end_date);
+                $expense = $sumBetween('expense', $capital->start_date, $capital->end_date);
+                $netProfit = $income - $expense;
+                $modal = $capital->periodTotal();
+
+                return [
+                    'basis' => 'capital',
+                    'income' => $income,
+                    'expense' => $expense,
+                    'net_profit' => $netProfit,
+                    'income_ratio_percent' => $ratio($income, $expense),
+                    'change_percent' => $modal > 0 ? round($netProfit / $modal * 100, 1) : null,
+                    'baseline_amount' => $modal,
+                    'period_start' => $capital->start_date,
+                    'period_end' => $capital->end_date,
+                ];
+            }
+        }
+
+        $income = $sumBetween('income', $now->copy()->startOfMonth()->toDateString(), $now->toDateString());
+        $expense = $sumBetween('expense', $now->copy()->startOfMonth()->toDateString(), $now->toDateString());
+        $netProfit = $income - $expense;
+
+        $prevStart = $now->copy()->subMonthNoOverflow()->startOfMonth()->toDateString();
+        $prevEnd = $now->copy()->subMonthNoOverflow()->endOfMonth()->toDateString();
+        $prevNet = $sumBetween('income', $prevStart, $prevEnd) - $sumBetween('expense', $prevStart, $prevEnd);
+
+        return [
+            'basis' => 'month',
+            'income' => $income,
+            'expense' => $expense,
+            'net_profit' => $netProfit,
+            'income_ratio_percent' => $ratio($income, $expense),
+            'change_percent' => $prevNet != 0.0
+                ? round(($netProfit - $prevNet) / abs($prevNet) * 100, 1)
+                : null,
+            'baseline_amount' => $prevNet != 0.0 ? $prevNet : null,
+            'period_start' => null,
+            'period_end' => null,
+        ];
     }
 
     /**

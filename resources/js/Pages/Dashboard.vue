@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingUp } from '@lucide/vue';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingDown, TrendingUp } from '@lucide/vue';
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
@@ -8,18 +8,26 @@ import Button from '@/Components/ui/Button.vue';
 const page = usePage();
 
 const props = defineProps({
-    user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
+    user: { type: Object, default: null },
     capitalWidget: { type: Object, default: null },
     quotaWidget: { type: Object, default: null },
     // US-INV-06: { outstanding, partial } or null when every invoice is covered.
     invoiceReminderWidget: { type: Object, default: null },
+    // Performance card. `basis` is 'capital' (badge = laba ÷ modal over the
+    // active capital period) or 'month' (badge = month-over-month net change).
+    // `change_percent` / `baseline_amount` are null when there is no baseline.
     summary: {
         type: Object,
         default: () => ({
-            netProfit: 'Rp4.250.000',
-            income: 'Rp7,1jt',
-            expense: 'Rp2,8jt',
-            capital: 'Rp12.900.000',
+            basis: 'month',
+            income: 0,
+            expense: 0,
+            net_profit: 0,
+            income_ratio_percent: 0,
+            change_percent: null,
+            baseline_amount: null,
+            period_start: null,
+            period_end: null,
         }),
     },
     recentTransactions: {
@@ -32,6 +40,61 @@ const props = defineProps({
 });
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+const currentUser = computed(() => page.props.auth?.user ?? props.user);
+const displayName = computed(() => currentUser.value?.name ?? '');
+
+const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
+const formatDate = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '');
+const formatDayMonth = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    : '');
+
+const summaryTitle = computed(() => (props.summary.basis === 'capital'
+    ? 'Laba bersih · Periode modal'
+    : 'Laba bersih · Bulan ini'));
+
+const netChange = computed(() => props.summary.change_percent);
+const netChangeUp = computed(() => (netChange.value ?? 0) >= 0);
+
+// Return-on-capital can legitimately run into the hundreds of %; clamp the
+// printed figure so the badge never overflows its pill.
+const PERCENT_CAP = 999.9;
+const netChangeLabel = computed(() => {
+    const value = netChange.value;
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    const clamped = Math.min(PERCENT_CAP, Math.max(-PERCENT_CAP, value));
+    const prefix = Math.abs(value) > PERCENT_CAP ? '>' : '';
+    const sign = clamped > 0 ? '+' : clamped < 0 ? '−' : '';
+    const magnitude = Math.abs(clamped).toLocaleString('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+    });
+
+    return `${prefix}${sign}${magnitude}%`;
+});
+
+const summaryCaption = computed(() => {
+    const s = props.summary;
+
+    if (s.basis === 'capital') {
+        return `dari modal ${formatRupiah(s.baseline_amount)} · ${formatDayMonth(s.period_start)}–${formatDayMonth(s.period_end)}`;
+    }
+
+    if (s.baseline_amount === null || s.baseline_amount === undefined) {
+        return null;
+    }
+
+    const delta = s.net_profit - s.baseline_amount;
+    const direction = delta >= 0 ? 'naik' : 'turun';
+
+    return `${direction} ${formatRupiah(Math.abs(delta))} dari ${formatRupiah(s.baseline_amount)} bulan lalu`;
+});
 
 const quickActions = computed(() => [
     { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
@@ -64,21 +127,16 @@ const quotaItems = computed(() => {
 
     return [build('income', 'Pemasukan'), build('expense', 'Pengeluaran')];
 });
-
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
-const formatDate = (value) => (value
-    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '');
 </script>
 
 <template>
     <Head title="Beranda" />
 
-    <PrototypeLayout :user="props.user">
+    <PrototypeLayout :user="currentUser">
         <section class="pb-5 pt-4">
             <p class="text-sm text-slate-500">Selamat datang kembali,</p>
             <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-950">
-                {{ props.user.name || 'Budi Santoso' }}
+                {{ displayName }}
             </h1>
         </section>
 
@@ -87,18 +145,19 @@ const formatDate = (value) => (value
             <div class="absolute -bottom-20 right-8 size-40 rounded-full border-[18px] border-primary-400/10" />
             <div class="relative">
                 <div class="flex items-center justify-between">
-                    <p id="profit-title" class="text-xs font-semibold text-primary-100">Laba bersih · Bulan ini</p>
-                    <span class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-primary-50">
-                        <TrendingUp class="size-3" /> +12,8%
+                    <p id="profit-title" class="text-xs font-semibold text-primary-100">{{ summaryTitle }}</p>
+                    <span v-if="netChangeLabel" class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-primary-50">
+                        <component :is="netChangeUp ? TrendingUp : TrendingDown" class="size-3" /> {{ netChangeLabel }}
                     </span>
                 </div>
-                <p class="mt-3 text-[2rem] font-extrabold tracking-tight">{{ props.summary.netProfit }}</p>
+                <p class="mt-3 text-[2rem] font-extrabold tracking-tight">{{ formatRupiah(props.summary.net_profit) }}</p>
+                <p v-if="summaryCaption" class="mt-1 text-[10px] text-primary-100">{{ summaryCaption }}</p>
                 <div class="mt-5 h-2 overflow-hidden rounded-full bg-primary-400/50" aria-label="Perbandingan pemasukan dan pengeluaran">
-                    <div class="h-full w-[72%] rounded-full bg-emerald-300" />
+                    <div class="h-full rounded-full bg-emerald-300" :style="{ width: `${props.summary.income_ratio_percent}%` }" />
                 </div>
                 <div class="mt-2 flex justify-between text-[10px] text-primary-100">
-                    <span>Pemasukan {{ props.summary.income }}</span>
-                    <span>Pengeluaran {{ props.summary.expense }}</span>
+                    <span>Pemasukan {{ formatRupiah(props.summary.income) }}</span>
+                    <span>Pengeluaran {{ formatRupiah(props.summary.expense) }}</span>
                 </div>
             </div>
         </section>
