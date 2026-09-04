@@ -1,5 +1,5 @@
 <script setup>
-import { Bell, ChevronDown } from '@lucide/vue';
+import { ChevronDown } from '@lucide/vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import BottomNav from '@/Components/app/BottomNav.vue';
@@ -26,10 +26,6 @@ const initial = computed(() => (authUser.value?.name ?? '').charAt(0).toUpperCas
                     </template>
                 </Link>
                 <div class="flex items-center gap-2">
-                    <button aria-label="Notifikasi" class="relative flex size-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
-                        <Bell class="size-[17px]" />
-                        <span class="absolute right-2 top-2 size-1.5 rounded-full bg-rose-500" />
-                    </button>
                     <Dropdown align="right" width="48" content-classes="py-1 bg-white">
                         <template #trigger>
                             <button
