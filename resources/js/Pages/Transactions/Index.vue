@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, Plus } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import { formatRupiah } from '@/utils/currency';
 
 type TransactionType = 'income' | 'expense';
 
@@ -96,7 +97,6 @@ watch(() => [form.date_from, form.date_to], () => {
 });
 watch(() => form.category_id, reload);
 
-const formatRupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 const formatDate = (value: string): string =>
     new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
