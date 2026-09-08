@@ -4,6 +4,7 @@ import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landm
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const page = usePage();
 
@@ -41,7 +42,6 @@ const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
 
 const displayName = computed(() => page.props.auth?.user?.name ?? '');
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '');

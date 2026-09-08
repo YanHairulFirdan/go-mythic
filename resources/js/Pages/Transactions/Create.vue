@@ -4,6 +4,8 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronLeft, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import QuotaRadial from '@/Components/ui/QuotaRadial.vue';
+import CurrencyInput from '@/Components/CurrencyInput.vue';
+import { formatRupiah as rupiah } from '@/utils/currency';
 
 type TransactionType = 'income' | 'expense';
 
@@ -79,7 +81,7 @@ const backHref = route('transactions.index');
 
 const form = useForm<{
     type: TransactionType;
-    amount: string;
+    amount: number | null;
     category_id: number | '';
     invoice_id: number | '';
     customer_id: number | '';
@@ -90,7 +92,7 @@ const form = useForm<{
     attachment: File | null;
 }>({
     type: 'income',
-    amount: '',
+    amount: null,
     category_id: '',
     invoice_id: props.prefill.invoice_id ?? '',
     customer_id: '',
@@ -103,7 +105,6 @@ const form = useForm<{
 
 const isIncome = computed((): boolean => form.type === 'income');
 
-const rupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 const selectedInvoice = computed((): InvoiceOption | undefined =>
     props.invoices.find((invoice) => invoice.id === form.invoice_id));
 // US-CUST-02 AC2: an invoice locks the customer to its own.
@@ -238,13 +239,9 @@ const submit = (): void => {
                 <label for="amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal</label>
                 <div class="flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                     <span class="text-sm font-semibold text-slate-400">Rp</span>
-                    <input
+                    <CurrencyInput
                         id="amount"
                         v-model="form.amount"
-                        type="number"
-                        min="1"
-                        step="1"
-                        inputmode="numeric"
                         placeholder="0"
                         class="w-full border-0 bg-transparent px-2 py-3 text-sm font-bold tabular-nums text-slate-800 placeholder:text-slate-300 focus:ring-0"
                     />

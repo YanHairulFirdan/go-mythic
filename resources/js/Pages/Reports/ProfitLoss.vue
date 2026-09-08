@@ -5,6 +5,7 @@ import { computed, reactive } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     report: {
@@ -27,7 +28,6 @@ const customRange = reactive({
 });
 
 const periodLabel = computed(() => props.report.period_label);
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 
 const selectPeriod = (period) => {
     if (period === 'custom') {

@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ChevronDown, ChevronLeft } from '@lucide/vue';
 import { ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import { formatRupiah } from '@/utils/currency';
 
 defineProps({
     entries: {
@@ -19,7 +20,6 @@ const toggle = (id) => {
     expanded.value = next;
 };
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—');

@@ -3,6 +3,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import CurrencyInput from '@/Components/CurrencyInput.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     activeEntry: {
@@ -27,7 +29,6 @@ const form = useForm({
 
 const isCustom = computed(() => form.duration === 'custom');
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '');
@@ -90,7 +91,7 @@ const submitTopUp = () => {
             <form class="mt-4 space-y-4 pb-8" @submit.prevent="submit">
                 <div>
                     <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
-                    <input id="initial_amount" v-model.number="form.initial_amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                    <CurrencyInput id="initial_amount" v-model="form.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                     <p v-if="form.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.initial_amount }}</p>
                 </div>
 
@@ -202,7 +203,7 @@ const submitTopUp = () => {
 
                         <div>
                             <label for="topup-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Tambahan modal</label>
-                            <input id="topup-amount" v-model.number="topUpForm.amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                            <CurrencyInput id="topup-amount" v-model="topUpForm.amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                             <p v-if="topUpForm.errors.amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ topUpForm.errors.amount }}</p>
                         </div>
 

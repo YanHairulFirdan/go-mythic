@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronLeft, CirclePlus, Lock, Pencil, Trash2 } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     invoice: {
@@ -11,8 +12,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 
 // US-INV-04: on-the-fly progress (SUM transaksi terkait vs nominal_total).
 const progressPct = computed(() => {
