@@ -1,6 +1,6 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ChevronLeft } from '@lucide/vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ChevronLeft, Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import CurrencyInput from '@/Components/CurrencyInput.vue';
@@ -65,6 +65,41 @@ const submitTopUp = () => {
         preserveScroll: true,
         onSuccess: () => {
             topUpOpen.value = false;
+        },
+    });
+};
+
+// --- Edit entry ---
+const editOpen = ref(false);
+const editForm = useForm({ initial_amount: null, start_date: '', end_date: '' });
+
+const openEdit = () => {
+    editForm.clearErrors();
+    editForm.initial_amount = props.activeEntry.initial_amount;
+    editForm.start_date = props.activeEntry.start_date;
+    editForm.end_date = props.activeEntry.end_date;
+    editOpen.value = true;
+};
+
+const submitEdit = () => {
+    editForm.patch(route('capital.update', props.activeEntry.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            editOpen.value = false;
+        },
+    });
+};
+
+// --- Delete entry ---
+const confirmingDelete = ref(false);
+const deleting = ref(false);
+
+const destroy = () => {
+    deleting.value = true;
+    router.delete(route('capital.destroy', props.activeEntry.id), {
+        onFinish: () => {
+            deleting.value = false;
+            confirmingDelete.value = false;
         },
     });
 };
@@ -167,6 +202,22 @@ const submitTopUp = () => {
                 >
                     Top-up Modal
                 </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="openEdit"
+                    >
+                        <Pencil class="size-4" /> Edit modal
+                    </button>
+                    <button
+                        type="button"
+                        class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                        @click="confirmingDelete = true"
+                    >
+                        <Trash2 class="size-4" /> Hapus
+                    </button>
+                </div>
                 <Link
                     :href="route('capital.history')"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -218,6 +269,76 @@ const submitTopUp = () => {
                             <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ topUpForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                         </div>
                     </form>
+                </section>
+            </div>
+
+            <div
+                v-if="editOpen"
+                class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+                role="presentation"
+                @click.self="editOpen = false"
+            >
+                <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+                    <h2 id="edit-title" class="text-lg font-bold text-slate-800">Edit modal</h2>
+
+                    <form class="mt-4 space-y-4" @submit.prevent="submitEdit">
+                        <div>
+                            <label for="edit-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
+                            <CurrencyInput id="edit-amount" v-model="editForm.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                            <p v-if="editForm.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.initial_amount }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="edit-start" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Mulai</label>
+                                <input id="edit-start" v-model="editForm.start_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
+                                <p v-if="editForm.errors.start_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.start_date }}</p>
+                            </div>
+                            <div>
+                                <label for="edit-end" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Selesai</label>
+                                <input id="edit-end" v-model="editForm.end_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
+                                <p v-if="editForm.errors.end_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.end_date }}</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-400">Mengubah nominal atau periode langsung memengaruhi total modal & laporan.</p>
+
+                        <div class="flex gap-3 pt-1">
+                            <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="editOpen = false">Batal</button>
+                            <button type="submit" :disabled="editForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ editForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <div
+                v-if="confirmingDelete"
+                class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+                role="presentation"
+                @click.self="confirmingDelete = false"
+            >
+                <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="delete-capital-title">
+                    <h2 id="delete-capital-title" class="text-sm font-bold text-slate-900">Hapus modal ini?</h2>
+                    <p class="mt-1.5 text-xs text-slate-500">
+                        Periode {{ formatDate(props.activeEntry.start_date) }} – {{ formatDate(props.activeEntry.end_date) }} akan dihapus. Transaksi yang sudah tercatat tetap tersimpan.
+                    </p>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            @click="confirmingDelete = false"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            :disabled="deleting"
+                            class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                            @click="destroy"
+                        >
+                            {{ deleting ? 'Menghapus…' : 'Hapus' }}
+                        </button>
+                    </div>
                 </section>
             </div>
         </template>
