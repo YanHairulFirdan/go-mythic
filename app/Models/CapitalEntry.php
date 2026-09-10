@@ -45,8 +45,9 @@ class CapitalEntry extends Model
 
     /**
      * US-MK-01B AC2 "Total Modal Periode Ini": the originally-set amount plus
-     * every top-up. `initial_amount` is kept immutable; the running total is
-     * always derived (reconciles the DBML column name with the PRD prose).
+     * every top-up. Top-ups never touch `initial_amount` (only an explicit edit
+     * does); the running total is always derived (reconciles the DBML column
+     * name with the PRD prose).
      */
     public function periodTotal(): float
     {

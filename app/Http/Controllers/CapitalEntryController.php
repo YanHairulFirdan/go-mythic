@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCapitalEntryRequest;
 use App\Http\Requests\TopUpCapitalEntryRequest;
+use App\Http\Requests\UpdateCapitalEntryRequest;
 use App\Models\CapitalEntry;
 use App\Models\CapitalTopup;
 use Illuminate\Http\RedirectResponse;
@@ -52,6 +53,40 @@ class CapitalEntryController extends Controller
             'start_date' => $start,
             'end_date' => $end,
         ]);
+
+        return to_route('capital.index');
+    }
+
+    /**
+     * Edit the amount and/or period of an existing entry. `initial_amount` is
+     * otherwise immutable (top-ups never touch it) — this is the one path that
+     * changes it, for correcting a mistyped baseline.
+     */
+    public function update(UpdateCapitalEntryRequest $request, CapitalEntry $capitalEntry): RedirectResponse
+    {
+        $this->authorizeOwner($request);
+
+        [$start, $end] = $request->resolvedRange();
+
+        $capitalEntry->update([
+            'initial_amount' => $request->validated('initial_amount'),
+            'start_date' => $start,
+            'end_date' => $end,
+        ]);
+
+        return to_route('capital.index');
+    }
+
+    /**
+     * Remove an entry (soft delete — recoverable, and its top-up history stays
+     * on the row). Owner-only and tenant-scoped.
+     */
+    public function destroy(Request $request, CapitalEntry $capitalEntry): RedirectResponse
+    {
+        $this->authorizeOwner($request);
+        abort_unless($capitalEntry->company_id === $request->user()->company_id, 403);
+
+        $capitalEntry->delete();
 
         return to_route('capital.index');
     }
