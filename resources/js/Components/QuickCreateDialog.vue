@@ -16,6 +16,7 @@ const props = withDefaults(defineProps<{
     fields: Field[];
     responseKey: string;
     payload?: Record<string, unknown>;
+    initialValues?: Record<string, string>;
     submitLabel?: string;
 }>(), {
     payload: () => ({}),
@@ -32,16 +33,28 @@ const errors = ref<Record<string, string>>({});
 const generalError = ref('');
 const processing = ref(false);
 const dialogEl = ref<HTMLElement | null>(null);
+const opener = ref<HTMLElement | null>(null);
+
+function onEscape(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && props.open) {
+        event.preventDefault();
+        close();
+    }
+}
 
 watch(() => props.open, (open) => {
-    if (!open) {
-        return;
+    if (open) {
+        opener.value = document.activeElement as HTMLElement | null;
+        values.value = Object.fromEntries(props.fields.map((field) => [field.name, props.initialValues?.[field.name] ?? '']));
+        errors.value = {};
+        generalError.value = '';
+        document.addEventListener('keydown', onEscape);
+        void nextTick(() => dialogEl.value?.querySelector('input')?.focus());
+    } else {
+        document.removeEventListener('keydown', onEscape);
+        void nextTick(() => opener.value?.focus());
     }
-    values.value = Object.fromEntries(props.fields.map((field) => [field.name, '']));
-    errors.value = {};
-    generalError.value = '';
-    void nextTick(() => dialogEl.value?.querySelector('input')?.focus());
-});
+}, { immediate: true });
 
 function close(): void {
     emit('update:open', false);
