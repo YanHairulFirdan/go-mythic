@@ -27,7 +27,8 @@ class UpdateCapitalEntryRequest extends FormRequest
         return [
             'initial_amount' => ['required', 'numeric', 'gt:0'],
             'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            // Nullable: an open-ended entry stores end_date = NULL.
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 
@@ -57,15 +58,18 @@ class UpdateCapitalEntryRequest extends FormRequest
     }
 
     /**
-     * Effective [start, end] Y-m-d strings for this request (UTC).
+     * Effective [start, end] Y-m-d strings for this request (UTC). `end` is null
+     * for an open-ended entry.
      *
-     * @return array{0: string, 1: string}
+     * @return array{0: string, 1: string|null}
      */
     public function resolvedRange(): array
     {
+        $end = $this->input('end_date');
+
         return [
             Carbon::parse($this->input('start_date'))->toDateString(),
-            Carbon::parse($this->input('end_date'))->toDateString(),
+            $end !== null && $end !== '' ? Carbon::parse($end)->toDateString() : null,
         ];
     }
 }

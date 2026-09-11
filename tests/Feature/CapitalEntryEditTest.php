@@ -132,6 +132,43 @@ class CapitalEntryEditTest extends TestCase
         ])->assertSessionHasNoErrors();
     }
 
+    public function test_owner_can_make_an_entry_open_ended(): void
+    {
+        $owner = User::factory()->create();
+        $entry = $this->entryFor($owner);
+
+        $this->actingAs($owner)->patch(route('capital.update', $entry), [
+            'initial_amount' => 3_000_000,
+            'start_date' => '2026-09-01',
+            'end_date' => null,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('capital_entries', ['id' => $entry->id, 'end_date' => null]);
+
+        // Still reported as the active entry.
+        $this->actingAs($owner)
+            ->get(route('capital.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('activeEntry.id', $entry->id)
+                ->where('activeEntry.end_date', null));
+    }
+
+    public function test_clearing_end_date_still_rejects_overlap_with_a_later_entry(): void
+    {
+        $owner = User::factory()->create();
+        $entry = $this->entryFor($owner, ['start_date' => '2026-09-01', 'end_date' => '2026-09-30']);
+        $this->entryFor($owner, ['start_date' => '2026-11-01', 'end_date' => '2026-11-30']);
+
+        // Open-ended would swallow the November entry.
+        $this->actingAs($owner)->patch(route('capital.update', $entry), [
+            'initial_amount' => 3_000_000,
+            'start_date' => '2026-09-01',
+            'end_date' => null,
+        ])->assertInvalid('start_date');
+
+        $this->assertDatabaseHas('capital_entries', ['id' => $entry->id, 'end_date' => '2026-09-30']);
+    }
+
     public function test_update_rejects_range_overlapping_another_entry(): void
     {
         $owner = User::factory()->create();

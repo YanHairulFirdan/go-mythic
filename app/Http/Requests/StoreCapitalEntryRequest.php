@@ -9,13 +9,6 @@ use Illuminate\Support\Carbon;
 
 class StoreCapitalEntryRequest extends FormRequest
 {
-    /** Inclusive day-span for each preset (US-MK-01 AC2/AC3). */
-    private const PRESET_SPANS = [
-        '1_day' => 1,
-        '1_week' => 7,
-        '1_month' => 30,
-    ];
-
     public function authorize(): bool
     {
         return $this->user() !== null;
@@ -27,7 +20,9 @@ class StoreCapitalEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'duration' => ['required', 'in:1_day,1_week,1_month,custom'],
+            // "1_year" = one year from today; "no_end" = open-ended (end_date NULL);
+            // "custom" = an explicit range.
+            'duration' => ['required', 'in:1_year,no_end,custom'],
             'initial_amount' => ['required', 'numeric', 'gt:0'],
             'start_date' => ['nullable', 'required_if:duration,custom', 'date'],
             'end_date' => ['nullable', 'required_if:duration,custom', 'date', 'after_or_equal:start_date'],
@@ -57,9 +52,10 @@ class StoreCapitalEntryRequest extends FormRequest
     }
 
     /**
-     * Effective [start, end] Y-m-d strings for this request (UTC).
+     * Effective [start, end] for this request (UTC Y-m-d). `end` is null for an
+     * open-ended entry.
      *
-     * @return array{0: string, 1: string}
+     * @return array{0: string, 1: string|null}
      */
     public function resolvedRange(): array
     {
@@ -71,8 +67,12 @@ class StoreCapitalEntryRequest extends FormRequest
         }
 
         $start = Carbon::now()->startOfDay();
-        $span = self::PRESET_SPANS[$this->input('duration')] ?? 1;
 
-        return [$start->toDateString(), $start->copy()->addDays($span - 1)->toDateString()];
+        if ($this->input('duration') === 'no_end') {
+            return [$start->toDateString(), null];
+        }
+
+        // 1_year: inclusive one-year span ending the day before the anniversary.
+        return [$start->toDateString(), $start->copy()->addYear()->subDay()->toDateString()];
     }
 }

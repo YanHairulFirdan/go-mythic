@@ -75,8 +75,9 @@ class DashboardController extends Controller
                 ->first();
 
             if ($capital !== null) {
-                $income = $sumBetween('income', $capital->start_date, $capital->end_date);
-                $expense = $sumBetween('expense', $capital->start_date, $capital->end_date);
+                $periodEnd = $capital->effectiveEndDate();
+                $income = $sumBetween('income', $capital->start_date, $periodEnd);
+                $expense = $sumBetween('expense', $capital->start_date, $periodEnd);
                 $netProfit = $income - $expense;
                 $modal = $capital->periodTotal();
 

@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * start_date / end_date are stored as plain Y-m-d strings (UTC). Lexicographic
  * comparison of that format is chronological, so the scopes use plain where().
+ * end_date is nullable — NULL means "no fixed end" (open-ended); running totals
+ * then treat today as the effective end (see effectiveEndDate()).
  */
 #[Fillable(['company_id', 'initial_amount', 'start_date', 'end_date', 'created_by'])]
 class CapitalEntry extends Model
@@ -64,7 +67,7 @@ class CapitalEntry extends Model
     {
         $inPeriod = Transaction::query()
             ->where('company_id', $this->company_id)
-            ->whereBetween('transaction_date', [$this->start_date, $this->end_date]);
+            ->whereBetween('transaction_date', [$this->start_date, $this->effectiveEndDate()]);
 
         $income = (float) (clone $inPeriod)->where('type', 'income')->sum('amount');
         $expense = (float) (clone $inPeriod)->where('type', 'expense')->sum('amount');
@@ -73,18 +76,39 @@ class CapitalEntry extends Model
     }
 
     /**
-     * Entries whose [start_date, end_date] range (end inclusive) covers $date.
+     * The end date to use for running totals: the fixed end_date, or today when
+     * the entry is open-ended (C2 of the modal-feedback plan).
      */
-    public function scopeActiveOn(Builder $query, string $date): Builder
+    public function effectiveEndDate(): string
     {
-        return $query->where('start_date', '<=', $date)->where('end_date', '>=', $date);
+        return $this->end_date ?? Carbon::now()->toDateString();
+    }
+
+    public function isOpenEnded(): bool
+    {
+        return $this->end_date === null;
     }
 
     /**
-     * Entries whose range overlaps [$start, $end] (both inclusive).
+     * Entries whose [start_date, end_date] range (end inclusive) covers $date.
+     * An open-ended entry (end_date NULL) covers every date from start onward.
      */
-    public function scopeOverlapping(Builder $query, string $start, string $end): Builder
+    public function scopeActiveOn(Builder $query, string $date): Builder
     {
-        return $query->where('start_date', '<=', $end)->where('end_date', '>=', $start);
+        return $query
+            ->where('start_date', '<=', $date)
+            ->where(fn (Builder $q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $date));
+    }
+
+    /**
+     * Entries whose range overlaps [$start, $end] (both inclusive). A null $end
+     * means the probe range itself is open-ended; a null end_date means the
+     * stored entry is open-ended — either way it extends to infinity.
+     */
+    public function scopeOverlapping(Builder $query, string $start, ?string $end): Builder
+    {
+        return $query
+            ->when($end !== null, fn (Builder $q) => $q->where('start_date', '<=', $end))
+            ->where(fn (Builder $q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $start));
     }
 }
