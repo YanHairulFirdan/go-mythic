@@ -247,6 +247,31 @@ class ProfitLossReportTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_expense_breakdown_lists_categories_sorted_descending_by_total(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transactionInCategory($owner->company_id, 'expense', 400_000, '2026-09-05', 'Bahan Baku');
+        $this->transactionInCategory($owner->company_id, 'expense', 110_000, '2026-09-03', 'Sewa');
+        $this->transactionInCategory($owner->company_id, 'expense', 100_000, '2026-09-06', 'Transport');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('report.expenseBreakdown', 3)
+                ->where('report.expenseBreakdown.0.label', 'Bahan Baku')
+                ->where('report.expenseBreakdown.0.amount', 400_000)
+                ->where('report.expenseBreakdown.0.percent', 65.6)
+                ->where('report.expenseBreakdown.1.label', 'Sewa')
+                ->where('report.expenseBreakdown.1.amount', 110_000)
+                ->where('report.expenseBreakdown.1.percent', 18)
+                ->where('report.expenseBreakdown.2.label', 'Transport')
+                ->where('report.expenseBreakdown.2.amount', 100_000)
+                ->where('report.expenseBreakdown.2.percent', 16.4));
+
+        Carbon::setTestNow();
+    }
+
     public function test_income_and_expense_breakdowns_are_separate_lists(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);

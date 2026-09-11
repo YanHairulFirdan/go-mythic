@@ -1,12 +1,26 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip, Plus, TriangleAlert } from '@lucide/vue';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import QuotaRadial from '@/Components/ui/QuotaRadial.vue';
 import CurrencyInput from '@/Components/CurrencyInput.vue';
 import QuickCreateDialog from '@/Components/QuickCreateDialog.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { formatRupiah as rupiah } from '@/utils/currency';
+
+const categorySearchTerm = ref('');
+const customerSearchTerm = ref('');
+
+function openCategoryDialog(term: string): void {
+    categorySearchTerm.value = term;
+    categoryDialogOpen.value = true;
+}
+
+function openCustomerDialog(term: string): void {
+    customerSearchTerm.value = term;
+    customerDialogOpen.value = true;
+}
 
 type TransactionType = 'income' | 'expense';
 
@@ -291,25 +305,15 @@ const submit = (): void => {
             </div>
 
             <div>
-                <div class="mb-1.5 flex items-center justify-between">
-                    <label for="category" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kategori</label>
-                    <button
-                        v-if="isOwner"
-                        type="button"
-                        class="inline-flex items-center gap-1 text-[11px] font-bold text-primary-600 transition hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                        @click="categoryDialogOpen = true"
-                    >
-                        <Plus class="size-3.5" /> Kategori baru
-                    </button>
-                </div>
-                <select
+                <SearchableSelect
                     id="category"
                     v-model="form.category_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
-                >
-                    <option disabled value="">Pilih kategori</option>
-                    <option v-for="category in availableCategories" :key="category.id" :value="category.id">{{ category.name }}</option>
-                </select>
+                    label="Kategori"
+                    placeholder="Cari atau pilih kategori"
+                    :options="availableCategories"
+                    :allow-add="isOwner"
+                    @add="openCategoryDialog"
+                />
                 <p v-if="form.errors.category_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.category_id }}</p>
             </div>
 
@@ -334,26 +338,16 @@ const submit = (): void => {
             </div>
 
             <div v-if="isIncome && !customerLockedByInvoice">
-                <div class="mb-1.5 flex items-center justify-between">
-                    <label for="customer" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                        Customer <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
-                    </label>
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1 text-[11px] font-bold text-primary-600 transition hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                        @click="customerDialogOpen = true"
-                    >
-                        <Plus class="size-3.5" /> Customer baru
-                    </button>
-                </div>
-                <select
+                <SearchableSelect
                     id="customer"
                     v-model="form.customer_id"
-                    class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
-                >
-                    <option value="">Tanpa customer</option>
-                    <option v-for="customer in customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
-                </select>
+                    label="Customer (opsional)"
+                    placeholder="Cari atau pilih customer"
+                    empty-label="Tanpa customer"
+                    :options="customers"
+                    allow-add
+                    @add="openCustomerDialog"
+                />
                 <p v-if="form.errors.customer_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.customer_id }}</p>
             </div>
             <p v-else-if="isIncome && selectedInvoice" class="text-[11px] text-slate-500">
@@ -452,6 +446,7 @@ const submit = (): void => {
             :payload="{ type: form.type }"
             response-key="category"
             submit-label="Tambah kategori"
+            :initial-values="{ name: categorySearchTerm }"
             @created="onCategoryCreated"
         />
 
@@ -465,6 +460,7 @@ const submit = (): void => {
             ]"
             response-key="customer"
             submit-label="Tambah customer"
+            :initial-values="{ name: customerSearchTerm }"
             @created="onCustomerCreated"
         />
     </PrototypeLayout>
