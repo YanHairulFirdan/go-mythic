@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronLeft, Pencil, Trash2 } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     customer: {
@@ -20,7 +21,6 @@ const props = defineProps({
     },
 });
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—');

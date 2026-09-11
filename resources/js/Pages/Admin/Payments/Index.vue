@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { formatRupiah } from '@/utils/currency';
 
 defineProps({
     payments: {
@@ -50,7 +51,7 @@ const approve = (payment) => {
                             <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
                                 <tr v-for="payment in payments" :key="payment.id">
                                     <td class="whitespace-nowrap px-3 py-3 font-medium">{{ payment.company.name }}</td>
-                                    <td class="whitespace-nowrap px-3 py-3">Rp{{ Number(payment.amount).toLocaleString('id-ID') }}</td>
+                                    <td class="whitespace-nowrap px-3 py-3">{{ formatRupiah(payment.amount) }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ payment.attachment_path }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ payment.status }}</td>
                                     <td class="whitespace-nowrap px-3 py-3">{{ payment.created_at }}</td>

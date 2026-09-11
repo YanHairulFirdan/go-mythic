@@ -7,7 +7,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,6 +40,26 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Send a password reset link to the authenticated user's current email.
+     *
+     * @throws ValidationException
+     */
+    public function sendPasswordResetLink(Request $request): RedirectResponse
+    {
+        $status = Password::sendResetLink([
+            'email' => $request->user()->email,
+        ]);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return Redirect::route('profile.edit')->with('status', __($status));
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
     }
 
     /**

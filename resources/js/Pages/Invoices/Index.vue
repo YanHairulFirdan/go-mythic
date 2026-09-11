@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronRight, Plus, ReceiptText, Search } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     invoices: {
@@ -33,7 +34,6 @@ watch(search, () => {
     }, 300);
 });
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '');

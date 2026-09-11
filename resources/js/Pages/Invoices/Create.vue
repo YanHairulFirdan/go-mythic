@@ -4,6 +4,8 @@ import { ChevronLeft, Plus, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
+import CurrencyInput from '@/Components/CurrencyInput.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     customers: { type: Array, default: () => [] },
@@ -17,7 +19,7 @@ const form = useForm({
 });
 
 const total = computed(() => form.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
-const formattedTotal = computed(() => `Rp${total.value.toLocaleString('id-ID')}`);
+const formattedTotal = computed(() => formatRupiah(total.value));
 
 const addItem = () => form.items.push({ description: '', amount: null });
 const removeItem = (index) => {
@@ -86,7 +88,7 @@ const submit = () => form.post(route('invoices.store'));
                         <div class="mt-2 flex items-center rounded-xl border border-slate-200 px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                             <span class="text-sm font-semibold text-slate-400">Rp</span>
                             <label :for="`item-amount-${index}`" class="sr-only">Nominal item {{ index + 1 }}</label>
-                            <input :id="`item-amount-${index}`" v-model.number="item.amount" type="number" min="1" step="any" required placeholder="0" class="w-full border-0 px-2 py-2.5 text-sm font-bold tabular-nums text-slate-700 placeholder:text-slate-300 focus:ring-0" />
+                            <CurrencyInput :id="`item-amount-${index}`" v-model="item.amount" required placeholder="0" class="w-full border-0 px-2 py-2.5 text-sm font-bold tabular-nums text-slate-700 placeholder:text-slate-300 focus:ring-0" />
                         </div>
                         <p v-if="form.errors[`items.${index}.description`]" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors[`items.${index}.description`] }}</p>
                         <p v-if="form.errors[`items.${index}.amount`]" class="mt-1 text-xs font-semibold text-rose-600">{{ form.errors[`items.${index}.amount`] }}</p>

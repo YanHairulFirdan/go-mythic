@@ -1,8 +1,10 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ChevronLeft } from '@lucide/vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ChevronLeft, Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import CurrencyInput from '@/Components/CurrencyInput.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const props = defineProps({
     activeEntry: {
@@ -12,14 +14,18 @@ const props = defineProps({
 });
 
 const durations = [
-    { value: '1_day', label: '1 Hari' },
-    { value: '1_week', label: '1 Minggu' },
-    { value: '1_month', label: '1 Bulan' },
+    { value: '1_year', label: '1 Tahun' },
+    { value: 'no_end', label: 'Tanpa batas' },
     { value: 'custom', label: 'Custom' },
 ];
 
+const durationHints = {
+    '1_year': 'Mulai hari ini, berakhir otomatis satu tahun kemudian.',
+    no_end: 'Mulai hari ini, tanpa tanggal selesai — jalan terus sampai diubah.',
+};
+
 const form = useForm({
-    duration: '1_month',
+    duration: '1_year',
     initial_amount: null,
     start_date: '',
     end_date: '',
@@ -27,7 +33,6 @@ const form = useForm({
 
 const isCustom = computed(() => form.duration === 'custom');
 
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '');
@@ -67,6 +72,48 @@ const submitTopUp = () => {
         },
     });
 };
+
+// --- Edit entry ---
+const editOpen = ref(false);
+const editForm = useForm({ initial_amount: null, start_date: '', end_date: '', no_end: false });
+
+const openEdit = () => {
+    editForm.clearErrors();
+    editForm.initial_amount = props.activeEntry.initial_amount;
+    editForm.start_date = props.activeEntry.start_date;
+    editForm.end_date = props.activeEntry.end_date ?? '';
+    editForm.no_end = props.activeEntry.end_date === null;
+    editOpen.value = true;
+};
+
+const submitEdit = () => {
+    editForm
+        .transform((data) => ({
+            initial_amount: data.initial_amount,
+            start_date: data.start_date,
+            end_date: data.no_end ? null : data.end_date,
+        }))
+        .patch(route('capital.update', props.activeEntry.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                editOpen.value = false;
+            },
+        });
+};
+
+// --- Delete entry ---
+const confirmingDelete = ref(false);
+const deleting = ref(false);
+
+const destroy = () => {
+    deleting.value = true;
+    router.delete(route('capital.destroy', props.activeEntry.id), {
+        onFinish: () => {
+            deleting.value = false;
+            confirmingDelete.value = false;
+        },
+    });
+};
 </script>
 
 <template>
@@ -90,13 +137,13 @@ const submitTopUp = () => {
             <form class="mt-4 space-y-4 pb-8" @submit.prevent="submit">
                 <div>
                     <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
-                    <input id="initial_amount" v-model.number="form.initial_amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                    <CurrencyInput id="initial_amount" v-model="form.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                     <p v-if="form.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.initial_amount }}</p>
                 </div>
 
                 <div>
                     <span class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Masa berlaku</span>
-                    <div class="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Masa berlaku modal">
+                    <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Masa berlaku modal">
                         <button
                             v-for="duration in durations"
                             :key="duration.value"
@@ -110,7 +157,7 @@ const submitTopUp = () => {
                         </button>
                     </div>
                     <p v-if="form.errors.duration" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.duration }}</p>
-                    <p v-if="!isCustom" class="mt-1.5 text-xs text-slate-400">Mulai hari ini, berakhir otomatis sesuai durasi.</p>
+                    <p v-if="durationHints[form.duration]" class="mt-1.5 text-xs text-slate-400">{{ durationHints[form.duration] }}</p>
                 </div>
 
                 <div v-if="isCustom" class="grid grid-cols-2 gap-3">
@@ -154,7 +201,7 @@ const submitTopUp = () => {
                     >{{ formatRupiah(props.activeEntry.current_total) }}</span>
                 </div>
                 <div class="mt-2 text-xs text-slate-500">
-                    Periode {{ formatDate(props.activeEntry.start_date) }} – {{ formatDate(props.activeEntry.end_date) }}
+                    Periode {{ formatDate(props.activeEntry.start_date) }} – {{ props.activeEntry.end_date ? formatDate(props.activeEntry.end_date) : 'tanpa batas' }}
                 </div>
             </div>
 
@@ -166,6 +213,22 @@ const submitTopUp = () => {
                 >
                     Top-up Modal
                 </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="openEdit"
+                    >
+                        <Pencil class="size-4" /> Edit modal
+                    </button>
+                    <button
+                        type="button"
+                        class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                        @click="confirmingDelete = true"
+                    >
+                        <Trash2 class="size-4" /> Hapus
+                    </button>
+                </div>
                 <Link
                     :href="route('capital.history')"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -202,7 +265,7 @@ const submitTopUp = () => {
 
                         <div>
                             <label for="topup-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Tambahan modal</label>
-                            <input id="topup-amount" v-model.number="topUpForm.amount" type="number" min="1" step="any" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                            <CurrencyInput id="topup-amount" v-model="topUpForm.amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                             <p v-if="topUpForm.errors.amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ topUpForm.errors.amount }}</p>
                         </div>
 
@@ -217,6 +280,81 @@ const submitTopUp = () => {
                             <button type="submit" :disabled="topUpForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ topUpForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
                         </div>
                     </form>
+                </section>
+            </div>
+
+            <div
+                v-if="editOpen"
+                class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+                role="presentation"
+                @click.self="editOpen = false"
+            >
+                <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+                    <h2 id="edit-title" class="text-lg font-bold text-slate-800">Edit modal</h2>
+
+                    <form class="mt-4 space-y-4" @submit.prevent="submitEdit">
+                        <div>
+                            <label for="edit-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
+                            <CurrencyInput id="edit-amount" v-model="editForm.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
+                            <p v-if="editForm.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.initial_amount }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="edit-start" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Mulai</label>
+                                <input id="edit-start" v-model="editForm.start_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
+                                <p v-if="editForm.errors.start_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.start_date }}</p>
+                            </div>
+                            <div>
+                                <label for="edit-end" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Selesai</label>
+                                <input id="edit-end" v-model="editForm.end_date" type="date" :disabled="editForm.no_end" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-400" />
+                                <p v-if="editForm.errors.end_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.end_date }}</p>
+                            </div>
+                        </div>
+
+                        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                            <input v-model="editForm.no_end" type="checkbox" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
+                            Tanpa tanggal selesai
+                        </label>
+
+                        <p class="text-xs text-slate-400">Mengubah nominal atau periode langsung memengaruhi total modal & laporan.</p>
+
+                        <div class="flex gap-3 pt-1">
+                            <button type="button" class="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="editOpen = false">Batal</button>
+                            <button type="submit" :disabled="editForm.processing" class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50">{{ editForm.processing ? 'Menyimpan…' : 'Simpan' }}</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <div
+                v-if="confirmingDelete"
+                class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center"
+                role="presentation"
+                @click.self="confirmingDelete = false"
+            >
+                <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="delete-capital-title">
+                    <h2 id="delete-capital-title" class="text-sm font-bold text-slate-900">Hapus modal ini?</h2>
+                    <p class="mt-1.5 text-xs text-slate-500">
+                        Periode {{ formatDate(props.activeEntry.start_date) }} – {{ props.activeEntry.end_date ? formatDate(props.activeEntry.end_date) : 'tanpa batas' }} akan dihapus. Transaksi yang sudah tercatat tetap tersimpan.
+                    </p>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            @click="confirmingDelete = false"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            :disabled="deleting"
+                            class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                            @click="destroy"
+                        >
+                            {{ deleting ? 'Menghapus…' : 'Hapus' }}
+                        </button>
+                    </div>
                 </section>
             </div>
         </template>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip, TriangleAlert } from '@lucide/vue';
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Paperclip, Plus, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import QuotaRadial from '@/Components/ui/QuotaRadial.vue';
+import CurrencyInput from '@/Components/CurrencyInput.vue';
+import QuickCreateDialog from '@/Components/QuickCreateDialog.vue';
+import { formatRupiah as rupiah } from '@/utils/currency';
 
 type TransactionType = 'income' | 'expense';
 
@@ -93,7 +96,7 @@ const backHref = route('transactions.show', props.transaction.id);
 
 const form = useForm<{
     type: TransactionType;
-    amount: string;
+    amount: number | null;
     category_id: number | '';
     invoice_id: number | '';
     customer_id: number | '';
@@ -104,7 +107,7 @@ const form = useForm<{
     attachment: File | null;
 }>({
     type: props.transaction.type,
-    amount: String(props.transaction.amount),
+    amount: props.transaction.amount,
     category_id: props.transaction.category_id,
     invoice_id: props.transaction.invoice_id ?? '',
     customer_id: props.transaction.customer_id ?? '',
@@ -117,7 +120,29 @@ const form = useForm<{
 
 const isIncome = computed((): boolean => form.type === 'income');
 
-const rupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
+// Local copies so quick-created rows show up immediately without a page reload.
+const categories = ref<Category[]>([...props.categories]);
+const customers = ref<NamedOption[]>([...props.customers]);
+
+const categoryDialogOpen = ref(false);
+const customerDialogOpen = ref(false);
+
+const onCategoryCreated = (record: Record<string, unknown>): void => {
+    const category: Category = {
+        id: Number(record.id),
+        name: String(record.name),
+        type: record.type as TransactionType,
+    };
+    categories.value.push(category);
+    form.category_id = category.id;
+};
+
+const onCustomerCreated = (record: Record<string, unknown>): void => {
+    const customer: NamedOption = { id: Number(record.id), name: String(record.name) };
+    customers.value.push(customer);
+    form.customer_id = customer.id;
+};
+
 const selectedInvoice = computed((): InvoiceOption | undefined =>
     props.invoices.find((invoice) => invoice.id === form.invoice_id));
 const customerLockedByInvoice = computed((): boolean => form.invoice_id !== '');
@@ -128,7 +153,7 @@ const dateHasCapital = computed((): boolean =>
         form.transaction_date >= period.start_date && form.transaction_date <= period.end_date));
 
 const availableCategories = computed((): Category[] =>
-    props.categories.filter((category) => category.type === form.type));
+    categories.value.filter((category) => category.type === form.type));
 
 watch(() => form.type, (next, previous) => {
     if (next !== previous) {
@@ -256,13 +281,9 @@ const submit = (): void => {
                 <label for="amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal</label>
                 <div class="flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                     <span class="text-sm font-semibold text-slate-400">Rp</span>
-                    <input
+                    <CurrencyInput
                         id="amount"
                         v-model="form.amount"
-                        type="number"
-                        min="1"
-                        step="1"
-                        inputmode="numeric"
                         class="w-full border-0 bg-transparent px-2 py-3 text-sm font-bold tabular-nums text-slate-800 focus:ring-0"
                     />
                 </div>
@@ -270,7 +291,17 @@ const submit = (): void => {
             </div>
 
             <div>
-                <label for="category" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kategori</label>
+                <div class="mb-1.5 flex items-center justify-between">
+                    <label for="category" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kategori</label>
+                    <button
+                        v-if="isOwner"
+                        type="button"
+                        class="inline-flex items-center gap-1 text-[11px] font-bold text-primary-600 transition hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="categoryDialogOpen = true"
+                    >
+                        <Plus class="size-3.5" /> Kategori baru
+                    </button>
+                </div>
                 <select
                     id="category"
                     v-model="form.category_id"
@@ -303,16 +334,25 @@ const submit = (): void => {
             </div>
 
             <div v-if="isIncome && !customerLockedByInvoice">
-                <label for="customer" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                    Customer <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
-                </label>
+                <div class="mb-1.5 flex items-center justify-between">
+                    <label for="customer" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Customer <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span>
+                    </label>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1 text-[11px] font-bold text-primary-600 transition hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="customerDialogOpen = true"
+                    >
+                        <Plus class="size-3.5" /> Customer baru
+                    </button>
+                </div>
                 <select
                     id="customer"
                     v-model="form.customer_id"
                     class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option value="">Tanpa customer</option>
-                    <option v-for="customer in props.customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
+                    <option v-for="customer in customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
                 </select>
                 <p v-if="form.errors.customer_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.customer_id }}</p>
             </div>
@@ -403,5 +443,29 @@ const submit = (): void => {
                 {{ form.processing ? 'Menyimpan…' : 'Simpan perubahan' }}
             </button>
         </form>
+
+        <QuickCreateDialog
+            v-model:open="categoryDialogOpen"
+            title="Kategori baru"
+            :endpoint="route('transaction-categories.store')"
+            :fields="[{ name: 'name', label: 'Nama kategori', required: true, placeholder: 'mis. Konsinyasi' }]"
+            :payload="{ type: form.type }"
+            response-key="category"
+            submit-label="Tambah kategori"
+            @created="onCategoryCreated"
+        />
+
+        <QuickCreateDialog
+            v-model:open="customerDialogOpen"
+            title="Customer baru"
+            :endpoint="route('customers.store')"
+            :fields="[
+                { name: 'name', label: 'Nama customer', required: true },
+                { name: 'contact', label: 'Kontak' },
+            ]"
+            response-key="customer"
+            submit-label="Tambah customer"
+            @created="onCustomerCreated"
+        />
     </PrototypeLayout>
 </template>

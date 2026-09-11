@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -53,6 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+    // US-AUTH-09: logged-in user forgot their current password and wants a
+    // reset link without typing it. Always targets the authenticated user's
+    // own email — any submitted email is ignored, reusing the same broker as
+    // the guest forgot-password flow (password.email).
+    Route::post('profile/password-reset-link', [ProfileController::class, 'sendPasswordResetLink'])
+        ->name('profile.password-reset-link');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

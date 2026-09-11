@@ -54,7 +54,9 @@ Route::middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::c
     Route::get('/capital', [CapitalEntryController::class, 'index'])->name('capital.index');
     Route::get('/capital/history', [CapitalEntryController::class, 'history'])->name('capital.history');
     Route::post('/capital', [CapitalEntryController::class, 'store'])->name('capital.store');
-    Route::patch('/capital/{capitalEntry}', [CapitalEntryController::class, 'topUp'])->name('capital.top-up');
+    Route::patch('/capital/{capitalEntry}', [CapitalEntryController::class, 'update'])->name('capital.update');
+    Route::delete('/capital/{capitalEntry}', [CapitalEntryController::class, 'destroy'])->name('capital.destroy');
+    Route::patch('/capital/{capitalEntry}/top-up', [CapitalEntryController::class, 'topUp'])->name('capital.top-up');
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::post('/subscription/payment', [SubscriptionController::class, 'store'])->name('subscription.payment.store');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');

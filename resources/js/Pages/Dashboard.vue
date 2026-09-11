@@ -1,35 +1,108 @@
 <script setup>
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingUp } from '@lucide/vue';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingDown, TrendingUp } from '@lucide/vue';
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
+import { formatRupiah } from '@/utils/currency';
 
 const page = usePage();
 
 const props = defineProps({
-    user: { type: Object, default: () => ({ name: 'Budi Santoso' }) },
     capitalWidget: { type: Object, default: null },
     quotaWidget: { type: Object, default: null },
+    // US-INV-06: { outstanding, partial } or null when every invoice is covered.
+    invoiceReminderWidget: { type: Object, default: null },
+    // Performance card. `basis` is 'capital' (badge = laba ÷ modal over the
+    // active capital period) or 'month' (badge = month-over-month net change).
+    // `change_percent` / `baseline_amount` are null when there is no baseline.
     summary: {
         type: Object,
         default: () => ({
-            netProfit: 'Rp4.250.000',
-            income: 'Rp7,1jt',
-            expense: 'Rp2,8jt',
-            capital: 'Rp12.900.000',
+            basis: 'month',
+            income: 0,
+            expense: 0,
+            net_profit: 0,
+            income_ratio_percent: 0,
+            change_percent: null,
+            baseline_amount: null,
+            period_start: null,
+            period_end: null,
         }),
     },
+    // Latest rows the viewer may see (Employee: only their own), newest first.
+    // Each: { id, type, amount, transaction_date, category }.
     recentTransactions: {
         type: Array,
-        default: () => [
-            { name: 'Jasa Cleaning Rumah', date: '20 Agu 2026', amount: '+Rp850.000', type: 'income' },
-            { name: 'Belanja bahan', date: '19 Agu 2026', amount: '-Rp250.000', type: 'expense' },
-        ],
+        default: () => [],
     },
 });
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+
+const displayName = computed(() => page.props.auth?.user?.name ?? '');
+
+const formatDate = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '');
+const formatDayMonth = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    : '');
+
+const summaryTitle = computed(() => (props.summary.basis === 'capital'
+    ? 'Laba bersih · Periode modal'
+    : 'Laba bersih · Bulan ini'));
+
+const netChange = computed(() => props.summary.change_percent);
+const netChangeUp = computed(() => (netChange.value ?? 0) >= 0);
+
+// Return-on-capital can legitimately run into the hundreds of %; clamp the
+// printed figure so the badge never overflows its pill.
+const PERCENT_CAP = 999.9;
+const netChangeLabel = computed(() => {
+    const value = netChange.value;
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    const clamped = Math.min(PERCENT_CAP, Math.max(-PERCENT_CAP, value));
+    const prefix = Math.abs(value) > PERCENT_CAP ? '>' : '';
+    const sign = clamped > 0 ? '+' : clamped < 0 ? '−' : '';
+    const magnitude = Math.abs(clamped).toLocaleString('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+    });
+
+    return `${prefix}${sign}${magnitude}%`;
+});
+
+const summaryCaption = computed(() => {
+    const s = props.summary;
+
+    if (s.basis === 'capital') {
+        const range = s.period_end
+            ? `${formatDayMonth(s.period_start)}–${formatDayMonth(s.period_end)}`
+            : `sejak ${formatDayMonth(s.period_start)}`;
+        return `dari modal ${formatRupiah(s.baseline_amount)} · ${range}`;
+    }
+
+    if (s.baseline_amount === null || s.baseline_amount === undefined) {
+        return null;
+    }
+
+    const delta = s.net_profit - s.baseline_amount;
+    const direction = delta >= 0 ? 'naik' : 'turun';
+
+    return `${direction} ${formatRupiah(Math.abs(delta))} dari ${formatRupiah(s.baseline_amount)} bulan lalu`;
+});
+
+const recentItems = computed(() => props.recentTransactions.map((transaction) => ({
+    id: transaction.id,
+    type: transaction.type,
+    label: transaction.category ?? (transaction.type === 'income' ? 'Pemasukan' : 'Pengeluaran'),
+    date: formatDate(transaction.transaction_date),
+    amount: `${transaction.type === 'income' ? '+' : '−'}${formatRupiah(transaction.amount)}`,
+})));
 
 const quickActions = computed(() => [
     { label: 'Catat transaksi', icon: CirclePlus, href: route('transactions.create') },
@@ -62,21 +135,16 @@ const quotaItems = computed(() => {
 
     return [build('income', 'Pemasukan'), build('expense', 'Pengeluaran')];
 });
-
-const formatRupiah = (value) => `Rp${Number(value || 0).toLocaleString('id-ID')}`;
-const formatDate = (value) => (value
-    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '');
 </script>
 
 <template>
     <Head title="Beranda" />
 
-    <PrototypeLayout :user="props.user">
+    <PrototypeLayout>
         <section class="pb-5 pt-4">
             <p class="text-sm text-slate-500">Selamat datang kembali,</p>
             <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-950">
-                {{ props.user.name || 'Budi Santoso' }}
+                {{ displayName }}
             </h1>
         </section>
 
@@ -85,18 +153,19 @@ const formatDate = (value) => (value
             <div class="absolute -bottom-20 right-8 size-40 rounded-full border-[18px] border-primary-400/10" />
             <div class="relative">
                 <div class="flex items-center justify-between">
-                    <p id="profit-title" class="text-xs font-semibold text-primary-100">Laba bersih · Bulan ini</p>
-                    <span class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-primary-50">
-                        <TrendingUp class="size-3" /> +12,8%
+                    <p id="profit-title" class="text-xs font-semibold text-primary-100">{{ summaryTitle }}</p>
+                    <span v-if="netChangeLabel" class="flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[10px] font-semibold text-primary-50">
+                        <component :is="netChangeUp ? TrendingUp : TrendingDown" class="size-3" /> {{ netChangeLabel }}
                     </span>
                 </div>
-                <p class="mt-3 text-[2rem] font-extrabold tracking-tight">{{ props.summary.netProfit }}</p>
+                <p class="mt-3 text-[2rem] font-extrabold tracking-tight">{{ formatRupiah(props.summary.net_profit) }}</p>
+                <p v-if="summaryCaption" class="mt-1 text-[10px] text-primary-100">{{ summaryCaption }}</p>
                 <div class="mt-5 h-2 overflow-hidden rounded-full bg-primary-400/50" aria-label="Perbandingan pemasukan dan pengeluaran">
-                    <div class="h-full w-[72%] rounded-full bg-emerald-300" />
+                    <div class="h-full rounded-full bg-emerald-300" :style="{ width: `${props.summary.income_ratio_percent}%` }" />
                 </div>
                 <div class="mt-2 flex justify-between text-[10px] text-primary-100">
-                    <span>Pemasukan {{ props.summary.income }}</span>
-                    <span>Pengeluaran {{ props.summary.expense }}</span>
+                    <span>Pemasukan {{ formatRupiah(props.summary.income) }}</span>
+                    <span>Pengeluaran {{ formatRupiah(props.summary.expense) }}</span>
                 </div>
             </div>
         </section>
@@ -107,7 +176,7 @@ const formatDate = (value) => (value
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total modal periode ini</span>
                     <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                        Aktif s/d {{ formatDate(props.capitalWidget.end_date) }}
+                        {{ props.capitalWidget.end_date ? `Aktif s/d ${formatDate(props.capitalWidget.end_date)}` : 'Aktif · tanpa batas' }}
                     </span>
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">{{ formatRupiah(props.capitalWidget.period_total) }}</div>
@@ -160,16 +229,23 @@ const formatDate = (value) => (value
             </div>
         </section>
 
-        <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800" aria-label="Perhatian">
-            <div class="flex gap-3">
-                <span class="mt-0.5 text-base" aria-hidden="true">!</span>
-                <div>
-                    <p class="font-bold">3 invoice belum lunas</p>
-                    <p class="mt-0.5 text-xs text-amber-700">1 invoice terpakai sebagian · Periksa sebelum jatuh tempo</p>
-                </div>
-                <ChevronRight class="ml-auto mt-0.5 size-4 shrink-0" />
+        <!-- US-INV-06: invoices not yet fully covered by linked transactions.
+             Counts are on-the-fly (US-INV-04); hidden when nothing is outstanding. -->
+        <Link
+            v-if="props.invoiceReminderWidget"
+            :href="route('invoices.index')"
+            class="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800 transition hover:border-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            aria-label="Ringkasan invoice belum tuntas"
+        >
+            <span class="mt-0.5 text-base" aria-hidden="true">!</span>
+            <div>
+                <p class="font-bold">{{ props.invoiceReminderWidget.outstanding }} invoice belum lunas</p>
+                <p v-if="props.invoiceReminderWidget.partial > 0" class="mt-0.5 text-xs text-amber-700">
+                    {{ props.invoiceReminderWidget.partial }} invoice terpakai sebagian
+                </p>
             </div>
-        </section>
+            <ChevronRight class="ml-auto mt-0.5 size-4 shrink-0" />
+        </Link>
 
         <section class="mt-6" aria-labelledby="quick-actions-title">
             <div class="mb-3 flex items-center justify-between">
@@ -190,12 +266,13 @@ const formatDate = (value) => (value
                 <Link :href="route('transactions.index')" class="text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Lihat semua <span aria-hidden="true">→</span></Link>
             </div>
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
-                <Link v-for="transaction in props.recentTransactions" :key="transaction.name" href="#transaction-detail" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500">
+                <Link v-for="transaction in recentItems" :key="transaction.id" :href="route('transactions.show', transaction.id)" class="flex items-center gap-3 py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500">
                     <span :class="transaction.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" class="flex size-9 shrink-0 items-center justify-center rounded-xl"><ArrowUpRight v-if="transaction.type === 'income'" class="size-[18px]" /><ArrowDownLeft v-else class="size-[18px]" /></span>
-                    <span class="min-w-0 flex-1"><strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.name }}</strong><small class="mt-1 block text-[10px] text-slate-400">{{ transaction.date }}</small></span>
+                    <span class="min-w-0 flex-1"><strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.label }}</strong><small class="mt-1 block text-[10px] text-slate-400">{{ transaction.date }}</small></span>
                     <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'" class="text-xs font-extrabold tabular-nums">{{ transaction.amount }}</span>
                     <ChevronRight class="size-4 text-slate-300" />
                 </Link>
+                <p v-if="recentItems.length === 0" class="py-6 text-center text-xs text-slate-400">Belum ada transaksi.</p>
             </div>
         </section>
     </PrototypeLayout>

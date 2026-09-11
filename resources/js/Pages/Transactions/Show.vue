@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Download, Pencil, Trash2 } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import { formatRupiah } from '@/utils/currency';
 
 type TransactionType = 'income' | 'expense';
 
@@ -50,7 +51,6 @@ const destroy = (): void => {
     });
 };
 
-const formatRupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 const formatDate = (value: string | null): string => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—');

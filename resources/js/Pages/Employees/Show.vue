@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ChevronLeft } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
+import { formatRupiah } from '@/utils/currency';
 
 interface Employee {
     id: number;
@@ -23,8 +24,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const backHref = route('employees.index');
-
-const formatRupiah = (value: number): string => `Rp${Number(value).toLocaleString('id-ID')}`;
 </script>
 
 <template>
