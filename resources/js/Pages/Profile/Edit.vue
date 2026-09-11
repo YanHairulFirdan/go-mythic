@@ -16,6 +16,7 @@ const branding = computed(() => page.props.branding);
 
 const profileForm = useForm({ name: user.name, email: user.email });
 const passwordForm = useForm({ current_password: '', password: '', password_confirmation: '' });
+const resetPasswordForm = useForm({});
 const deleteForm = useForm({ password: '' });
 
 const COLOR_PRESETS = [
@@ -119,6 +120,14 @@ const updatePassword = () => {
         },
     });
 };
+
+const sendPasswordResetLink = () => {
+    resetPasswordForm.post(route('profile.password-reset-link'), {
+        preserveScroll: true,
+    });
+};
+
+const passwordResetSent = computed(() => props.status === 'passwords.sent');
 
 const confirmDeletion = () => {
     confirmingDeletion.value = true;
@@ -301,6 +310,18 @@ const primaryBtn = 'flex min-h-12 w-full items-center justify-center rounded-xl 
                     </Transition>
                 </div>
             </form>
+
+            <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <h3 class="text-sm font-bold text-amber-900">Lupa kata sandi?</h3>
+                <p class="mt-1 text-xs leading-relaxed text-amber-800">Kirim tautan reset ke {{ user.email }} tanpa memasukkan kata sandi saat ini.</p>
+                <div class="mt-3 flex flex-wrap items-center gap-3">
+                    <button type="button" :disabled="resetPasswordForm.processing" :class="primaryBtn" @click="sendPasswordResetLink">
+                        {{ resetPasswordForm.processing ? 'Mengirim…' : 'Kirim tautan reset' }}
+                    </button>
+                    <p v-if="passwordResetSent" class="text-xs font-semibold text-emerald-700">Tautan reset terkirim ke email Anda.</p>
+                    <p v-if="resetPasswordForm.errors.email" class="text-xs font-semibold text-rose-600">{{ resetPasswordForm.errors.email }}</p>
+                </div>
+            </div>
         </section>
 
         <section class="mt-6 pb-8" aria-labelledby="delete-title">
