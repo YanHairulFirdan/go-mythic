@@ -63,7 +63,7 @@ const formatDate = (value) => (value
                             </span>
                         </span>
                         <small class="mt-1 block text-[10px] text-slate-400">
-                            {{ formatDate(entry.start_date) }} – {{ formatDate(entry.end_date) }} · dibuat {{ formatDate(entry.created_at) }}
+                            {{ formatDate(entry.start_date) }} – {{ entry.end_date ? formatDate(entry.end_date) : 'tanpa batas' }} · dibuat {{ formatDate(entry.created_at) }}
                         </small>
                     </span>
                     <ChevronDown

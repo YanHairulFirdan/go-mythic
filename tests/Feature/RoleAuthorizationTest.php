@@ -106,7 +106,7 @@ class RoleAuthorizationTest extends TestCase
             fn () => $this->actingAs($employee)->get(route('capital.index')),
             fn () => $this->actingAs($employee)->get(route('capital.history')),
             fn () => $this->actingAs($employee)->post(route('capital.store'), [
-                'duration' => '1_day', 'initial_amount' => 100,
+                'duration' => '1_year', 'initial_amount' => 100,
             ]),
             fn () => $this->actingAs($employee)->patch(route('capital.top-up', $capital), [
                 'amount' => 100,

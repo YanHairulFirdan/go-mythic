@@ -80,7 +80,10 @@ const summaryCaption = computed(() => {
     const s = props.summary;
 
     if (s.basis === 'capital') {
-        return `dari modal ${formatRupiah(s.baseline_amount)} · ${formatDayMonth(s.period_start)}–${formatDayMonth(s.period_end)}`;
+        const range = s.period_end
+            ? `${formatDayMonth(s.period_start)}–${formatDayMonth(s.period_end)}`
+            : `sejak ${formatDayMonth(s.period_start)}`;
+        return `dari modal ${formatRupiah(s.baseline_amount)} · ${range}`;
     }
 
     if (s.baseline_amount === null || s.baseline_amount === undefined) {
@@ -173,7 +176,7 @@ const quotaItems = computed(() => {
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total modal periode ini</span>
                     <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                        Aktif s/d {{ formatDate(props.capitalWidget.end_date) }}
+                        {{ props.capitalWidget.end_date ? `Aktif s/d ${formatDate(props.capitalWidget.end_date)}` : 'Aktif · tanpa batas' }}
                     </span>
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums tracking-tight">{{ formatRupiah(props.capitalWidget.period_total) }}</div>

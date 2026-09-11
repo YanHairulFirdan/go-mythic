@@ -111,7 +111,9 @@ class CapitalEntryController extends Controller
                 'final_amount' => (float) $entry->initial_amount + (float) $entry->topups->sum('amount'),
                 'start_date' => $entry->start_date,
                 'end_date' => $entry->end_date,
-                'status' => ($entry->start_date <= $today && $entry->end_date >= $today) ? 'Aktif' : 'Kadaluarsa',
+                'status' => ($entry->start_date <= $today && ($entry->end_date === null || $entry->end_date >= $today))
+                    ? 'Aktif'
+                    : 'Kadaluarsa',
                 'created_at' => $entry->created_at?->toDateString(),
                 'topups' => $entry->topups
                     ->sortBy('changed_at')

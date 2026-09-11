@@ -14,14 +14,18 @@ const props = defineProps({
 });
 
 const durations = [
-    { value: '1_day', label: '1 Hari' },
-    { value: '1_week', label: '1 Minggu' },
-    { value: '1_month', label: '1 Bulan' },
+    { value: '1_year', label: '1 Tahun' },
+    { value: 'no_end', label: 'Tanpa batas' },
     { value: 'custom', label: 'Custom' },
 ];
 
+const durationHints = {
+    '1_year': 'Mulai hari ini, berakhir otomatis satu tahun kemudian.',
+    no_end: 'Mulai hari ini, tanpa tanggal selesai — jalan terus sampai diubah.',
+};
+
 const form = useForm({
-    duration: '1_month',
+    duration: '1_year',
     initial_amount: null,
     start_date: '',
     end_date: '',
@@ -71,23 +75,30 @@ const submitTopUp = () => {
 
 // --- Edit entry ---
 const editOpen = ref(false);
-const editForm = useForm({ initial_amount: null, start_date: '', end_date: '' });
+const editForm = useForm({ initial_amount: null, start_date: '', end_date: '', no_end: false });
 
 const openEdit = () => {
     editForm.clearErrors();
     editForm.initial_amount = props.activeEntry.initial_amount;
     editForm.start_date = props.activeEntry.start_date;
-    editForm.end_date = props.activeEntry.end_date;
+    editForm.end_date = props.activeEntry.end_date ?? '';
+    editForm.no_end = props.activeEntry.end_date === null;
     editOpen.value = true;
 };
 
 const submitEdit = () => {
-    editForm.patch(route('capital.update', props.activeEntry.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            editOpen.value = false;
-        },
-    });
+    editForm
+        .transform((data) => ({
+            initial_amount: data.initial_amount,
+            start_date: data.start_date,
+            end_date: data.no_end ? null : data.end_date,
+        }))
+        .patch(route('capital.update', props.activeEntry.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                editOpen.value = false;
+            },
+        });
 };
 
 // --- Delete entry ---
@@ -132,7 +143,7 @@ const destroy = () => {
 
                 <div>
                     <span class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Masa berlaku</span>
-                    <div class="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Masa berlaku modal">
+                    <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Masa berlaku modal">
                         <button
                             v-for="duration in durations"
                             :key="duration.value"
@@ -146,7 +157,7 @@ const destroy = () => {
                         </button>
                     </div>
                     <p v-if="form.errors.duration" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.duration }}</p>
-                    <p v-if="!isCustom" class="mt-1.5 text-xs text-slate-400">Mulai hari ini, berakhir otomatis sesuai durasi.</p>
+                    <p v-if="durationHints[form.duration]" class="mt-1.5 text-xs text-slate-400">{{ durationHints[form.duration] }}</p>
                 </div>
 
                 <div v-if="isCustom" class="grid grid-cols-2 gap-3">
@@ -190,7 +201,7 @@ const destroy = () => {
                     >{{ formatRupiah(props.activeEntry.current_total) }}</span>
                 </div>
                 <div class="mt-2 text-xs text-slate-500">
-                    Periode {{ formatDate(props.activeEntry.start_date) }} – {{ formatDate(props.activeEntry.end_date) }}
+                    Periode {{ formatDate(props.activeEntry.start_date) }} – {{ props.activeEntry.end_date ? formatDate(props.activeEntry.end_date) : 'tanpa batas' }}
                 </div>
             </div>
 
@@ -296,10 +307,15 @@ const destroy = () => {
                             </div>
                             <div>
                                 <label for="edit-end" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Selesai</label>
-                                <input id="edit-end" v-model="editForm.end_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
+                                <input id="edit-end" v-model="editForm.end_date" type="date" :disabled="editForm.no_end" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-400" />
                                 <p v-if="editForm.errors.end_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.end_date }}</p>
                             </div>
                         </div>
+
+                        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                            <input v-model="editForm.no_end" type="checkbox" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
+                            Tanpa tanggal selesai
+                        </label>
 
                         <p class="text-xs text-slate-400">Mengubah nominal atau periode langsung memengaruhi total modal & laporan.</p>
 
@@ -320,7 +336,7 @@ const destroy = () => {
                 <section class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="delete-capital-title">
                     <h2 id="delete-capital-title" class="text-sm font-bold text-slate-900">Hapus modal ini?</h2>
                     <p class="mt-1.5 text-xs text-slate-500">
-                        Periode {{ formatDate(props.activeEntry.start_date) }} – {{ formatDate(props.activeEntry.end_date) }} akan dihapus. Transaksi yang sudah tercatat tetap tersimpan.
+                        Periode {{ formatDate(props.activeEntry.start_date) }} – {{ props.activeEntry.end_date ? formatDate(props.activeEntry.end_date) : 'tanpa batas' }} akan dihapus. Transaksi yang sudah tercatat tetap tersimpan.
                     </p>
                     <div class="mt-4 flex justify-end gap-2">
                         <button

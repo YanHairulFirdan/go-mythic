@@ -30,7 +30,7 @@ class CapitalEntryTest extends TestCase
 
         $this->actingAs($employee)->get(route('capital.index'))->assertForbidden();
         $this->actingAs($employee)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => 1000000,
         ])->assertForbidden();
     }
@@ -47,13 +47,13 @@ class CapitalEntryTest extends TestCase
                 ->where('activeEntry', null));
     }
 
-    public function test_owner_can_set_capital_with_one_month_preset(): void
+    public function test_owner_can_set_capital_for_one_year(): void
     {
         $owner = User::factory()->create();
 
         $this->actingAs($owner)
             ->post(route('capital.store'), [
-                'duration' => '1_month',
+                'duration' => '1_year',
                 'initial_amount' => 3000000,
             ])
             ->assertSessionHasNoErrors()
@@ -64,38 +64,41 @@ class CapitalEntryTest extends TestCase
             'created_by' => $owner->id,
             'initial_amount' => 3000000,
             'start_date' => '2026-09-01',
-            'end_date' => '2026-09-30',
+            'end_date' => '2027-08-31',
         ]);
     }
 
-    public function test_one_week_preset_sets_seven_day_span(): void
+    public function test_no_end_duration_stores_a_null_end_date(): void
     {
         $owner = User::factory()->create();
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_week',
+            'duration' => 'no_end',
             'initial_amount' => 500000,
         ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('capital_entries', [
+            'company_id' => $owner->company_id,
             'start_date' => '2026-09-01',
-            'end_date' => '2026-09-07',
+            'end_date' => null,
         ]);
     }
 
-    public function test_one_day_preset_is_same_day(): void
+    public function test_open_ended_entry_blocks_a_later_overlapping_entry(): void
     {
         $owner = User::factory()->create();
+        CapitalEntry::factory()->create([
+            'company_id' => $owner->company_id,
+            'start_date' => '2026-08-01',
+            'end_date' => null,
+        ]);
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_day',
-            'initial_amount' => 100000,
-        ])->assertSessionHasNoErrors();
+            'duration' => '1_year',
+            'initial_amount' => 1000000,
+        ])->assertInvalid('duration');
 
-        $this->assertDatabaseHas('capital_entries', [
-            'start_date' => '2026-09-01',
-            'end_date' => '2026-09-01',
-        ]);
+        $this->assertDatabaseCount('capital_entries', 1);
     }
 
     public function test_owner_can_set_capital_with_custom_range(): void
@@ -138,12 +141,12 @@ class CapitalEntryTest extends TestCase
         $owner = User::factory()->create();
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => 0,
         ])->assertInvalid('initial_amount');
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => -50000,
         ])->assertInvalid('initial_amount');
 
@@ -160,7 +163,7 @@ class CapitalEntryTest extends TestCase
         ]);
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => 1000000,
         ])->assertInvalid('duration');
 
@@ -196,7 +199,7 @@ class CapitalEntryTest extends TestCase
         ]);
 
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => 2000000,
         ])->assertSessionHasNoErrors();
 
@@ -231,7 +234,7 @@ class CapitalEntryTest extends TestCase
 
         // Another company has an active entry; this owner still has none.
         $this->actingAs($owner)->post(route('capital.store'), [
-            'duration' => '1_month',
+            'duration' => '1_year',
             'initial_amount' => 1000000,
         ])->assertSessionHasNoErrors();
 

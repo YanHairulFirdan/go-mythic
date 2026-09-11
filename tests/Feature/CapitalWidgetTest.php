@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\CapitalEntry;
 use App\Models\CapitalTopup;
+use App\Models\Transaction;
+use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -43,6 +45,38 @@ class CapitalWidgetTest extends TestCase
                 ->component('Dashboard')
                 ->where('capitalWidget.period_total', 3000000)
                 ->where('capitalWidget.end_date', '2026-09-30'));
+    }
+
+    public function test_widget_handles_an_open_ended_entry(): void
+    {
+        $owner = User::factory()->create();
+        CapitalEntry::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'initial_amount' => 2_000_000,
+            'start_date' => '2026-09-01',
+            'end_date' => null,
+        ]);
+
+        $category = TransactionCategory::factory()->for($owner->company)->create(['type' => 'income']);
+        Transaction::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'type' => 'income',
+            'category_id' => $category->id,
+            'amount' => 400_000,
+            'transaction_date' => '2026-09-15',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->where('capitalWidget.period_total', 2000000)
+                // current total counts income up to "today" (2026-09-20)
+                ->where('capitalWidget.current_total', 2400000)
+                ->where('capitalWidget.end_date', null));
     }
 
     public function test_widget_period_total_includes_top_ups(): void
