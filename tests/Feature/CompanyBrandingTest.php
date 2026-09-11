@@ -28,6 +28,35 @@ class CompanyBrandingTest extends TestCase
             ->assertForbidden();
     }
 
+    // US-SET-01 AC1: guest hitting the dedicated appearance page is redirected to login.
+    public function test_guest_cannot_view_the_branding_settings_page(): void
+    {
+        $this->get(route('settings.branding.edit'))
+            ->assertRedirect(route('login'));
+    }
+
+    // US-SET-01 AC1: employee gets 403 even when hitting the URL directly (not just a hidden menu item).
+    public function test_employee_cannot_view_the_branding_settings_page(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee']);
+
+        $this->actingAs($employee)
+            ->get(route('settings.branding.edit'))
+            ->assertForbidden();
+    }
+
+    // US-SET-01 AC1/AC2: Owner reaches the dedicated Inertia page.
+    public function test_owner_can_view_the_branding_settings_page(): void
+    {
+        $owner = User::factory()->create();
+
+        $this->actingAs($owner)
+            ->get(route('settings.branding.edit'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Settings/Branding'));
+    }
+
+    // US-SET-01 AC5: after saving, the user lands back on the appearance page (not Profile).
     public function test_owner_can_choose_a_preset_primary_color(): void
     {
         $owner = User::factory()->create();
@@ -35,7 +64,7 @@ class CompanyBrandingTest extends TestCase
         $this->actingAs($owner)
             ->patch(route('settings.branding.update'), ['primary_color' => 'emerald'])
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('settings.branding.edit'));
 
         $this->assertSame('emerald', $owner->company->fresh()->primary_color);
     }

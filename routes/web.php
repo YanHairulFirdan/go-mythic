@@ -63,6 +63,7 @@ Route::middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::c
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/settings/branding', [CompanyBrandingController::class, 'edit'])->name('settings.branding.edit');
     Route::patch('/settings/branding', [CompanyBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
