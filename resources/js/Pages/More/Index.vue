@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ChevronRight, CreditCard, Landmark, LogOut, Tags, TrendingUp, UserRound, Users } from '@lucide/vue';
+import { ChevronRight, CreditCard, Landmark, LogOut, Palette, Tags, TrendingUp, UserRound, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 
 const page = usePage();
@@ -13,6 +13,7 @@ const modules = computed(() => isOwner.value ? [
     { label: 'Kelola Kategori', desc: 'Kategori transaksi bawaan dan custom', icon: Tags, href: route('transaction-categories.index') },
     { label: 'Kelola Karyawan', desc: 'Roster worker dan employee ber-akun', icon: Users, href: route('employees.index') },
     { label: 'Langganan', desc: 'Paket dan pembayaran', icon: CreditCard, href: route('subscription.index') },
+    { label: 'Tampilan aplikasi', desc: 'Atur warna utama dan logo perusahaan', icon: Palette, href: route('settings.branding.edit') },
 ] : []);
 
 const account = [

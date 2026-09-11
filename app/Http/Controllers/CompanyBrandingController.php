@@ -4,11 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateCompanyBrandingRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CompanyBrandingController extends Controller
 {
+    public function edit(Request $request): Response
+    {
+        abort_unless($request->user()->role === 'owner', 403);
+
+        return Inertia::render('Settings/Branding');
+    }
+
     public function update(UpdateCompanyBrandingRequest $request): RedirectResponse
     {
         $company = $request->user()->company;
@@ -29,7 +39,7 @@ class CompanyBrandingController extends Controller
 
         $company->update($changes);
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('settings.branding.edit');
     }
 
     private function deleteLogo(?string $path): void
