@@ -1,7 +1,8 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Plus, Trash2 } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import QuickCreateDialog from '@/Components/QuickCreateDialog.vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
 import CurrencyInput from '@/Components/CurrencyInput.vue';
@@ -13,6 +14,9 @@ const props = defineProps({
     employees: { type: Array, default: () => [] },
 });
 
+const customers = ref([...props.customers]);
+const customerDialogOpen = ref(false);
+
 const form = useForm({
     customer_id: props.invoice.customer_id ?? '',
     employee_id: props.invoice.employee_id ?? '',
@@ -21,6 +25,12 @@ const form = useForm({
         ? props.invoice.items.map((item) => ({ description: item.description, amount: Number(item.amount) }))
         : [{ description: '', amount: null }],
 });
+
+const onCustomerCreated = (record) => {
+    const customer = { id: Number(record.id), name: String(record.name) };
+    customers.value.push(customer);
+    form.customer_id = customer.id;
+};
 
 const total = computed(() => form.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
 const formattedTotal = computed(() => formatRupiah(total.value));
@@ -52,11 +62,13 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
             <div>
                 <div class="mb-1.5 flex items-center justify-between">
                     <label for="customer_id" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Customer</label>
-                    <Link :href="route('customers.create')" class="text-xs font-bold text-primary-600 hover:text-primary-700">+ Customer baru</Link>
+                    <button type="button" class="flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" @click="customerDialogOpen = true">
+                        <Plus class="size-3.5" /> Customer baru
+                    </button>
                 </div>
                 <select id="customer_id" v-model="form.customer_id" required class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500">
                     <option disabled value="">Pilih customer</option>
-                    <option v-for="customer in props.customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
+                    <option v-for="customer in customers" :key="customer.id" :value="customer.id">{{ customer.name }}</option>
                 </select>
                 <p v-if="form.errors.customer_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.customer_id }}</p>
             </div>
@@ -113,5 +125,18 @@ const submit = () => form.patch(route('invoices.update', props.invoice.id));
                 {{ form.processing ? 'Menyimpan…' : 'Simpan perubahan' }}
             </button>
         </form>
+
+        <QuickCreateDialog
+            v-model:open="customerDialogOpen"
+            title="Customer baru"
+            :endpoint="route('customers.store')"
+            :fields="[
+                { name: 'name', label: 'Nama customer', required: true },
+                { name: 'contact', label: 'Kontak' },
+            ]"
+            response-key="customer"
+            submit-label="Tambah customer"
+            @created="onCustomerCreated"
+        />
     </PrototypeLayout>
 </template>
