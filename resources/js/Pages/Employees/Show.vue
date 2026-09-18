@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ChevronLeft } from '@lucide/vue';
+import { ChevronLeft, Pencil } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import { formatRupiah } from '@/utils/currency';
 
@@ -38,7 +38,14 @@ const backHref = route('employees.index');
             >
                 <ChevronLeft class="size-5" />
             </Link>
-            <h1 class="min-w-0 truncate text-xl font-bold tracking-tight">{{ props.employee.name }}</h1>
+            <h1 class="min-w-0 flex-1 truncate text-xl font-bold tracking-tight">{{ props.employee.name }}</h1>
+            <Link
+                :href="route('employees.edit', props.employee.id)"
+                aria-label="Edit karyawan"
+                class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-primary-200 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+                <Pencil class="size-4" />
+            </Link>
         </section>
 
         <section class="rounded-2xl border border-slate-200 bg-white p-4" aria-label="Info karyawan">
