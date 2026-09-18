@@ -13,18 +13,20 @@ const props = defineProps({
     },
     filters: {
         type: Object,
-        default: () => ({ search: '' }),
+        default: () => ({ search: '', status: 'all' }),
     },
 });
 
 const search = ref(props.filters.search ?? '');
+// US-INV-07 AC6: status filter — semua / belum dibayar / dp / lunas / jatuh tempo.
+const status = ref(props.filters.status ?? 'all');
 const reloading = ref(false);
 
 let timer;
 watch(search, () => {
     clearTimeout(timer);
     timer = setTimeout(() => {
-        router.get(route('invoices.index'), { search: search.value.trim() || undefined }, {
+        router.get(route('invoices.index'), { search: search.value.trim() || undefined, status: status.value === 'all' ? undefined : status.value }, {
             only: ['invoices', 'filters'],
             preserveState: true,
             replace: true,
@@ -33,6 +35,33 @@ watch(search, () => {
         });
     }, 300);
 });
+
+const reloadWithStatus = (value) => {
+    status.value = value;
+    router.get(route('invoices.index'), { search: search.value.trim() || undefined, status: value === 'all' ? undefined : value }, {
+        only: ['invoices', 'filters'],
+        preserveState: true,
+        replace: true,
+        onStart: () => { reloading.value = true; },
+        onFinish: () => { reloading.value = false; },
+    });
+};
+
+const statusOptions = [
+    { key: 'all', label: 'Semua' },
+    { key: 'belum_dibayar', label: 'Belum dibayar' },
+    { key: 'dp', label: 'DP' },
+    { key: 'lunas', label: 'Lunas' },
+    { key: 'jatuh_tempo', label: 'Jatuh tempo' },
+];
+
+// US-INV-07 AC2/AC3: pill colours per derived status; overdue wins visually.
+const statusPill = (invoice) => {
+    if (invoice.is_overdue) {
+        return 'bg-rose-50 text-rose-700';
+    }
+    return { lunas: 'bg-emerald-50 text-emerald-700', dp: 'bg-amber-50 text-amber-700', belum_dibayar: 'bg-slate-100 text-slate-600' }[invoice.status_key] ?? 'bg-slate-100 text-slate-600';
+};
 
 const formatDate = (value) => (value
     ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -67,6 +96,22 @@ const progressPct = (invoice) => {
             />
         </div>
 
+        <div class="mt-2.5 -mx-4 overflow-x-auto px-4 pb-0.5" role="group" aria-label="Filter status invoice">
+            <div class="flex w-max gap-2">
+                <button
+                    v-for="option in statusOptions"
+                    :key="option.key"
+                    type="button"
+                    :aria-pressed="status === option.key"
+                    class="min-h-8 whitespace-nowrap rounded-full border px-3 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                    :class="status === option.key ? 'border-primary-600 bg-primary-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-primary-200'"
+                    @click="reloadWithStatus(option.key)"
+                >
+                    {{ option.label }}
+                </button>
+            </div>
+        </div>
+
         <section class="mt-3 pb-4" aria-label="Daftar invoice" :aria-busy="reloading">
             <div :class="['divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']">
                 <Link
@@ -85,6 +130,12 @@ const progressPct = (invoice) => {
                         </span>
                         <span class="text-xs font-extrabold tabular-nums text-slate-700">{{ formatRupiah(invoice.nominal_total) }}</span>
                         <ChevronRight class="size-4 shrink-0 text-slate-300" />
+                    </div>
+                    <div class="mt-2 flex items-center gap-2 pl-[52px]">
+                        <span :class="['rounded-full px-2 py-0.5 text-[9px] font-extrabold', statusPill(invoice)]">
+                            {{ invoice.is_overdue ? 'JATUH TEMPO' : invoice.status }}
+                        </span>
+                        <span v-if="invoice.due_date" class="text-[10px] text-slate-400">Tempo {{ formatDate(invoice.due_date) }}</span>
                     </div>
                     <div class="mt-2 flex items-center gap-2 pl-[52px]">
                         <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">

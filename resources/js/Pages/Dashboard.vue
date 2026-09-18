@@ -11,7 +11,7 @@ const page = usePage();
 const props = defineProps({
     capitalWidget: { type: Object, default: null },
     quotaWidget: { type: Object, default: null },
-    // US-INV-06: { outstanding, partial } or null when every invoice is covered.
+    // US-INV-06/07: { outstanding, partial, overdue } or null when every invoice is covered.
     invoiceReminderWidget: { type: Object, default: null },
     // Performance card. `basis` is 'capital' (badge = laba ÷ modal over the
     // active capital period) or 'month' (badge = month-over-month net change).
@@ -240,7 +240,10 @@ const quotaItems = computed(() => {
             <span class="mt-0.5 text-base" aria-hidden="true">!</span>
             <div>
                 <p class="font-bold">{{ props.invoiceReminderWidget.outstanding }} invoice belum lunas</p>
-                <p v-if="props.invoiceReminderWidget.partial > 0" class="mt-0.5 text-xs text-amber-700">
+                <p v-if="props.invoiceReminderWidget.overdue > 0" class="mt-0.5 text-xs font-semibold text-rose-600">
+                    {{ props.invoiceReminderWidget.overdue }} invoice jatuh tempo
+                </p>
+                <p v-else-if="props.invoiceReminderWidget.partial > 0" class="mt-0.5 text-xs text-amber-700">
                     {{ props.invoiceReminderWidget.partial }} invoice terpakai sebagian
                 </p>
             </div>

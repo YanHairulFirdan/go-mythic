@@ -32,6 +32,7 @@ class InvoiceRequest extends FormRequest
                 'nullable',
                 Rule::exists('employees', 'id')->where('company_id', $companyId)->whereNull('deleted_at'),
             ],
+            'due_date' => ['nullable', 'date'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.amount' => ['required', 'numeric', 'gt:0'],

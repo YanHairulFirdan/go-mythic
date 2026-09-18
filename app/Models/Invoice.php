@@ -9,12 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
-#[Fillable(['company_id', 'customer_id', 'employee_id', 'created_by'])]
+#[Fillable(['company_id', 'customer_id', 'employee_id', 'created_by', 'due_date'])]
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
     use HasFactory, SoftDeletes;
+
+    protected $casts = [
+        'due_date' => 'date',
+    ];
 
     public function company(): BelongsTo
     {
@@ -66,6 +71,30 @@ class Invoice extends Model
     public function remainingBalance(): float
     {
         return $this->nominalTotal() - $this->linkedTotal();
+    }
+
+    public function paymentStatus(): string
+    {
+        $total = $this->nominalTotal();
+        $linked = $this->linkedTotal();
+
+        return $linked <= 0 ? 'belum_dibayar' : ($linked < $total ? 'dp' : 'lunas');
+    }
+
+    public function paymentStatusLabel(): string
+    {
+        return match ($this->paymentStatus()) {
+            'dp' => 'DP',
+            'lunas' => 'LUNAS',
+            default => 'BELUM DIBAYAR',
+        };
+    }
+
+    public function isOverdue(?Carbon $today = null): bool
+    {
+        return $this->remainingBalance() > 0
+            && $this->due_date !== null
+            && $this->due_date->toDateString() < ($today ?? Carbon::now('UTC'))->toDateString();
     }
 
     /**

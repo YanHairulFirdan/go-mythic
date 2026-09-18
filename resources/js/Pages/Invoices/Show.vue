@@ -22,6 +22,12 @@ const progressPct = computed(() => {
     return Math.min(100, Math.round((Number(props.invoice.linked_total || 0) / total) * 100));
 });
 const hasRemaining = computed(() => Number(props.invoice.remaining || 0) > 0);
+const statusClass = computed(() => props.invoice.is_overdue
+    ? 'bg-rose-50 text-rose-700'
+    : { lunas: 'bg-emerald-50 text-emerald-700', dp: 'bg-amber-50 text-amber-700', belum_dibayar: 'bg-slate-100 text-slate-600' }[props.invoice.status_key] ?? 'bg-slate-100 text-slate-600');
+const formatDate = (value) => (value
+    ? new Date(value).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—');
 // US-INV-03: open the transaction form with this invoice pre-selected.
 const recordTransactionHref = computed(() => route('transactions.create', { invoice_id: props.invoice.id }));
 
@@ -87,6 +93,17 @@ const destroy = () => {
         </section>
 
         <Card label="Total invoice" :amount="formatRupiah(props.invoice.nominal_total)" class="mt-4" />
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-4" aria-label="Status pembayaran">
+            <div class="flex items-center justify-between gap-3">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Status pembayaran</span>
+                <span :class="['rounded-full px-2.5 py-1 text-[10px] font-extrabold', statusClass]">
+                    {{ props.invoice.is_overdue ? 'JATUH TEMPO' : props.invoice.status }}
+                </span>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">Jatuh tempo: <strong class="text-slate-700">{{ formatDate(props.invoice.due_date) }}</strong></p>
+            <p v-if="props.invoice.is_overdue" class="mt-1 text-xs font-semibold text-rose-600">Sisa saldo belum tertagih.</p>
+        </section>
 
         <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-4" aria-label="Progress invoice">
             <div class="flex items-center justify-between gap-2">
