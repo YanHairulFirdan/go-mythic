@@ -136,7 +136,7 @@ const destroy = () => {
 
             <form class="mt-4 space-y-4 pb-8" @submit.prevent="submit">
                 <div>
-                    <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
+                    <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Modal awal</label>
                     <CurrencyInput id="initial_amount" v-model="form.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                     <p v-if="form.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.initial_amount }}</p>
                 </div>
@@ -294,7 +294,7 @@ const destroy = () => {
 
                     <form class="mt-4 space-y-4" @submit.prevent="submitEdit">
                         <div>
-                            <label for="edit-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
+                            <label for="edit-amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Modal awal</label>
                             <CurrencyInput id="edit-amount" v-model="editForm.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                             <p v-if="editForm.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ editForm.errors.initial_amount }}</p>
                         </div>
