@@ -23,6 +23,7 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->string('search'));
+        $statusFilter = (string) $request->string('status', 'all');
 
         $invoices = Invoice::query()
             ->where('company_id', $request->user()->company_id)
@@ -37,19 +38,18 @@ class InvoiceController extends Controller
             ->withSum('items as nominal_total', 'amount')
             ->withSum('transactions as linked_total', 'amount')
             ->latest()
-            ->get(['id', 'customer_id', 'created_at'])
-            ->map(fn (Invoice $invoice): array => [
-                'id' => $invoice->id,
-                'customer' => $invoice->customer?->name,
-                'nominal_total' => (float) ($invoice->nominal_total ?? 0),
-                // US-INV-04 AC1: progress is always on-the-fly, never stored.
-                'linked_total' => (float) ($invoice->linked_total ?? 0),
-                'created_at' => $invoice->created_at?->toDateString(),
-            ]);
+            ->get(['id', 'customer_id', 'due_date', 'created_at'])
+            ->map(fn (Invoice $invoice): array => $this->presentInvoice($invoice))
+            ->filter(fn (array $invoice): bool => match ($statusFilter) {
+                'jatuh_tempo' => $invoice['is_overdue'],
+                'all' => true,
+                default => $invoice['status_key'] === $statusFilter,
+            })
+            ->values();
 
         return Inertia::render('Invoices/Index', [
             'invoices' => $invoices,
-            'filters' => ['search' => $search],
+            'filters' => ['search' => $search, 'status' => $statusFilter],
         ]);
     }
 
@@ -65,6 +65,7 @@ class InvoiceController extends Controller
                 'company_id' => $request->user()->company_id,
                 'customer_id' => $request->validated('customer_id'),
                 'employee_id' => $request->validated('employee_id'),
+                'due_date' => $request->validated('due_date'),
                 'created_by' => $request->user()->id,
             ]);
 
@@ -90,6 +91,11 @@ class InvoiceController extends Controller
                 // US-INV-04: progress computed on-the-fly (AC1), shown on detail (AC2).
                 'linked_total' => $invoice->linkedTotal(),
                 'remaining' => $invoice->remainingBalance(),
+                // US-INV-07: derived payment status + due date, still nothing stored.
+                'status_key' => $invoice->paymentStatus(),
+                'status' => $invoice->paymentStatusLabel(),
+                'due_date' => $invoice->due_date?->toDateString(),
+                'is_overdue' => $invoice->isOverdue(),
                 'is_frozen' => $invoice->isFrozen(),
                 'created_at' => $invoice->created_at?->toDateString(),
             ],
@@ -109,6 +115,7 @@ class InvoiceController extends Controller
                 'id' => $invoice->id,
                 'customer_id' => $invoice->customer_id,
                 'employee_id' => $invoice->employee_id,
+                'due_date' => $invoice->due_date?->toDateString(),
                 'items' => $invoice->items->map->only('description', 'amount'),
             ],
         ]);
@@ -123,6 +130,7 @@ class InvoiceController extends Controller
             $invoice->update([
                 'customer_id' => $request->validated('customer_id'),
                 'employee_id' => $request->validated('employee_id'),
+                'due_date' => $request->validated('due_date'),
             ]);
 
             $invoice->items()->delete();
@@ -152,6 +160,22 @@ class InvoiceController extends Controller
         return [
             'customers' => Customer::where('company_id', $companyId)->orderBy('name')->get(['id', 'name']),
             'employees' => Employee::where('company_id', $companyId)->orderBy('name')->get(['id', 'name']),
+        ];
+    }
+
+    private function presentInvoice(Invoice $invoice): array
+    {
+        return [
+            'id' => $invoice->id,
+            'customer' => $invoice->customer?->name,
+            'nominal_total' => (float) ($invoice->nominal_total ?? $invoice->nominalTotal()),
+            'linked_total' => (float) ($invoice->linked_total ?? $invoice->linkedTotal()),
+            'remaining' => (float) (($invoice->nominal_total ?? $invoice->nominalTotal()) - ($invoice->linked_total ?? $invoice->linkedTotal())),
+            'status_key' => $invoice->paymentStatus(),
+            'status' => $invoice->paymentStatusLabel(),
+            'due_date' => $invoice->due_date?->toDateString(),
+            'is_overdue' => $invoice->isOverdue(),
+            'created_at' => $invoice->created_at?->toDateString(),
         ];
     }
 

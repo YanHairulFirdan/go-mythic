@@ -15,6 +15,7 @@ const props = defineProps({
 const form = useForm({
     customer_id: '',
     employee_id: '',
+    due_date: '',
     items: [{ description: '', amount: null }],
 });
 
@@ -64,6 +65,12 @@ const submit = () => form.post(route('invoices.store'));
                     <option v-for="employee in props.employees" :key="employee.id" :value="employee.id">{{ employee.name }}</option>
                 </select>
                 <p v-if="form.errors.employee_id" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.employee_id }}</p>
+            </div>
+
+            <div>
+                <label for="due_date" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Jatuh tempo <span class="font-medium normal-case tracking-normal text-slate-400">(opsional)</span></label>
+                <input id="due_date" v-model="form.due_date" type="date" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 focus:border-primary-500 focus:ring-primary-500" />
+                <p v-if="form.errors.due_date" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.due_date }}</p>
             </div>
 
             <section aria-labelledby="items-title">

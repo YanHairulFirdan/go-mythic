@@ -151,14 +151,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * US-INV-06: dashboard reminder for invoices still awaiting transactions.
-     * Invoices carry no stored status or due date (US-INV-01 AC3); both counts
-     * are derived on-the-fly from SUM(items) vs SUM(non-soft-deleted linked
-     * transactions), consistent with US-INV-04 AC1. Visible to Owner & Employee
-     * (US-INV-05 AC3), scoped to the current company. Returns null when every
-     * invoice is fully covered so the card can be hidden entirely.
+     * US-INV-06/US-INV-07 AC5: dashboard reminder for invoices still awaiting
+     * transactions. Invoices carry no stored status or total (US-INV-01 AC3);
+     * counts are derived on-the-fly from SUM(items) vs SUM(non-soft-deleted
+     * linked transactions), consistent with US-INV-04 AC1. Visible to Owner &
+     * Employee (US-INV-05 AC3), scoped to the current company. Returns null
+     * when every invoice is fully covered so the card can be hidden entirely.
      *
-     * @return array{outstanding: int, partial: int}|null
+     * @return array{outstanding: int, partial: int, overdue: int}|null
      */
     private function invoiceReminderWidget(Request $request): ?array
     {
@@ -166,10 +166,11 @@ class DashboardController extends Controller
             ->where('company_id', $request->user()->company_id)
             ->withSum('items as nominal_total', 'amount')
             ->withSum('transactions as linked_total', 'amount')
-            ->get(['id']);
+            ->get(['id', 'due_date']);
 
         $outstanding = 0;
         $partial = 0;
+        $overdue = 0;
 
         foreach ($invoices as $invoice) {
             $total = (float) ($invoice->nominal_total ?? 0);
@@ -184,9 +185,13 @@ class DashboardController extends Controller
             if ($linked > 0) {
                 $partial++;
             }
+
+            if ($invoice->isOverdue()) {
+                $overdue++;
+            }
         }
 
-        return $outstanding === 0 ? null : ['outstanding' => $outstanding, 'partial' => $partial];
+        return $outstanding === 0 ? null : ['outstanding' => $outstanding, 'partial' => $partial, 'overdue' => $overdue];
     }
 
     /**
