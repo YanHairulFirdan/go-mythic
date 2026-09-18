@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\EnsureCompanySubscription;
 use App\Http\Requests\StoreEmployeeAccountRequest;
 use App\Http\Requests\StoreWorkerRequest;
+use App\Http\Requests\UpdateWorkerRequest;
 use App\Models\Employee;
 use App\Models\Transaction;
 use App\Models\User;
@@ -76,6 +77,31 @@ class EmployeeController extends Controller
         ]);
 
         return to_route('employees.index');
+    }
+
+    public function edit(Request $request, Employee $employee): Response
+    {
+        abort_unless($request->user()?->role === 'owner', 403);
+        abort_if($employee->company_id !== $request->user()->company_id, 404);
+
+        return Inertia::render('Employees/Edit', [
+            'employee' => [
+                'id' => $employee->id,
+                'name' => $employee->name,
+            ],
+        ]);
+    }
+
+    public function update(UpdateWorkerRequest $request, Employee $employee): RedirectResponse
+    {
+        abort_unless($request->user()?->role === 'owner', 403);
+        abort_if($employee->company_id !== $request->user()->company_id, 404);
+
+        // Update roster name only; for account-backed employees the login user
+        // record is intentionally untouched.
+        $employee->update(['name' => $request->validated('name')]);
+
+        return to_route('employees.show', $employee);
     }
 
     public function storeAccount(StoreEmployeeAccountRequest $request): RedirectResponse
