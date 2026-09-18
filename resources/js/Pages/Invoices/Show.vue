@@ -11,6 +11,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    transactions: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 // US-INV-04: on-the-fly progress (SUM transaksi terkait vs nominal_total).
@@ -124,6 +128,29 @@ const destroy = () => {
             >
                 <CirclePlus class="size-4" /> Catat transaksi
             </Link>
+        </section>
+
+        <section class="mt-4 pb-4" aria-labelledby="invoice-transactions-title">
+            <h2 id="invoice-transactions-title" class="mb-2 text-sm font-bold">Transaksi terkait</h2>
+            <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
+                <Link
+                    v-for="transaction in props.transactions"
+                    :key="transaction.id"
+                    :href="route('transactions.show', transaction.id)"
+                    class="flex items-center gap-3 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+                >
+                    <span class="min-w-0 flex-1">
+                        <strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.category ?? 'Tanpa kategori' }}</strong>
+                        <small class="mt-1 block text-[10px] text-slate-400">{{ formatDate(transaction.transaction_date) }}</small>
+                    </span>
+                    <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'" class="shrink-0 text-xs font-extrabold tabular-nums">
+                        {{ transaction.type === 'income' ? '+' : '-' }}{{ formatRupiah(transaction.amount) }}
+                    </span>
+                </Link>
+                <p v-if="props.transactions.length === 0" class="py-8 text-center text-xs text-slate-400">
+                    Belum ada transaksi tercatat untuk invoice ini.
+                </p>
+            </div>
         </section>
 
         <div

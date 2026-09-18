@@ -6,6 +6,7 @@ use App\Http\Requests\InvoiceRequest;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Invoice;
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,6 +82,21 @@ class InvoiceController extends Controller
 
         $invoice->load(['customer:id,name', 'employee:id,name', 'items:id,invoice_id,description,amount']);
 
+        $transactions = Transaction::query()
+            ->where('company_id', $invoice->company_id)
+            ->where('invoice_id', $invoice->id)
+            ->with('category:id,name')
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('id')
+            ->get(['id', 'amount', 'transaction_date', 'category_id', 'type'])
+            ->map(fn (Transaction $transaction): array => [
+                'id' => $transaction->id,
+                'amount' => (float) $transaction->amount,
+                'transaction_date' => $transaction->transaction_date,
+                'category' => $transaction->category?->name,
+                'type' => $transaction->type,
+            ]);
+
         return Inertia::render('Invoices/Show', [
             'invoice' => [
                 'id' => $invoice->id,
@@ -99,6 +115,7 @@ class InvoiceController extends Controller
                 'is_frozen' => $invoice->isFrozen(),
                 'created_at' => $invoice->created_at?->toDateString(),
             ],
+            'transactions' => $transactions,
         ]);
     }
 

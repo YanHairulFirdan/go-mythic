@@ -165,6 +165,41 @@ class InvoicePaymentStatusTest extends TestCase
         $this->assertNotSame($unpaid->id, $paid->id);
     }
 
+    public function test_detail_lists_linked_transactions_newest_first(): void
+    {
+        $owner = User::factory()->create();
+        $invoice = $this->invoiceFor($owner);
+        $first = $this->link($owner, $invoice, 400000);
+        $second = Transaction::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'type' => 'income',
+            'category_id' => $first->category_id,
+            'invoice_id' => $invoice->id,
+            'customer_id' => $invoice->customer_id,
+            'amount' => 600000,
+            'transaction_date' => '2026-09-17',
+        ]);
+
+        $this->actingAs($owner)->get(route('invoices.show', $invoice))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('transactions', 2)
+                ->where('transactions.0.id', $second->id)
+                ->where('transactions.0.amount', 600000)
+                ->where('transactions.1.id', $first->id));
+    }
+
+    public function test_detail_transaction_list_excludes_other_invoices_and_is_empty_when_unpaid(): void
+    {
+        $owner = User::factory()->create();
+        $invoice = $this->invoiceFor($owner);
+        $otherInvoice = $this->invoiceFor($owner);
+        $this->link($owner, $otherInvoice, 500000);
+
+        $this->actingAs($owner)->get(route('invoices.show', $invoice))
+            ->assertInertia(fn (Assert $page) => $page->has('transactions', 0));
+    }
+
     public function test_status_and_total_are_not_stored_columns(): void
     {
         $this->assertFalse(Schema::hasColumn('invoices', 'status'));
