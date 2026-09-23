@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\CapitalEntry;
+use App\Models\CapitalTopup;
 use App\Models\Company;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
@@ -97,6 +99,26 @@ class ProfitLossReportTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_2months_period_covers_current_and_previous_calendar_month(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $this->transaction($owner->company_id, 'income', 100_000, '2026-09-01');
+        $this->transaction($owner->company_id, 'income', 200_000, '2026-08-31');
+        $this->transaction($owner->company_id, 'income', 999_000, '2026-07-31');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss', ['period' => '2months']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('report.period', '2months')
+                ->where('report.period_label', '2 Bulan Terakhir')
+                ->where('report.date_from', '2026-08-01')
+                ->where('report.date_to', '2026-09-15')
+                ->where('report.income', 300_000));
+
+        Carbon::setTestNow();
+    }
+
     public function test_summary_is_text_only_without_chart_data(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
@@ -167,6 +189,64 @@ class ProfitLossReportTest extends TestCase
                 'period' => 'custom', 'date_from' => '2026-08-31', 'date_to' => '2026-08-01',
             ]))
             ->assertSessionHasErrors('date_to');
+    }
+
+    public function test_report_includes_capital_topup_within_period(): void
+    {
+        Carbon::setTestNow('2026-09-15');
+        $owner = User::factory()->create(['role' => 'owner']);
+        $entry = CapitalEntry::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-30',
+        ]);
+        CapitalTopup::factory()->create([
+            'capital_entry_id' => $entry->id,
+            'changed_by' => $owner->id,
+            'amount' => 250_000,
+            'changed_at' => '2026-08-15 10:00:00',
+        ]);
+        CapitalTopup::factory()->create([
+            'capital_entry_id' => $entry->id,
+            'changed_by' => $owner->id,
+            'amount' => 100_000,
+            'changed_at' => '2026-10-01 10:00:00',
+        ]);
+        $otherOwner = User::factory()->create(['role' => 'owner']);
+        $otherEntry = CapitalEntry::factory()->create([
+            'company_id' => $otherOwner->company_id,
+            'created_by' => $otherOwner->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-30',
+        ]);
+        CapitalTopup::factory()->create([
+            'capital_entry_id' => $otherEntry->id,
+            'changed_by' => $otherOwner->id,
+            'amount' => 900_000,
+            'changed_at' => '2026-08-15 10:00:00',
+        ]);
+        $this->transaction($owner->company_id, 'income', 500_000, '2026-08-20');
+        $this->transaction($owner->company_id, 'expense', 100_000, '2026-08-21');
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss', [
+                'period' => 'custom', 'date_from' => '2026-08-01', 'date_to' => '2026-09-30',
+            ]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('report.capital_topup', 250_000)
+                ->where('report.net', 400_000));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_capital_topup_is_zero_when_none_in_period(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($owner)
+            ->get(route('reports.profit-loss'))
+            ->assertInertia(fn (Assert $page) => $page->where('report.capital_topup', 0));
     }
 
     public function test_invalid_period_is_rejected(): void
