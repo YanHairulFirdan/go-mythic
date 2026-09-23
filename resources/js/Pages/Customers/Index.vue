@@ -1,4 +1,5 @@
 <script setup>
+import { driver } from 'driver.js';
 import { Head, Link } from '@inertiajs/vue3';
 import { ChevronRight, Plus, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -10,6 +11,21 @@ defineProps({
         default: () => [],
     },
 });
+
+const startTour = () => {
+    driver({
+        showProgress: true,
+        animate: false,
+        skipMissingElement: true,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="customer-list"]', popover: { title: 'Daftar customer', description: 'Pilih customer untuk melihat detail dan riwayat transaksinya.' } },
+            { element: '[data-tour="customer-create"]', popover: { title: 'Tambah customer', description: 'Gunakan tombol ini untuk menyimpan customer baru.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -17,10 +33,20 @@ defineProps({
 
     <PrototypeLayout>
         <section class="pb-5 pt-4">
-            <PageHeader title="Customer" />
+            <PageHeader title="Customer">
+                <template #actions>
+                    <button
+                        type="button"
+                        class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="startTour"
+                    >
+                        Mulai tur
+                    </button>
+                </template>
+            </PageHeader>
         </section>
 
-        <section class="pb-4" aria-label="Daftar customer">
+        <section data-tour="customer-list" class="pb-4" aria-label="Daftar customer">
             <div class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3">
                 <Link
                     v-for="customer in customers"
@@ -44,6 +70,7 @@ defineProps({
         </section>
 
         <Link
+            data-tour="customer-create"
             :href="route('customers.create')"
             aria-label="Tambah customer"
             class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"

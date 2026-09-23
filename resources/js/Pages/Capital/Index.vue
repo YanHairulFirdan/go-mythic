@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { driver } from 'driver.js';
 import { ChevronLeft, Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -114,6 +115,26 @@ const destroy = () => {
         },
     });
 };
+
+// skipMissingElement: true, karena target berbeda tergantung ada/tidaknya activeEntry.
+const startTour = () => {
+    driver({
+        showProgress: true,
+        animate: false,
+        skipMissingElement: true,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="capital-amount"]', popover: { title: 'Nominal modal', description: 'Masukkan modal awal sebagai baseline perhitungan.' } },
+            { element: '[data-tour="capital-duration"]', popover: { title: 'Masa berlaku', description: 'Tentukan berapa lama periode modal ini berlaku.' } },
+            { element: '[data-tour="capital-summary"]', popover: { title: 'Ringkasan modal', description: 'Lihat total modal periode ini dan saat ini.' } },
+            { element: '[data-tour="capital-topup"]', popover: { title: 'Top-up modal', description: 'Tambahkan modal tambahan kapan saja.' } },
+            { element: '[data-tour="capital-actions"]', popover: { title: 'Edit / hapus', description: 'Ubah atau hapus modal yang sudah diatur.' } },
+            { element: '[data-tour="capital-history"]', popover: { title: 'Riwayat modal', description: 'Lihat catatan modal dan top-up sebelumnya.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -128,20 +149,27 @@ const destroy = () => {
             >
                 <ChevronLeft class="size-5" />
             </Link>
-            <h1 class="text-xl font-bold tracking-tight">Modal / Kas Usaha</h1>
+            <h1 class="flex-1 text-xl font-bold tracking-tight">Modal / Kas Usaha</h1>
+            <button
+                type="button"
+                class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                @click="startTour"
+            >
+                Mulai tur
+            </button>
         </section>
 
         <template v-if="!props.activeEntry">
             <p class="text-sm text-slate-500">Belum ada modal aktif — set dulu sebagai baseline.</p>
 
             <form class="mt-4 space-y-4 pb-8" @submit.prevent="submit">
-                <div>
+                <div data-tour="capital-amount">
                     <label for="initial_amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal modal</label>
                     <CurrencyInput id="initial_amount" v-model="form.initial_amount" required placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:border-primary-500 focus:ring-primary-500" />
                     <p v-if="form.errors.initial_amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.initial_amount }}</p>
                 </div>
 
-                <div>
+                <div data-tour="capital-duration">
                     <span class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Masa berlaku</span>
                     <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Masa berlaku modal">
                         <button
@@ -178,6 +206,7 @@ const destroy = () => {
                 </button>
 
                 <Link
+                    data-tour="capital-history"
                     :href="route('capital.history')"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
@@ -187,7 +216,7 @@ const destroy = () => {
         </template>
 
         <template v-else>
-            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+            <div data-tour="capital-summary" class="rounded-2xl border border-slate-200 bg-white p-4">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total modal periode ini</span>
                     <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600">Aktif</span>
@@ -207,13 +236,14 @@ const destroy = () => {
 
             <div class="grid gap-3 pb-8 pt-5">
                 <button
+                    data-tour="capital-topup"
                     type="button"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                     @click="openTopUp"
                 >
                     Top-up Modal
                 </button>
-                <div class="grid grid-cols-2 gap-3">
+                <div data-tour="capital-actions" class="grid grid-cols-2 gap-3">
                     <button
                         type="button"
                         class="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -230,6 +260,7 @@ const destroy = () => {
                     </button>
                 </div>
                 <Link
+                    data-tour="capital-history"
                     :href="route('capital.history')"
                     class="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >

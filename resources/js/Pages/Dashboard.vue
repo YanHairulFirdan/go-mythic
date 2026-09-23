@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, CirclePlus, FilePlus2, Landmark, TrendingDown, TrendingUp } from '@lucide/vue';
+import { driver } from 'driver.js';
 import { computed } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Button from '@/Components/ui/Button.vue';
@@ -53,6 +54,34 @@ const onboardingSteps = computed(() => {
         { label: 'Lihat laporan laba-rugi', complete: false, href: route('reports.profit-loss') },
     ];
 });
+
+const startTour = () => {
+    driver({
+        showProgress: true,
+        animate: false,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            {
+                element: '[data-tour="summary"]',
+                popover: { title: 'Ringkasan usaha', description: 'Lihat pemasukan, pengeluaran, dan laba bersih usaha di sini.' },
+            },
+            {
+                element: '[data-tour="onboarding"]',
+                popover: { title: 'Mulai dari sini', description: 'Ikuti checklist ini untuk menyiapkan pencatatan usaha.' },
+            },
+            {
+                element: '[data-tour="quick-actions"]',
+                popover: { title: 'Aksi cepat', description: 'Catat transaksi, buat invoice, atau buka laporan dari sini.' },
+            },
+            {
+                element: '[data-tour="recent-transactions"]',
+                popover: { title: 'Transaksi terbaru', description: 'Pantau catatan transaksi terakhir usahamu di sini.' },
+            },
+        ],
+    }).drive();
+};
 
 const displayName = computed(() => page.props.auth?.user?.name ?? '');
 
@@ -162,7 +191,7 @@ const quotaItems = computed(() => {
             </h1>
         </section>
 
-        <section class="relative overflow-hidden rounded-3xl bg-primary-600 p-5 text-white shadow-lg shadow-primary-200" aria-labelledby="profit-title">
+        <section data-tour="summary" class="relative overflow-hidden rounded-3xl bg-primary-600 p-5 text-white shadow-lg shadow-primary-200" aria-labelledby="profit-title">
             <div class="absolute -right-14 -top-16 size-44 rounded-full border-[22px] border-primary-400/20" />
             <div class="absolute -bottom-20 right-8 size-40 rounded-full border-[18px] border-primary-400/10" />
             <div class="relative">
@@ -184,13 +213,22 @@ const quotaItems = computed(() => {
             </div>
         </section>
 
-        <section v-if="showOnboarding" class="mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-4" aria-labelledby="onboarding-title">
+        <section v-if="showOnboarding" data-tour="onboarding" class="mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-4" aria-labelledby="onboarding-title">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h2 id="onboarding-title" class="text-sm font-bold text-primary-900">Mulai dari sini</h2>
                     <p class="mt-1 text-xs text-primary-700">Siapkan pencatatan usaha dalam beberapa langkah.</p>
                 </div>
-                <Link :href="route('guide')" class="shrink-0 text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Panduan</Link>
+                <div class="flex shrink-0 items-center gap-3">
+                    <button
+                        type="button"
+                        class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="startTour"
+                    >
+                        Mulai tur
+                    </button>
+                    <Link :href="route('guide')" class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Panduan</Link>
+                </div>
             </div>
             <div class="mt-3 space-y-2">
                 <Link
@@ -291,7 +329,7 @@ const quotaItems = computed(() => {
             <ChevronRight class="ml-auto mt-0.5 size-4 shrink-0" />
         </Link>
 
-        <section class="mt-6" aria-labelledby="quick-actions-title">
+        <section data-tour="quick-actions" class="mt-6" aria-labelledby="quick-actions-title">
             <div class="mb-3 flex items-center justify-between">
                 <h2 id="quick-actions-title" class="text-sm font-bold">Aksi cepat</h2>
                 <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400">MVP</span>
@@ -304,7 +342,7 @@ const quotaItems = computed(() => {
             </div>
         </section>
 
-        <section class="mt-7 pb-4" aria-labelledby="recent-title">
+        <section data-tour="recent-transactions" class="mt-7 pb-4" aria-labelledby="recent-title">
             <div class="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" class="text-sm font-bold">Transaksi terbaru</h2>
                 <Link :href="route('transactions.index')" class="text-xs font-bold text-primary-600 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Lihat semua <span aria-hidden="true">→</span></Link>

@@ -1,5 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
+import { driver } from 'driver.js';
 import { ArrowDownLeft, ArrowUpRight } from '@lucide/vue';
 import { computed, reactive, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -53,6 +54,23 @@ const applyCustomRange = () => {
         replace: true,
     });
 };
+
+const startTour = () => {
+    driver({
+        showProgress: true,
+        animate: false,
+        skipMissingElement: true,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="report-period"]', popover: { title: 'Filter periode', description: 'Pilih rentang waktu laporan yang ingin dilihat.' } },
+            { element: '[data-tour="report-summary"]', popover: { title: 'Ringkasan laba rugi', description: 'Bandingkan pemasukan dan pengeluaran.' } },
+            { element: '[data-tour="report-net"]', popover: { title: 'Saldo bersih', description: 'Laba bersih adalah pemasukan dikurangi pengeluaran.' } },
+            { element: '[data-tour="report-breakdown"]', popover: { title: 'Breakdown', description: 'Lihat sumber pemasukan dan pengeluaran per kategori.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -60,10 +78,20 @@ const applyCustomRange = () => {
 
     <PrototypeLayout>
         <section class="pb-5 pt-4">
-            <PageHeader title="Laporan P&L" :back="route('dashboard')" />
+            <PageHeader title="Laporan P&L" :back="route('dashboard')">
+                <template #actions>
+                    <button
+                        type="button"
+                        class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="startTour"
+                    >
+                        Mulai tur
+                    </button>
+                </template>
+            </PageHeader>
         </section>
 
-        <div class="flex rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Filter periode">
+        <div data-tour="report-period" class="flex rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Filter periode">
             <button
                 v-for="period in periods"
                 :key="period.value"
@@ -92,7 +120,7 @@ const applyCustomRange = () => {
 
         <p class="mt-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Periode {{ periodLabel }}</p>
 
-        <section class="mt-2 grid grid-cols-2 gap-3" aria-label="Ringkasan laba rugi">
+        <section data-tour="report-summary" class="mt-2 grid grid-cols-2 gap-3" aria-label="Ringkasan laba rugi">
             <Card label="Pemasukan" :amount="formatRupiah(props.report.income)">
                 <div class="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600">
                     <ArrowUpRight class="size-4" /> Masuk
@@ -105,7 +133,7 @@ const applyCustomRange = () => {
             </Card>
         </section>
 
-        <section class="mt-3" aria-label="Saldo bersih">
+        <section data-tour="report-net" class="mt-3" aria-label="Saldo bersih">
             <div class="rounded-2xl border border-primary-200 bg-primary-50 p-4">
                 <div class="text-[10px] font-extrabold uppercase tracking-wider text-primary-500">Saldo bersih</div>
                 <div class="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-primary-700">{{ formatRupiah(props.report.net) }}</div>
@@ -121,7 +149,7 @@ const applyCustomRange = () => {
             />
         </section>
 
-        <section class="mt-6" aria-labelledby="income-breakdown-title">
+        <section data-tour="report-breakdown" class="mt-6" aria-labelledby="income-breakdown-title">
             <h2 id="income-breakdown-title" class="mb-2 text-sm font-bold">Breakdown pemasukan</h2>
             <div class="rounded-2xl border border-slate-200 bg-white px-4">
                 <div v-for="row in props.report.incomeBreakdown" :key="row.label" class="border-b border-slate-100 py-3.5 last:border-b-0">
