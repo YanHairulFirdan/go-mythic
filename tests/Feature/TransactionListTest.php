@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use App\Models\User;
@@ -110,6 +112,33 @@ class TransactionListTest extends TestCase
         $this->actingAs($owner)
             ->get(route('transactions.index', ['date_from' => '2026-09-15', 'date_to' => '2026-09-30']))
             ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 2));
+    }
+
+    public function test_list_exposes_customer_and_invoice_source(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = Customer::factory()->for($owner->company)->create(['name' => 'PT Sumber Jaya']);
+        $invoice = Invoice::factory()->create([
+            'company_id' => $owner->company_id,
+            'customer_id' => $customer->id,
+            'created_by' => $owner->id,
+        ]);
+        $linked = $this->makeTransaction($owner, [
+            'type' => 'income',
+            'customer_id' => $customer->id,
+            'invoice_id' => $invoice->id,
+        ]);
+        $unlinked = $this->makeTransaction($owner, ['transaction_date' => '2020-01-01']);
+
+        $this->actingAs($owner)
+            ->get(route('transactions.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('transactions.data.0.id', $linked->id)
+                ->where('transactions.data.0.customer', 'PT Sumber Jaya')
+                ->where('transactions.data.0.invoice_id', $invoice->id)
+                ->where('transactions.data.1.id', $unlinked->id)
+                ->where('transactions.data.1.customer', null)
+                ->where('transactions.data.1.invoice_id', null));
     }
 
     public function test_results_are_paginated(): void
