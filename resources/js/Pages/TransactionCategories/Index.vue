@@ -182,8 +182,6 @@ const isEmpty = computed((): boolean => props.categories.data.length === 0);
             </button>
         </form>
 
-        <p class="mt-3 text-[11px] text-slate-400">Jumlah transaksi per kategori menyusul modul transaksi.</p>
-
         <div class="mt-1 rounded-2xl border border-slate-200 bg-white">
             <InfiniteScroll
                 data="categories"

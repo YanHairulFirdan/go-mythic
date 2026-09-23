@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -124,13 +125,33 @@ class TransactionCategoryTest extends TestCase
                 ->where('categories.current_page', 2));
     }
 
-    public function test_each_row_carries_a_transactions_count(): void
+    public function test_each_row_carries_the_active_transaction_count(): void
     {
         $owner = $this->ownerWithPresets();
+        $category = TransactionCategory::query()
+            ->where('company_id', $owner->company_id)
+            ->where('type', 'income')
+            ->where('name', 'Penjualan')
+            ->firstOrFail();
+
+        Transaction::factory()->count(2)->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'category_id' => $category->id,
+            'type' => 'income',
+        ]);
+        Transaction::factory()->create([
+            'company_id' => $owner->company_id,
+            'created_by' => $owner->id,
+            'category_id' => $category->id,
+            'type' => 'income',
+        ])->delete();
 
         $this->actingAs($owner)
-            ->get(route('transaction-categories.index'))
-            ->assertInertia(fn ($page) => $page->has('categories.data.0.transactions_count'));
+            ->get(route('transaction-categories.index', ['search' => 'Penjualan']))
+            ->assertInertia(fn ($page) => $page
+                ->where('categories.data.0.id', $category->id)
+                ->where('categories.data.0.transactions_count', 2));
     }
 
     public function test_index_rejects_employee(): void

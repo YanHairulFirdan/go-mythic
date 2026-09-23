@@ -102,6 +102,48 @@ class TransactionListTest extends TestCase
                 ->has('transactions.data', 1));
     }
 
+    public function test_totals_follow_type_and_category_filters(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $category = TransactionCategory::factory()->for($owner->company)->income()->create();
+        $this->makeTransaction($owner, ['type' => 'income', 'amount' => 100_000, 'category_id' => $category->id]);
+        $this->makeTransaction($owner, ['type' => 'income', 'amount' => 50_000]);
+        $this->makeTransaction($owner, ['type' => 'expense', 'amount' => 25_000]);
+
+        $this->actingAs($owner)
+            ->get(route('transactions.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('totals.income', 150000)
+                ->where('totals.expense', 25000));
+
+        $this->actingAs($owner)
+            ->get(route('transactions.index', ['type' => 'expense']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('totals.income', 0)
+                ->where('totals.expense', 25000));
+
+        $this->actingAs($owner)
+            ->get(route('transactions.index', ['category_id' => $category->id]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('totals.income', 100000)
+                ->where('totals.expense', 0));
+    }
+
+    public function test_totals_are_scoped_to_visible_transactions(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $employee = User::factory()->create(['role' => 'employee', 'company_id' => $owner->company_id]);
+        $this->makeTransaction($employee, ['type' => 'income', 'amount' => 80_000]);
+        $this->makeTransaction($owner, ['type' => 'income', 'amount' => 120_000]);
+        $this->makeTransaction(User::factory()->create(['role' => 'owner']), ['type' => 'income', 'amount' => 999_000]);
+
+        $this->actingAs($employee)
+            ->get(route('transactions.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('totals.income', 80000)
+                ->where('totals.expense', 0));
+    }
+
     public function test_filter_by_date_range_is_inclusive(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
