@@ -13,6 +13,8 @@ interface Row {
     amount: number;
     transaction_date: string;
     category: string | null;
+    customer: string | null;
+    invoice_id: number | null;
     payment_method: string;
     notes: string | null;
 }
@@ -183,6 +185,9 @@ const hasActiveFilter = computed((): boolean =>
                         <strong class="block truncate text-xs font-bold text-slate-800">{{ transaction.category ?? 'Tanpa kategori' }}</strong>
                         <small class="mt-1 block truncate text-[10px] text-slate-400">
                             {{ formatDate(transaction.transaction_date) }}<template v-if="transaction.notes"> · {{ transaction.notes }}</template>
+                        </small>
+                        <small v-if="transaction.customer || transaction.invoice_id" class="mt-1 block truncate text-[10px] text-slate-400">
+                            <template v-if="transaction.customer">{{ transaction.customer }}</template><template v-if="transaction.invoice_id">{{ transaction.customer ? ' · ' : '' }}Invoice #{{ transaction.invoice_id }}</template>
                         </small>
                     </span>
                     <span

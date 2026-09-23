@@ -13,6 +13,8 @@ interface TransactionDetail {
     amount: number;
     transaction_date: string;
     category: string | null;
+    customer: string | null;
+    invoice_id: number | null;
     payment_method: string;
     notes: string | null;
     recorded_by: string | null;
@@ -38,6 +40,9 @@ const paymentLabels: Record<string, string> = {
 
 const backHref = route('transactions.index');
 const editHref = route('transactions.edit', props.transaction.id);
+const invoiceHref = computed(() => props.transaction.invoice_id
+    ? route('invoices.show', props.transaction.invoice_id)
+    : '');
 
 const isIncome = computed((): boolean => props.transaction.type === 'income');
 
@@ -65,6 +70,8 @@ const rows = computed((): Array<[string, string]> => [
     ['Metode', paymentLabels[props.transaction.payment_method] ?? props.transaction.payment_method],
     ['Dicatat oleh', props.transaction.recorded_by ?? '—'],
 ]);
+
+const hasSource = computed((): boolean => isIncome.value && (props.transaction.customer !== null || props.transaction.invoice_id !== null));
 </script>
 
 <template>
@@ -105,6 +112,21 @@ const rows = computed((): Array<[string, string]> => [
             >
                 <span class="text-slate-400">{{ row[0] }}</span>
                 <strong class="text-right font-semibold text-slate-700">{{ row[1] }}</strong>
+            </div>
+            <div v-if="hasSource" class="border-b border-slate-100 py-3.5 text-xs last:border-b-0">
+                <div class="flex items-start justify-between gap-4">
+                    <span class="text-slate-400">Customer</span>
+                    <strong class="text-right font-semibold text-slate-700">{{ props.transaction.customer ?? 'Tanpa customer' }}</strong>
+                </div>
+                <div v-if="props.transaction.invoice_id" class="mt-3 flex items-start justify-between gap-4">
+                    <span class="text-slate-400">Invoice</span>
+                    <Link
+                        :href="invoiceHref"
+                        class="text-right font-semibold text-primary-600 underline-offset-2 hover:underline"
+                    >
+                        Invoice #{{ props.transaction.invoice_id }}
+                    </Link>
+                </div>
             </div>
         </section>
 

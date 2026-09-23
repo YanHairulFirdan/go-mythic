@@ -59,7 +59,7 @@ class TransactionController extends Controller
             ->when($categoryId, fn (Builder $query, int $id) => $query->where('category_id', $id))
             ->when($dateFrom, fn (Builder $query, string $date) => $query->where('transaction_date', '>=', $date))
             ->when($dateTo, fn (Builder $query, string $date) => $query->where('transaction_date', '<=', $date))
-            ->with('category:id,name')
+            ->with(['category:id,name', 'customer:id,name'])
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
             ->paginate(self::PER_PAGE)
@@ -72,6 +72,9 @@ class TransactionController extends Controller
                 'category' => $transaction->category?->name,
                 'payment_method' => $transaction->payment_method,
                 'notes' => $transaction->notes,
+                // US: sumber transaksi — nama customer & invoice terkait bila ada.
+                'customer' => $transaction->customer?->name,
+                'invoice_id' => $transaction->invoice_id,
             ]);
 
         return Inertia::render('Transactions/Index', [
@@ -160,7 +163,7 @@ class TransactionController extends Controller
     {
         $this->authorizeAccess($request, $transaction);
 
-        $transaction->load(['category:id,name', 'creator:id,name', 'editor:id,name']);
+        $transaction->load(['category:id,name', 'customer:id,name', 'creator:id,name', 'editor:id,name']);
 
         $wasEdited = $transaction->updated_by !== null;
 
@@ -173,6 +176,9 @@ class TransactionController extends Controller
                 'category' => $transaction->category?->name,
                 'payment_method' => $transaction->payment_method,
                 'notes' => $transaction->notes,
+                // US: sumber transaksi — nama customer & invoice terkait bila ada.
+                'customer' => $transaction->customer?->name,
+                'invoice_id' => $transaction->invoice_id,
                 'recorded_by' => $transaction->creator?->name,
                 'created_at' => $transaction->created_at?->toIso8601String(),
                 // AC1: "last updated by" only surfaces once the row has been edited.

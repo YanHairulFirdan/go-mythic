@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,6 +60,28 @@ class TransactionDetailTest extends TestCase
                 ->where('transaction.last_updated_by', null)
                 ->where('transaction.last_updated_at', null)
                 ->where('transaction.attachment_url', null));
+    }
+
+    public function test_detail_exposes_customer_and_invoice_source(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = Customer::factory()->for($owner->company)->create(['name' => 'PT Sumber Jaya']);
+        $invoice = Invoice::factory()->create([
+            'company_id' => $owner->company_id,
+            'customer_id' => $customer->id,
+            'created_by' => $owner->id,
+        ]);
+        $transaction = $this->makeTransaction($owner, [
+            'type' => 'income',
+            'customer_id' => $customer->id,
+            'invoice_id' => $invoice->id,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('transactions.show', $transaction))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('transaction.customer', 'PT Sumber Jaya')
+                ->where('transaction.invoice_id', $invoice->id));
     }
 
     public function test_last_updated_by_is_shown_only_after_an_edit(): void
