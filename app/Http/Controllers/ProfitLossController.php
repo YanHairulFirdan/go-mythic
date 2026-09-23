@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CapitalTopup;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,7 +19,7 @@ class ProfitLossController extends Controller
         abort_unless($user?->role === 'owner', 403);
 
         $validated = $request->validate([
-            'period' => ['sometimes', Rule::in(['today', 'week', 'month', 'custom'])],
+            'period' => ['sometimes', Rule::in(['today', 'week', 'month', '2months', 'custom'])],
             'date_from' => ['nullable', 'date_format:Y-m-d', 'required_if:period,custom'],
             'date_to' => ['nullable', 'date_format:Y-m-d', 'required_if:period,custom', 'after_or_equal:date_from'],
         ]);
@@ -33,6 +34,11 @@ class ProfitLossController extends Controller
                 $validated['date_from'],
                 $validated['date_to'],
                 $validated['date_from'].' — '.$validated['date_to'],
+            ],
+            '2months' => [
+                $today->copy()->subMonthNoOverflow()->startOfMonth()->toDateString(),
+                $today->toDateString(),
+                '2 Bulan Terakhir',
             ],
             default => [
                 $today->copy()->startOfMonth()->toDateString(),
@@ -49,6 +55,10 @@ class ProfitLossController extends Controller
 
         $income = $baseQuery('income');
         $expense = $baseQuery('expense');
+        $capitalTopup = (float) CapitalTopup::query()
+            ->whereHas('capitalEntry', fn ($query) => $query->where('company_id', $user->company_id))
+            ->whereBetween('changed_at', [$dateFrom.' 00:00:00', $dateTo.' 23:59:59'])
+            ->sum('amount');
 
         $breakdown = function (string $type) use ($user, $dateFrom, $dateTo, $income, $expense): array {
             $total = $type === 'income' ? $income : $expense;
@@ -80,6 +90,7 @@ class ProfitLossController extends Controller
                 'income' => $income,
                 'expense' => $expense,
                 'net' => $income - $expense,
+                'capital_topup' => $capitalTopup,
                 'incomeBreakdown' => $breakdown('income'),
                 'expenseBreakdown' => $breakdown('expense'),
             ],

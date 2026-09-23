@@ -1,7 +1,7 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight } from '@lucide/vue';
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 import Card from '@/Components/ui/Card.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
@@ -18,10 +18,11 @@ const periods = [
     { value: 'today', label: 'Hari ini' },
     { value: 'week', label: 'Minggu ini' },
     { value: 'month', label: 'Bulan ini' },
+    { value: '2months', label: '2 Bulan' },
     { value: 'custom', label: 'Custom' },
 ];
 
-const selectedPeriod = computed(() => props.report.period);
+const selectedPeriod = ref(props.report.period);
 const customRange = reactive({
     from: props.report.date_from,
     to: props.report.date_to,
@@ -30,6 +31,8 @@ const customRange = reactive({
 const periodLabel = computed(() => props.report.period_label);
 
 const selectPeriod = (period) => {
+    selectedPeriod.value = period;
+
     if (period === 'custom') {
         return;
     }
@@ -108,6 +111,14 @@ const applyCustomRange = () => {
                 <div class="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-primary-700">{{ formatRupiah(props.report.net) }}</div>
                 <p class="mt-1 text-xs text-primary-500">Pemasukan dikurangi pengeluaran pada periode ini</p>
             </div>
+        </section>
+
+        <section v-if="props.report.capital_topup > 0" class="mt-3" aria-label="Top-up modal">
+            <Card
+                label="Top-up Modal"
+                :amount="formatRupiah(props.report.capital_topup)"
+                note="Top-up modal pada periode ini (di luar laba operasional)."
+            />
         </section>
 
         <section class="mt-6" aria-labelledby="income-breakdown-title">
