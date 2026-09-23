@@ -49,7 +49,7 @@ class TransactionController extends Controller
         $dateFrom = $validated['date_from'] ?? null;
         $dateTo = $validated['date_to'] ?? null;
 
-        $transactions = Transaction::query()
+        $query = Transaction::query()
             ->where('company_id', $companyId)
             ->when(
                 $request->user()->role === 'employee',
@@ -58,7 +58,14 @@ class TransactionController extends Controller
             ->when($type, fn (Builder $query, string $value) => $query->where('type', $value))
             ->when($categoryId, fn (Builder $query, int $id) => $query->where('category_id', $id))
             ->when($dateFrom, fn (Builder $query, string $date) => $query->where('transaction_date', '>=', $date))
-            ->when($dateTo, fn (Builder $query, string $date) => $query->where('transaction_date', '<=', $date))
+            ->when($dateTo, fn (Builder $query, string $date) => $query->where('transaction_date', '<=', $date));
+
+        $totals = (clone $query)
+            ->selectRaw('type, SUM(amount) as total')
+            ->groupBy('type')
+            ->pluck('total', 'type');
+
+        $transactions = $query
             ->with(['category:id,name', 'customer:id,name'])
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
@@ -88,6 +95,11 @@ class TransactionController extends Controller
                 'category_id' => $categoryId,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
+            ],
+            // US: total nominal hasil filter, agar user tidak perlu jumlah manual.
+            'totals' => [
+                'income' => (float) ($totals['income'] ?? 0),
+                'expense' => (float) ($totals['expense'] ?? 0),
             ],
         ]);
     }

@@ -38,10 +38,16 @@ interface Filters {
     date_to: string | null;
 }
 
+interface Totals {
+    income: number;
+    expense: number;
+}
+
 interface Props {
     transactions: Paginated<Row>;
     categories: Category[];
     filters: Filters;
+    totals: Totals;
 }
 
 const props = defineProps<Props>();
@@ -64,6 +70,15 @@ const showHref = (id: number): string => route('transactions.show', id);
 
 const availableCategories = computed((): Category[] =>
     form.type === null ? props.categories : props.categories.filter((category) => category.type === form.type));
+const summaryType = computed((): TransactionType | null => {
+    if (form.type !== null) {
+        return form.type;
+    }
+
+    return form.category_id === null
+        ? null
+        : props.categories.find((category) => category.id === form.category_id)?.type ?? null;
+});
 
 const reloading = ref(false);
 
@@ -74,7 +89,7 @@ const reload = (): void => {
         date_from: form.date_from ?? undefined,
         date_to: form.date_to ?? undefined,
     }, {
-        only: ['transactions', 'filters'],
+        only: ['transactions', 'filters', 'totals'],
         reset: ['transactions'],
         preserveState: true,
         replace: true,
@@ -161,6 +176,17 @@ const hasActiveFilter = computed((): boolean =>
                 />
             </label>
         </div>
+
+        <section class="mt-3 flex gap-2" aria-label="Total hasil filter">
+            <div v-if="summaryType !== 'expense'" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Pemasukan</span>
+                <strong class="block text-sm font-extrabold tabular-nums text-emerald-600">{{ formatRupiah(props.totals.income) }}</strong>
+            </div>
+            <div v-if="summaryType !== 'income'" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Pengeluaran</span>
+                <strong class="block text-sm font-extrabold tabular-nums text-rose-600">{{ formatRupiah(props.totals.expense) }}</strong>
+            </div>
+        </section>
 
         <section class="mt-3 pb-4" aria-label="Daftar transaksi" :aria-busy="reloading">
             <InfiniteScroll

@@ -32,6 +32,7 @@ class TransactionCategoryController extends Controller
             ->where('company_id', $request->user()->company_id)
             ->where('type', $type)
             ->when($search !== '', fn (Builder $query) => $query->where('name', 'like', '%'.$search.'%'))
+            ->withCount('transactions')
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->paginate(self::PER_PAGE)
@@ -41,9 +42,7 @@ class TransactionCategoryController extends Controller
                 'name' => $category->name,
                 'type' => $category->type,
                 'is_default' => $category->is_default,
-                // US-TR-01: real usage count via withCount('transactions') once
-                // the transactions table exists (Feature 4).
-                'transactions_count' => 0,
+                'transactions_count' => $category->transactions_count,
             ]);
 
         return Inertia::render('TransactionCategories/Index', [
