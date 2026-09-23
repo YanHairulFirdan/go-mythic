@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import { driver } from 'driver.js';
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight, Plus } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -120,6 +121,22 @@ const formatDate = (value: string): string =>
 const isEmpty = computed((): boolean => props.transactions.data.length === 0);
 const hasActiveFilter = computed((): boolean =>
     form.type !== null || form.category_id !== null || form.date_from !== null || form.date_to !== null);
+
+const startTour = (): void => {
+    driver({
+        showProgress: true,
+        animate: false,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="transaction-filters"]', popover: { title: 'Filter transaksi', description: 'Saring berdasarkan jenis, kategori, atau tanggal.' } },
+            { element: '[data-tour="transaction-totals"]', popover: { title: 'Ringkasan hasil', description: 'Lihat total pemasukan dan pengeluaran sesuai filter.' } },
+            { element: '[data-tour="transaction-list"]', popover: { title: 'Daftar transaksi', description: 'Pilih transaksi untuk melihat detailnya.' } },
+            { element: '[data-tour="transaction-create"]', popover: { title: 'Tambah transaksi', description: 'Gunakan tombol ini untuk mencatat transaksi baru.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -128,56 +145,67 @@ const hasActiveFilter = computed((): boolean =>
     <PrototypeLayout>
         <section class="flex items-center justify-between pb-3 pt-4">
             <h1 class="text-xl font-bold tracking-tight">Transaksi</h1>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ props.transactions.total }} entri</span>
+            <div class="flex items-center gap-3">
+                <button
+                    type="button"
+                    class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                    @click="startTour"
+                >
+                    Mulai tur
+                </button>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ props.transactions.total }} entri</span>
+            </div>
         </section>
 
-        <div class="flex gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Jenis transaksi">
-            <button
-                v-for="tab in typeTabs"
-                :key="tab.label"
-                type="button"
-                role="tab"
-                :aria-selected="form.type === tab.value"
-                :class="[
-                    'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
-                    form.type === tab.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
-                ]"
-                @click="selectType(tab.value)"
-            >
-                {{ tab.label }}
-            </button>
+        <div data-tour="transaction-filters">
+            <div class="flex gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Jenis transaksi">
+                <button
+                    v-for="tab in typeTabs"
+                    :key="tab.label"
+                    type="button"
+                    role="tab"
+                    :aria-selected="form.type === tab.value"
+                    :class="[
+                        'flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
+                        form.type === tab.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                    ]"
+                    @click="selectType(tab.value)"
+                >
+                    {{ tab.label }}
+                </button>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-2">
+                <select
+                    v-model="form.category_id"
+                    class="col-span-2 rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    aria-label="Filter kategori"
+                >
+                    <option :value="null">Semua kategori</option>
+                    <option v-for="category in availableCategories" :key="category.id" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+                <label class="block">
+                    <span class="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Dari</span>
+                    <input
+                        v-model="form.date_from"
+                        type="date"
+                        class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    />
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Sampai</span>
+                    <input
+                        v-model="form.date_to"
+                        type="date"
+                        class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+                    />
+                </label>
+            </div>
         </div>
 
-        <div class="mt-3 grid grid-cols-2 gap-2">
-            <select
-                v-model="form.category_id"
-                class="col-span-2 rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                aria-label="Filter kategori"
-            >
-                <option :value="null">Semua kategori</option>
-                <option v-for="category in availableCategories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                </option>
-            </select>
-            <label class="block">
-                <span class="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Dari</span>
-                <input
-                    v-model="form.date_from"
-                    type="date"
-                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                />
-            </label>
-            <label class="block">
-                <span class="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Sampai</span>
-                <input
-                    v-model="form.date_to"
-                    type="date"
-                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                />
-            </label>
-        </div>
-
-        <section class="mt-3 flex gap-2" aria-label="Total hasil filter">
+        <section data-tour="transaction-totals" class="mt-3 flex gap-2" aria-label="Total hasil filter">
             <div v-if="summaryType !== 'expense'" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Pemasukan</span>
                 <strong class="block text-sm font-extrabold tabular-nums text-emerald-600">{{ formatRupiah(props.totals.income) }}</strong>
@@ -188,7 +216,7 @@ const hasActiveFilter = computed((): boolean =>
             </div>
         </section>
 
-        <section class="mt-3 pb-4" aria-label="Daftar transaksi" :aria-busy="reloading">
+        <section data-tour="transaction-list" class="mt-3 pb-4" aria-label="Daftar transaksi" :aria-busy="reloading">
             <InfiniteScroll
                 data="transactions"
                 as="div"
@@ -236,6 +264,7 @@ const hasActiveFilter = computed((): boolean =>
         </section>
 
         <Link
+            data-tour="transaction-create"
             :href="createHref"
             aria-label="Tambah transaksi"
             class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"

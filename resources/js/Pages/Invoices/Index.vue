@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { driver } from 'driver.js';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronRight, Plus, ReceiptText, Search } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -75,6 +76,23 @@ const progressPct = (invoice) => {
     }
     return Math.min(100, Math.round((Number(invoice.linked_total || 0) / total) * 100));
 };
+
+const startTour = () => {
+    driver({
+        showProgress: true,
+        animate: false,
+        skipMissingElement: true,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="invoice-search"]', popover: { title: 'Cari invoice', description: 'Cari invoice berdasarkan nama customer.' } },
+            { element: '[data-tour="invoice-filters"]', popover: { title: 'Filter status', description: 'Saring invoice berdasarkan status pembayaran.' } },
+            { element: '[data-tour="invoice-list"]', popover: { title: 'Daftar invoice', description: 'Pilih invoice untuk melihat detail dan progres pembayarannya.' } },
+            { element: '[data-tour="invoice-create"]', popover: { title: 'Buat invoice', description: 'Gunakan tombol ini untuk membuat invoice baru.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -82,10 +100,20 @@ const progressPct = (invoice) => {
 
     <PrototypeLayout>
         <section class="pb-4 pt-4">
-            <PageHeader title="Invoice" />
+            <PageHeader title="Invoice">
+                <template #actions>
+                    <button
+                        type="button"
+                        class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        @click="startTour"
+                    >
+                        Mulai tur
+                    </button>
+                </template>
+            </PageHeader>
         </section>
 
-        <div class="relative">
+        <div data-tour="invoice-search" class="relative">
             <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <input
                 v-model="search"
@@ -96,7 +124,7 @@ const progressPct = (invoice) => {
             />
         </div>
 
-        <div class="mt-2.5 -mx-4 overflow-x-auto px-4 pb-0.5" role="group" aria-label="Filter status invoice">
+        <div data-tour="invoice-filters" class="mt-2.5 -mx-4 overflow-x-auto px-4 pb-0.5" role="group" aria-label="Filter status invoice">
             <div class="flex w-max gap-2">
                 <button
                     v-for="option in statusOptions"
@@ -112,7 +140,7 @@ const progressPct = (invoice) => {
             </div>
         </div>
 
-        <section class="mt-3 pb-4" aria-label="Daftar invoice" :aria-busy="reloading">
+        <section data-tour="invoice-list" class="mt-3 pb-4" aria-label="Daftar invoice" :aria-busy="reloading">
             <div :class="['divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-3 transition-opacity', reloading ? 'pointer-events-none opacity-50' : '']">
                 <Link
                     v-for="invoice in props.invoices"
@@ -153,6 +181,7 @@ const progressPct = (invoice) => {
         </section>
 
         <Link
+            data-tour="invoice-create"
             :href="route('invoices.create')"
             aria-label="Buat invoice"
             class="fixed bottom-24 right-5 z-20 flex size-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:absolute sm:bottom-20 sm:right-5"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { driver } from 'driver.js';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Plus, TriangleAlert } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
@@ -157,6 +158,23 @@ const onAttachmentChange = (event: Event): void => {
 const submit = (): void => {
     form.post(route('transactions.store'), { forceFormData: true });
 };
+
+const startTour = (): void => {
+    driver({
+        showProgress: true,
+        animate: false,
+        skipMissingElement: true,
+        nextBtnText: 'Lanjut',
+        prevBtnText: 'Kembali',
+        doneBtnText: 'Selesai',
+        steps: [
+            { element: '[data-tour="transaction-type"]', popover: { title: 'Jenis transaksi', description: 'Pilih pemasukan atau pengeluaran.' } },
+            { element: '[data-tour="transaction-amount"]', popover: { title: 'Nominal', description: 'Masukkan nilai transaksi dalam rupiah.' } },
+            { element: '[data-tour="transaction-category"]', popover: { title: 'Kategori', description: 'Pilih kategori agar laporan lebih mudah dibaca.' } },
+            { element: '[data-tour="transaction-submit"]', popover: { title: 'Simpan transaksi', description: 'Simpan catatan setelah semua data terisi.' } },
+        ],
+    }).drive();
+};
 </script>
 
 <template>
@@ -171,7 +189,14 @@ const submit = (): void => {
             >
                 <ChevronLeft class="size-5" />
             </Link>
-            <h1 class="text-xl font-bold tracking-tight">Tambah transaksi</h1>
+            <h1 class="flex-1 text-xl font-bold tracking-tight">Tambah transaksi</h1>
+            <button
+                type="button"
+                class="text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                @click="startTour"
+            >
+                Mulai tur
+            </button>
         </section>
 
         <!-- US-TR-01B: per-type radial quota indicator (Free only). -->
@@ -236,7 +261,7 @@ const submit = (): void => {
                 </div>
             </div>
 
-            <div class="flex rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Jenis transaksi">
+            <div data-tour="transaction-type" class="flex rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Jenis transaksi">
                 <button
                     type="button"
                     role="tab"
@@ -259,7 +284,7 @@ const submit = (): void => {
                 </button>
             </div>
 
-            <div>
+            <div data-tour="transaction-amount">
                 <label for="amount" class="mb-1.5 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Nominal</label>
                 <div class="flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                     <span class="text-sm font-semibold text-slate-400">Rp</span>
@@ -273,7 +298,7 @@ const submit = (): void => {
                 <p v-if="form.errors.amount" class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.errors.amount }}</p>
             </div>
 
-            <div>
+            <div data-tour="transaction-category">
                 <div class="mb-1.5 flex items-center justify-between">
                     <label for="category" class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Kategori</label>
                     <button
@@ -413,6 +438,7 @@ const submit = (): void => {
             </div>
 
             <button
+                data-tour="transaction-submit"
                 type="submit"
                 :disabled="form.processing || !dateHasCapital"
                 class="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-primary-200 transition hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50"
