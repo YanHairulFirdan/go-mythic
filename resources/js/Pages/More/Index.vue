@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ChevronRight, CreditCard, Landmark, LogOut, Palette, Tags, TrendingUp, UserRound, Users } from '@lucide/vue';
+import { BookOpen, ChevronRight, CreditCard, Landmark, LogOut, Palette, Tags, TrendingUp, UserRound, Users } from '@lucide/vue';
 import PrototypeLayout from '@/Layouts/PrototypeLayout.vue';
 
 const page = usePage();
@@ -18,6 +18,10 @@ const modules = computed(() => isOwner.value ? [
 
 const account = [
     { label: 'Profil', desc: 'Ubah data akun dan kata sandi', icon: UserRound, href: route('profile.edit') },
+];
+
+const help = [
+    { label: 'Panduan mulai', desc: 'Urutan setup modal, transaksi, dan laporan', icon: BookOpen, href: route('guide') },
 ];
 </script>
 
@@ -50,6 +54,24 @@ const account = [
         <section aria-label="Akun" class="mt-4 rounded-2xl border border-slate-200 bg-white px-4">
             <Link
                 v-for="item in account"
+                :key="item.label"
+                :href="item.href"
+                class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+            >
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                    <component :is="item.icon" class="size-[18px]" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <strong class="block truncate text-xs font-bold text-slate-800">{{ item.label }}</strong>
+                    <small class="mt-1 block truncate text-[10px] text-slate-400">{{ item.desc }}</small>
+                </span>
+                <ChevronRight class="size-4 shrink-0 text-slate-300" />
+            </Link>
+        </section>
+
+        <section aria-label="Bantuan" class="mt-4 rounded-2xl border border-slate-200 bg-white px-4">
+            <Link
+                v-for="item in help"
                 :key="item.label"
                 :href="item.href"
                 class="flex items-center gap-3 border-b border-slate-100 py-3.5 last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
