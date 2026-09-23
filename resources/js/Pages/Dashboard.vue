@@ -36,9 +36,23 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    onboarding: { type: Object, default: null },
 });
 
 const isOwner = computed(() => page.props.auth?.user?.role === 'owner');
+const showOnboarding = computed(() => isOwner.value && props.onboarding?.show === true);
+const onboardingSteps = computed(() => {
+    if (!props.onboarding) {
+        return [];
+    }
+
+    return [
+        { label: 'Profil usaha', complete: props.onboarding.profile_complete, href: route('profile.edit') },
+        { label: 'Atur modal awal', complete: props.onboarding.capital_complete, href: route('capital.index') },
+        { label: 'Tambah transaksi pertama', complete: props.onboarding.transaction_complete, href: route('transactions.create') },
+        { label: 'Lihat laporan laba-rugi', complete: false, href: route('reports.profit-loss') },
+    ];
+});
 
 const displayName = computed(() => page.props.auth?.user?.name ?? '');
 
@@ -167,6 +181,33 @@ const quotaItems = computed(() => {
                     <span>Pemasukan {{ formatRupiah(props.summary.income) }}</span>
                     <span>Pengeluaran {{ formatRupiah(props.summary.expense) }}</span>
                 </div>
+            </div>
+        </section>
+
+        <section v-if="showOnboarding" class="mt-4 rounded-2xl border border-primary-100 bg-primary-50 p-4" aria-labelledby="onboarding-title">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h2 id="onboarding-title" class="text-sm font-bold text-primary-900">Mulai dari sini</h2>
+                    <p class="mt-1 text-xs text-primary-700">Siapkan pencatatan usaha dalam beberapa langkah.</p>
+                </div>
+                <Link :href="route('guide')" class="shrink-0 text-xs font-bold text-primary-700 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">Panduan</Link>
+            </div>
+            <div class="mt-3 space-y-2">
+                <Link
+                    v-for="step in onboardingSteps"
+                    :key="step.label"
+                    :href="step.href"
+                    class="flex items-center gap-2 rounded-xl bg-white/80 px-3 py-2 text-xs transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                    <span
+                        class="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold"
+                        :class="step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-primary-100 text-primary-700'"
+                    >
+                        {{ step.complete ? '✓' : '○' }}
+                    </span>
+                    <span :class="step.complete ? 'text-slate-400 line-through' : 'font-semibold text-slate-700'">{{ step.label }}</span>
+                    <ChevronRight v-if="!step.complete" class="ml-auto size-4 text-slate-300" />
+                </Link>
             </div>
         </section>
 

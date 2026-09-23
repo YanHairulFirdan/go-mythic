@@ -62,6 +62,7 @@ Route::middleware(['auth', EnsureUserActive::class, EnsureCompanySubscription::c
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::post('/subscription/payment', [SubscriptionController::class, 'store'])->name('subscription.payment.store');
     Route::get('/more', fn () => Inertia::render('More/Index'))->name('more.index');
+    Route::get('/panduan', fn () => Inertia::render('Guide'))->name('guide');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

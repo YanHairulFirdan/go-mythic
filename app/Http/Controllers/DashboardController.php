@@ -30,6 +30,7 @@ class DashboardController extends Controller
             // US-INV-06: quick count of invoices not yet fully covered by their
             // linked transactions; null (card hidden) when nothing is outstanding.
             'invoiceReminderWidget' => $this->invoiceReminderWidget($request),
+            'onboarding' => $this->onboarding($request),
         ]);
     }
 
@@ -192,6 +193,38 @@ class DashboardController extends Controller
         }
 
         return $outstanding === 0 ? null : ['outstanding' => $outstanding, 'partial' => $partial, 'overdue' => $overdue];
+    }
+
+    /**
+     * Lightweight first-use checklist. State is derived from tenant records so
+     * no onboarding flag can become stale.
+     *
+     * @return array{profile_complete: bool, capital_complete: bool, transaction_complete: bool, show: bool}|null
+     */
+    private function onboarding(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'owner') {
+            return null;
+        }
+
+        $company = $user->company;
+        $profileComplete = filled($company?->name) && filled($company?->owner_name) && filled($company?->phone);
+        $capitalComplete = CapitalEntry::query()
+            ->where('company_id', $user->company_id)
+            ->activeOn(Carbon::now()->toDateString())
+            ->exists();
+        $transactionComplete = Transaction::query()
+            ->where('company_id', $user->company_id)
+            ->exists();
+
+        return [
+            'profile_complete' => $profileComplete,
+            'capital_complete' => $capitalComplete,
+            'transaction_complete' => $transactionComplete,
+            'show' => ! ($profileComplete && $capitalComplete && $transactionComplete),
+        ];
     }
 
     /**
